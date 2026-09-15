@@ -40,7 +40,7 @@ const API_BASE: Record<StoryblokRegion, string> = {
 const mask = (token: string) =>
   token.length <= 8 ? '••••' : `${token.slice(0, 4)}…${token.slice(-4)}`
 
-export default defineEventHandler(async (): Promise<StoryblokHealth> => {
+async function check(): Promise<StoryblokHealth> {
   const config = useRuntimeConfig()
   const token = config.storyblokAccessToken
   const region = ((config.storyblokRegion as StoryblokRegion) || 'eu')
@@ -129,4 +129,17 @@ export default defineEventHandler(async (): Promise<StoryblokHealth> => {
       region,
     }
   }
+}
+
+export default defineEventHandler(async () => {
+  const result = await check()
+
+  // The space name, id, token fingerprint and story list are internal details.
+  // Outside dev only the verdict is published, so the endpoint stays usable as a
+  // deploy/uptime check without describing the CMS to anyone who asks.
+  if (import.meta.dev) return result
+
+  return result.ok
+    ? { ok: true }
+    : { ok: false, reason: result.reason }
 })
