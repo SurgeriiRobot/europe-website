@@ -25,3 +25,7 @@ logs
 
 # Local HTTPS certificates (mkcert)
 certs
+
+# Storyblok tooling — schema generator, seeds and CLI staging copy (local only)
+.storyblok
+storyblok/
