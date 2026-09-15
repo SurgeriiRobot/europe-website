@@ -27,5 +27,5 @@ logs
 certs
 
 # Storyblok tooling — schema generator, seeds and CLI staging copy (local only)
-.storyblok
-storyblok/
+/.storyblok/
+/storyblok/
