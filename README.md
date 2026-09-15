@@ -72,22 +72,38 @@ never ships to the browser. It reports `missing-token`, `unauthorized`,
 `api-error` or `network` separately, and detects whether the token is preview or
 public by retrying draft → published.
 
+## Content architecture
+
+The full model — pages, content types, every block and its fields — lives in
+[docs/content-architecture.md](docs/content-architecture.md). It is derived from
+the canonical Figma frames, including which designs the designer marked
+`DO NOT USE`.
+
+The block schemas themselves live in the Storyblok space (40 components, 4
+content types, 5 datasources). They are generated from a local schema-as-code
+setup that is **not** part of this repository, so pulling a copy is the way to
+inspect them:
+
+```bash
+pnpm dlx storyblok@latest login
+pnpm dlx storyblok@latest components pull --space 295130137307478
+```
+
+That writes `.storyblok/components/<space>/components.json`, which is gitignored.
+Schema changes are made by the maintainer and pushed from that setup — don't
+hand-edit components in the UI without telling them, or the next push will
+overwrite the change.
+
 ## Storyblok integration
 
 [`@storyblok/nuxt`](https://github.com/storyblok/storyblok-nuxt) v11 is registered
-in `nuxt.config.ts`. Blocks map to components in `app/storyblok/` **by file name**
-— a `teaser` block renders `app/storyblok/Teaser.vue`:
+in `nuxt.config.ts`. Blocks map to components in `app/storyblok/` **by name** —
+`StoryblokComponent` converts `feature_grid` to `feature-grid`, which Vue resolves
+to `FeatureGrid.vue`.
 
-| Block | Component |
-| --- | --- |
-| `page` | `Page.vue` — renders nested `body` bloks |
-| `teaser` | `Teaser.vue` — `headline` |
-| `grid` | `Grid.vue` — renders `columns` |
-| `feature` | `Feature.vue` — `name` |
-
-Add a block type in Storyblok, add the matching `.vue` file here, done. Every
-component carries `v-editable`, which is what lets the Visual Editor highlight a
-block and jump to its fields.
+Add a block type in Storyblok, add the matching `.vue` file, done. Every component
+carries `v-editable`, which is what lets the Visual Editor highlight a block and
+jump to its fields.
 
 Dev fetches `draft` content and production fetches `published`, decided in
 `app/pages/[...slug].vue`.
@@ -95,6 +111,28 @@ Dev fetches `draft` content and production fetches `published`, decided in
 > **Note:** v11 changed `useAsyncStoryblok`'s signature — CDN parameters nest
 > under `api`: `useAsyncStoryblok(slug, { api: { version: 'draft' } })`. The old
 > flat form throws at runtime.
+
+## Design system
+
+Tokens in `app/assets/css/tokens.css` mirror the Figma Design System page
+exactly — the full colour ramp and the type scale. Sections never hardcode
+colour; they set `data-theme="light|dark|brand"` and inherit
+`--surface` / `--ink` / `--accent`.
+
+Fonts are **Lora** (display) and **Inter** (everything else), self-hosted at build
+time by `@nuxt/fonts`. They are deliberately not hotlinked from Google: German
+courts have held that embedding Google Fonts transfers visitor IPs to a third
+country in breach of the GDPR, which matters for a European medical site.
+
+## Internationalisation
+
+Field-level translation: one story tree, per-field translations, fetched with the
+Storyblok `language` parameter. English is the source locale and stays unprefixed
+(`/contact`); other locales are prefixed (`/de/contact`).
+
+To add a locale: add the language in Storyblok, uncomment its entry in
+`i18n.locales` in `nuxt.config.ts`, translate. No code changes — see
+[the architecture doc](docs/content-architecture.md#6-internationalisation--implemented).
 
 ## Visual Editor
 
