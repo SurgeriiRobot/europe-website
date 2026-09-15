@@ -8,9 +8,12 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "typecheck": "nuxt typecheck"
+    "typecheck": "nuxt typecheck",
+    "storyblok:build": "node storyblok/build.mjs"
   },
   "dependencies": {
+    "@nuxt/fonts": "^0.14.0",
+    "@nuxtjs/i18n": "^10.6.0",
     "@storyblok/nuxt": "^11.2.0",
     "nuxt": "^4.5.2",
     "vue": "^3.5.42",

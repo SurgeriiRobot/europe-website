@@ -1,0 +1,111 @@
+/* Design tokens — extracted from Figma "SHURUI Branding V1" → Design System.
+   Do not invent values here; they mirror the Color System and Typography frames. */
+:root {
+  /* ---- brand ---- */
+  --c-blue-700: #021140;
+  --c-blue-600: #04237f;
+  --c-blue-500: #0534bf;
+  --c-blue:     #0745fe;
+  --c-blue-300: #4574fe;
+  --c-blue-200: #83a2ff;
+  --c-blue-100: #c1d1ff;
+
+  --c-darkblue:     #03045e;
+  --c-darkblue-300: #424386;
+  --c-darkblue-200: #8182af;
+  --c-darkblue-100: #c0c0d7;
+
+  --c-black:     #1f2739;
+  --c-black-300: #575d6b;
+  --c-black-200: #8f939c;
+  --c-black-100: #c7c9ce;
+
+  /* ---- neutrals ---- */
+  --c-white:       #ffffff;
+  --c-neutral-200: #f9fafc;
+  --c-neutral-300: #f4f4f8;
+  --c-neutral-400: #e3e4eb;
+  --c-neutral-500: #cacbd4;
+  --c-neutral-600: #a8a9b2;
+  --c-neutral-700: #717188;
+  --c-neutral-800: #323241;
+  --c-neutral-1000: #000000;
+
+  --c-leather:     #e2e2e2;
+  --c-leather-300: #ececec;
+  --c-leather-200: #f5f5f5;
+
+  /* ---- accents ---- */
+  --c-sky:    #20aeff;
+  --c-purple: #6d3e98;
+  --c-lime:   #c9f288;
+  --c-red:    #dd3043;
+  --c-gold:   #fcac5d;
+  --c-pink:   #f26ca7;
+  --c-orange: #ff601a;
+  --c-green:  #00ad6a;
+
+  /* ---- semantic surfaces (what components actually reference) ---- */
+  --surface:        var(--c-white);
+  --surface-muted:  var(--c-neutral-300);
+  --ink:            var(--c-darkblue);
+  --ink-muted:      var(--c-black-300);
+  --accent:         var(--c-blue);
+  --border:         var(--c-neutral-400);
+
+  /* ---- type ---- */
+  --font-display: 'Lora', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Figma sizes are desktop maxima; they scale down fluidly below 1440px. */
+  --t-display-1: clamp(3rem, 6.7vw, 6rem);       /* 96 / 115 */
+  --t-display-2: clamp(2.25rem, 4.2vw, 3.75rem); /* 60 / 72  */
+  --t-h1: clamp(2rem, 3.3vw, 3rem);              /* 48 / 58  */
+  --t-h2: clamp(1.75rem, 2.8vw, 2.5rem);         /* 40 / 48  */
+  --t-h3: clamp(1.5rem, 2.4vw, 2.125rem);        /* 34 / 41  */
+  --t-h4: 1.5rem;                                /* 24 / 29  */
+  --t-h5: 1.25rem;                               /* 20 / 24  */
+  --t-h6: 1.125rem;                              /* 18 / 29  */
+  --t-body: 1.125rem;                            /* 18 / 29  */
+  --t-body-sm: 1rem;                             /* 16 / 19  */
+  --t-caption: 0.75rem;                          /* 12 / 14  */
+
+  --lh-tight: 1.2;
+  --lh-body: 1.6;
+
+  --w-light: 300;
+  --w-regular: 400;
+  --w-semibold: 600;
+
+  /* ---- spacing / layout ---- */
+  --space-1: 0.25rem; --space-2: 0.5rem;  --space-3: 0.75rem;
+  --space-4: 1rem;    --space-5: 1.5rem;  --space-6: 2rem;
+  --space-7: 3rem;    --space-8: 4rem;    --space-9: 6rem;
+  --space-10: 8rem;
+
+  --container: 1440px;
+  --container-narrow: 760px;
+  --gutter: clamp(1rem, 4vw, 4rem);
+  --radius: 8px;
+  --radius-lg: 16px;
+}
+
+/* Section themes — every section blok sets one of these, nothing hardcodes colour. */
+[data-theme='light'] {
+  --surface: var(--c-white);
+  --ink: var(--c-darkblue);
+  --ink-muted: var(--c-black-300);
+  --border: var(--c-neutral-400);
+}
+[data-theme='dark'] {
+  --surface: var(--c-darkblue);
+  --ink: var(--c-white);
+  --ink-muted: var(--c-darkblue-100);
+  --border: var(--c-darkblue-300);
+}
+[data-theme='brand'] {
+  --surface: var(--c-blue);
+  --ink: var(--c-white);
+  --ink-muted: var(--c-blue-100);
+  --border: var(--c-blue-300);
+}
