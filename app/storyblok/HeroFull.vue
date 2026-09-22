@@ -29,12 +29,27 @@ onMounted(() => {
 })
 
 // Moving content that runs longer than five seconds needs a pause control (WCAG 2.2.2).
+const userPaused = ref(false)
 function togglePlayback() {
   const el = videoEl.value
   if (!el) return
-  if (el.paused) { el.play(); playing.value = true }
-  else { el.pause(); playing.value = false }
+  if (el.paused) { el.play(); playing.value = true; userPaused.value = false }
+  else { el.pause(); playing.value = false; userPaused.value = true }
 }
+
+// Don't decode video nobody can see: pause off-screen and on a hidden tab, and
+// resume only if the visitor didn't pause it themselves.
+onMounted(() => {
+  const resume = () => { if (!userPaused.value && videoEl.value?.paused) { videoEl.value.play(); playing.value = true } }
+  const suspend = () => { if (!videoEl.value?.paused) { videoEl.value?.pause(); playing.value = false } }
+
+  const io = new IntersectionObserver(entries => (entries[0]?.isIntersecting ? resume() : suspend()), { threshold: 0.1 })
+  watchEffect(() => { if (videoEl.value) io.observe(videoEl.value) })
+
+  const onVisibility = () => (document.hidden ? suspend() : resume())
+  document.addEventListener('visibilitychange', onVisibility)
+  onBeforeUnmount(() => { io.disconnect(); document.removeEventListener('visibilitychange', onVisibility) })
+})
 const srcset = computed(() =>
   bg.value?.filename
     ? WIDTHS.map(w => `${sbImage(bg.value, `${w}x0/filters:format(webp):quality(80)`)} ${w}w`).join(', ')
