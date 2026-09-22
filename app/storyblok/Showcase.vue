@@ -36,7 +36,7 @@ const go = (i: number) => { if (i >= 0 && i < items.value.length) index.value = 
             v-if="current.image?.filename"
             :src="sbCrop(current.image, 2280)"
             :srcset="`${sbCrop(current.image, 1440)} 1440w, ${sbCrop(current.image, 2280)} 2280w`"
-            sizes="76vw"
+            sizes="calc(76 * var(--sx))"
             :alt="current.image.alt || current.name"
             class="showcase__image"
             loading="lazy"
@@ -62,7 +62,7 @@ const go = (i: number) => { if (i >= 0 && i < items.value.length) index.value = 
 </template>
 
 <style scoped>
-.showcase { padding: clamp(140px, 20.8vw, 300px) 0 clamp(140px, 21.5vw, 310px); overflow: hidden; }
+.showcase { padding: clamp(140px, calc(20.8 * var(--sx)), 300px) 0 clamp(140px, calc(21.5 * var(--sx)), 310px); overflow: hidden; }
 
 /* The 100px line on the centre axis, 101px into the lead-in space. */
 .showcase__lead {
@@ -75,17 +75,17 @@ const go = (i: number) => { if (i >= 0 && i < items.value.length) index.value = 
 
 .showcase__stage {
   position: relative;
-  height: 42.43vw;                 /* 611/1440 */
+  height: calc(42.43 * var(--sx));                 /* 611/1440 */
 }
 .showcase__slide { position: absolute; inset: 0; }
 
 .showcase__word {
   position: absolute;
   left: 50%;
-  top: 22vw;                       /* 317/1440 */
+  top: 51.9%;                      /* 317 of the 611 stage */
   margin: 0;
   translate: -50% 0;
-  font-size: 15.28vw;              /* 220/1440 */
+  font-size: calc(15.28 * var(--sx));              /* 220/1440 */
   line-height: 1.2;
   color: var(--c-leather-200);
   pointer-events: none;
@@ -95,8 +95,8 @@ const go = (i: number) => { if (i >= 0 && i < items.value.length) index.value = 
 .showcase__image {
   position: absolute;
   left: 50%;
-  top: -13.3vw;
-  width: 75.6vw;
+  top: calc(-13.3 * var(--sx));
+  width: calc(75.6 * var(--sx));
   max-width: none;
   height: auto;
   translate: -50% 0;
@@ -104,27 +104,27 @@ const go = (i: number) => { if (i >= 0 && i < items.value.length) index.value = 
 
 .showcase__nav {
   position: absolute;
-  bottom: 0.97vw;
+  bottom: calc(0.97 * var(--sx));
   z-index: 2;
   padding: 8px;
   border: 0;
   background: none;
-  font-size: clamp(1rem, 1.39vw, 1.25rem);
+  font-size: clamp(1rem, calc(1.39 * var(--sx)), 1.25rem);
   font-weight: 600;
   line-height: 1.2;
   color: var(--c-blue);
   cursor: pointer;
 }
 .showcase__nav:hover { text-decoration: underline; }
-.showcase__nav--prev { left: 3.9vw; text-align: left; }
-.showcase__nav--next { right: 1.8vw; text-align: right; }
+.showcase__nav--prev { left: calc(3.9 * var(--sx)); text-align: left; }
+.showcase__nav--next { right: calc(1.8 * var(--sx)); text-align: right; }
 /* Hairline running from the previous-item label toward the product. */
 .showcase__nav--prev::after {
   content: '';
   position: absolute;
   top: 50%;
-  left: calc(100% + 3.1vw);
-  width: 10.9vw;                   /* 157/1440 */
+  left: calc(100% + calc(3.1 * var(--sx)));
+  width: calc(10.9 * var(--sx));                   /* 157/1440 */
   border-top: var(--line-w) solid var(--line);
 }
 

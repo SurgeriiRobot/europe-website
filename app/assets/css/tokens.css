@@ -105,6 +105,15 @@
   --grad-bright: linear-gradient(135deg, #d7e1ff 0%, #5e86fe 45%, #3959c7 100%);
   --grad-footer: linear-gradient(180deg, #20aeff -5.5%, #0745fe 15.6%, #03045e 65.6%, #1f2739 100%);
   --line-w: 0.5px;   /* the design's hairline weight */
+
+  /* 1 unit = 1% of the 1440 design width, but never larger than at 1440. Sizes
+     written as calc(N * var(--sx)) scale down on small screens and stop growing
+     on large ones, so a 4K display shows the design at its intended size. */
+  --sx: min(1vw, 14.4px);
+  --gutter-design: clamp(16px, 5.21vw, 75px);   /* the design's 75px side gutter */
+  /* Same gutter, but measured from the centred 1440 frame rather than the screen
+     edge — so hairlines stay with the content on very wide displays. */
+  --frame-gutter: calc(max(0px, (100vw - var(--container)) / 2) + var(--gutter-design));
 }
 
 /* Section themes — every section blok sets one of these; nothing hardcodes colour.

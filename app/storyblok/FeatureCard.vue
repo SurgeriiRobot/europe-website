@@ -84,12 +84,12 @@ const media = computed(() => props.blok.media)
 
 /* White hairlines, placed per band as in Figma (in vw of the 1440 frame). */
 .band__line { position: absolute; z-index: 1; border: 0 solid var(--c-white); pointer-events: none; }
-.band--decor-0 .band__line--a { left: 95.07vw; top: 2.78vw; bottom: 0; border-left-width: var(--line-w); }   /* x1369, 40->800 */
-.band--decor-0 .band__line--b { left: 89.17vw; right: 0; top: 51.11vw; border-top-width: var(--line-w); }   /* 1284->1440 @736 */
-.band--decor-1 .band__line--a { left: 0; width: 50vw; top: 51.53vw; border-top-width: var(--line-w); }       /* 0->720 @742 */
-.band--decor-1 .band__line--b { left: 5.21vw; top: 45.83vw; bottom: 0; border-left-width: var(--line-w); }  /* x75, 660->800 */
-.band--decor-2 .band__line--a { left: 50vw; right: 0; top: 4.38vw; border-top-width: var(--line-w); }       /* 720->1440 @63 */
-.band--decor-2 .band__line--b { left: 58.96vw; top: 4.38vw; height: 3.75vw; border-left-width: var(--line-w); } /* x849, 63->117 */
+.band--decor-0 .band__line--a { left: 95.07%; top: 5%; bottom: 0; border-left-width: var(--line-w); }          /* x1369, 40->800 */
+.band--decor-0 .band__line--b { left: 89.17%; right: 0; top: 92%; border-top-width: var(--line-w); }          /* 1284->1440 @736 */
+.band--decor-1 .band__line--a { left: 0; width: 50%; top: 92.75%; border-top-width: var(--line-w); }          /* 0->720 @742 */
+.band--decor-1 .band__line--b { left: var(--frame-gutter); top: 82.5%; bottom: 0; border-left-width: var(--line-w); }  /* x75, 660->800 */
+.band--decor-2 .band__line--a { left: 50%; right: 0; top: 7.88%; border-top-width: var(--line-w); }           /* 720->1440 @63 */
+.band--decor-2 .band__line--b { left: 58.96%; top: 7.88%; height: 6.75%; border-left-width: var(--line-w); }   /* x849, 63->117 */
 
 @media (max-width: 860px) {
   .band { grid-template-columns: 1fr; }
