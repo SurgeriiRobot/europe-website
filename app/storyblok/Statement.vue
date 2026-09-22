@@ -1,36 +1,70 @@
 <script setup lang="ts">
-defineProps<{ blok: any }>()
+// Two uses in the design:
+//  - light (991:18640): centred title with hairlines, body, primary button
+//  - gradient (991:18644): white title on the deep gradient, sky button, and the
+//    oversized "Key features" watermark in Lora at 50% opacity overhanging the edges.
+const props = defineProps<{ blok: any }>()
+const dark = computed(() => ['dark', 'brand', 'gradient'].includes(props.blok.theme))
 </script>
 
 <template>
-  <section v-editable="blok" :id="blok.anchor || undefined" class="section statement" :data-theme="blok.theme || 'dark'">
-    <p v-if="blok.watermark" class="statement__watermark" aria-hidden="true">{{ blok.watermark }}</p>
-    <div class="container container--narrow statement__inner stack">
-      <h2 class="statement__headline">{{ blok.headline }}</h2>
-      <p v-if="blok.body" class="statement__body">{{ blok.body }}</p>
+  <section
+    v-editable="blok"
+    :id="blok.anchor || undefined"
+    class="section statement"
+    :class="{ 'statement--dark': dark, 'statement--watermarked': blok.watermark }"
+    :data-theme="blok.theme || 'light'"
+  >
+    <SectionConnector :connector="blok.connector" />
+    <div class="container statement__inner">
+      <SectionTitle :headline="blok.headline" :body="blok.body" :lines="blok.title_lines" />
       <div v-if="blok.buttons?.length" class="statement__actions">
         <StoryblokComponent v-for="button in blok.buttons" :key="button._uid" :blok="button" />
       </div>
     </div>
+    <p v-if="blok.watermark" class="statement__watermark display-word" aria-hidden="true">{{ blok.watermark }}</p>
+    <template v-if="dark">
+      <span class="statement__gutter statement__gutter--top" aria-hidden="true" />
+      <span class="statement__gutter statement__gutter--bottom" aria-hidden="true" />
+    </template>
   </section>
 </template>
 
 <style scoped>
-.statement { position: relative; text-align: center; overflow: hidden; }
+.statement { padding-block: 40px 80px; overflow: hidden; }
+/* The deep gradient starts 110px above the copy in the design (it begins in the
+   previous section's padding), so the top padding is 120 + 110. */
+.statement--dark { padding-block: 230px 120px; }
+/* Figma's frame is a fixed 860px, not hug-contents: 423px sit below the button. */
+.statement--watermarked { padding-bottom: clamp(220px, 29.4vw, 423px); }
+
+.statement__inner { position: relative; z-index: 1; display: grid; justify-items: center; gap: 24px; }
+.statement--dark .statement__inner { gap: 48px; }
+.statement :deep(.sec-title) { max-width: 632px; }
+.statement__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; }
+
+/* White gutter line at x=75 with a tick out to the page edge, and a short
+   closing segment at the bottom — Figma lines 38/39/43. */
+.statement__gutter { position: absolute; left: 5.21vw; border-left: var(--line-w) solid var(--line); pointer-events: none; }
+.statement__gutter--top { top: 0; height: 33.4vw; }                 /* 481 */
+.statement__gutter--top::before {
+  content: ''; position: absolute; top: 3.96vw; right: 0; width: 5.21vw;   /* tick 0->75 at 57 */
+  border-top: var(--line-w) solid var(--line);
+}
+.statement__gutter--bottom { bottom: 0; height: 4.86vw; }            /* 70 */
+@media (max-width: 720px) { .statement__gutter { display: none; } }
+
+/* Figma: Lora 600 252/302, #f5f5f5 at 50% opacity, 152px above the band's bottom. */
 .statement__watermark {
   position: absolute;
-  inset-inline: 0;
-  bottom: 0;
+  left: 50%;
+  bottom: clamp(60px, 10.6vw, 152px);
   margin: 0;
-  font-size: clamp(3rem, 12vw, 9rem);
-  font-weight: var(--w-semibold);
-  line-height: 0.9;
-  color: color-mix(in srgb, currentColor 12%, transparent);
+  translate: -50% 0;
+  font-size: 17.5vw;               /* 252/1440 */
+  color: var(--c-leather-200);
+  opacity: 0.5;
   pointer-events: none;
   user-select: none;
 }
-.statement__inner { position: relative; }
-.statement__headline { font-size: var(--t-h2); }
-.statement__body { color: var(--ink-muted); }
-.statement__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: center; }
 </style>
