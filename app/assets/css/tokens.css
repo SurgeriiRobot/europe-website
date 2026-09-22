@@ -87,25 +87,64 @@
   --container-narrow: 760px;
   --gutter: clamp(1rem, 4vw, 4rem);
   --radius: 8px;
+  --header-h: 80px;        /* Figma Frame 40; the home hero sits beneath it */
   --radius-lg: 16px;
 }
 
-/* Section themes — every section blok sets one of these, nothing hardcodes colour. */
+/* Brand gradients — converted from the Figma gradient handles on the home page.
+   deep:   statement band and feature 3 (Figma Rectangle 12/13, 148deg)
+   bright: feature 2 panel
+   footer: vertical wash behind the footer */
+:root {
+  /* Figma stacks two copies of this one; alphas below are the compounded result. */
+  --grad-deep: linear-gradient(148deg, rgb(7 69 254 / 94%) -8%, rgb(16 20 77 / 99%) 50%, #1f2739 72%);
+  /* Behind all three feature bands (Figma Rectangle 11): transparent at the top-left
+     over the white page, solid navy by the bottom-right. Band panels are cut from it. */
+  --grad-features: linear-gradient(142.4deg, rgb(32 174 255 / 0) 2.5%, rgb(7 69 254 / 3%) 19.4%,
+    rgb(7 69 254 / 75%) 46.5%, rgb(16 20 77 / 89%) 84.8%, #1f2739 99.4%);
+  --grad-bright: linear-gradient(135deg, #d7e1ff 0%, #5e86fe 45%, #3959c7 100%);
+  --grad-footer: linear-gradient(180deg, #20aeff -5.5%, #0745fe 15.6%, #03045e 65.6%, #1f2739 100%);
+  --line-w: 0.5px;   /* the design's hairline weight */
+}
+
+/* Section themes — every section blok sets one of these; nothing hardcodes colour.
+   In the design body copy is the same colour as headings, just Light weight. */
 [data-theme='light'] {
   --surface: var(--c-white);
   --ink: var(--c-darkblue);
-  --ink-muted: var(--c-black-300);
+  --ink-muted: var(--c-darkblue);
+  --line: var(--c-blue);
   --border: var(--c-neutral-400);
 }
+[data-theme='muted'] {
+  --surface: var(--c-leather);
+  --ink: var(--c-darkblue);
+  --ink-muted: var(--c-darkblue);
+  --line: var(--c-blue);
+  --border: var(--c-neutral-500);
+}
 [data-theme='dark'] {
-  --surface: var(--c-darkblue);
+  --surface: var(--c-black);
   --ink: var(--c-white);
-  --ink-muted: var(--c-darkblue-100);
-  --border: var(--c-darkblue-300);
+  --ink-muted: var(--c-white);
+  --line: var(--c-white);
+  --border: var(--c-black-300);
 }
 [data-theme='brand'] {
-  --surface: var(--c-blue);
+  --surface: var(--grad-bright);
   --ink: var(--c-white);
-  --ink-muted: var(--c-blue-100);
+  --ink-muted: var(--c-white);
+  --line: var(--c-white);
   --border: var(--c-blue-300);
+}
+[data-theme='gradient'] {
+  --surface: var(--grad-deep);
+  --ink: var(--c-white);
+  --ink-muted: var(--c-white);
+  --line: var(--c-white);
+  --border: var(--c-darkblue-300);
+}
+
+@media (max-width: 1180px) {
+  :root { --header-h: 64px; }
 }

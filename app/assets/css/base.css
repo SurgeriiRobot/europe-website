@@ -4,6 +4,9 @@
 
 html { -webkit-text-size-adjust: 100%; }
 
+/* Watermarks and edge-to-edge hairlines deliberately overhang the viewport. */
+html, body { overflow-x: clip; }
+
 body {
   margin: 0;
   background: var(--c-white);
@@ -46,6 +49,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* Section shell — the one place vertical rhythm and theming are decided. */
 .section {
+  position: relative;
   background: var(--surface);
   color: var(--ink);
   padding-block: var(--space-9);
@@ -73,4 +77,59 @@ button, input, select, textarea { font: inherit; color: inherit; }
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* BrandText — superscript registered/trademark marks and unbreakable compounds. */
+.brand-mark { font-size: 0.5em; line-height: 0; vertical-align: 0.8em; }
+.brand-nowrap { white-space: nowrap; }
+
+/* Section title — the design's recurring block: Inter 600 48/58 heading over an
+   Inter 300 18/29 body, 24px apart, centred. With lines, a hairline runs from each
+   page edge to 265px in (at 1440), level with the heading's first line. */
+.sec-title {
+  display: grid;
+  justify-items: center;
+  gap: 24px;
+  width: 100%;
+  max-width: 630px;
+  margin-inline: auto;
+  text-align: center;
+}
+.sec-title__h {
+  position: relative;
+  width: 100%;
+  margin: 0;
+  font-size: clamp(2rem, 3.33vw, 3rem);
+  font-weight: 600;
+  line-height: 1.2083;
+  color: var(--ink);
+}
+.sec-title__p {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 300;
+  line-height: 1.6111;
+  color: var(--ink-muted);
+}
+.sec-title--lines .sec-title__h::before,
+.sec-title--lines .sec-title__h::after {
+  content: '';
+  position: absolute;
+  top: 0.6em;
+  width: calc(50vw - 455px);
+  border-top: var(--line-w) solid var(--line);
+}
+.sec-title--lines .sec-title__h::before { left: calc(50% - 50vw); }
+.sec-title--lines .sec-title__h::after { right: calc(50% - 50vw); }
+@media (max-width: 1000px) {
+  .sec-title--lines .sec-title__h::before,
+  .sec-title--lines .sec-title__h::after { display: none; }
+}
+
+/* Display type — Lora, only for the oversized moments. */
+.display-word {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
 }
