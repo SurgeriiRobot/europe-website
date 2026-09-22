@@ -4,7 +4,12 @@ const config = await useSiteConfig()
 
 <template>
   <div class="site">
-    <StoryblokComponent v-for="header in config?.header || []" :key="header._uid" :blok="header" />
+    <StoryblokComponent
+      v-for="header in config?.header || []"
+      :key="header._uid"
+      :blok="header"
+      :socials="config?.footer?.[0]?.socials || []"
+    />
 
     <main class="site__main">
       <slot />
