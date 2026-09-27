@@ -16,6 +16,10 @@ export default defineNuxtConfig({
   // A draft build is a review copy (the test site) and must never be indexed.
   app: {
     head: {
+      link: [
+        { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+        { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
+      ],
       meta: process.env.NUXT_PUBLIC_STORYBLOK_VERSION === 'draft'
         ? [{ name: 'robots', content: 'noindex, nofollow' }]
         : [],
