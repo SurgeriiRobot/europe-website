@@ -32,3 +32,6 @@ certs
 
 # personal design tooling: cached Figma node trees
 /.figma/
+
+# Source media (original videos) — the web cuts live in the Storyblok asset library
+/media/
