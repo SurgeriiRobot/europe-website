@@ -27,7 +27,7 @@ const { data, status } = await useAsyncData(
 
     const { data, total } = await api.get('cdn/stories', {
       content_type: 'article',
-      version: import.meta.dev ? 'draft' : 'published',
+      version: useStoryblokVersion(),
       language: language.value,
       per_page: perPage.value,
       page: page.value,

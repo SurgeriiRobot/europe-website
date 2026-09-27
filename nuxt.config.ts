@@ -13,6 +13,15 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/base.css'],
 
+  // A draft build is a review copy (the test site) and must never be indexed.
+  app: {
+    head: {
+      meta: process.env.NUXT_PUBLIC_STORYBLOK_VERSION === 'draft'
+        ? [{ name: 'robots', content: 'noindex, nofollow' }]
+        : [],
+    },
+  },
+
   fonts: {
     families: [
       { name: 'Inter', provider: 'google', weights: [300, 400, 600] },
@@ -30,10 +39,10 @@ export default defineNuxtConfig({
     strategy: 'prefix_except_default',
     locales: [
       { code: 'en', language: 'en-GB', name: 'English', storyblok: 'default' },
-      // { code: 'de', language: 'de-DE', name: 'Deutsch', storyblok: 'de' },
-      // { code: 'fr', language: 'fr-FR', name: 'Francais', storyblok: 'fr' },
-      // { code: 'es', language: 'es-ES', name: 'Espanol', storyblok: 'es' },
-      // { code: 'it', language: 'it-IT', name: 'Italiano', storyblok: 'it' },
+      { code: 'de', language: 'de-DE', name: 'Deutsch', storyblok: 'de' },
+      { code: 'fr', language: 'fr-FR', name: 'Francais', storyblok: 'fr' },
+      { code: 'es', language: 'es-ES', name: 'Espanol', storyblok: 'es' },
+      { code: 'it', language: 'it-IT', name: 'Italiano', storyblok: 'it' },
     ],
     detectBrowserLanguage: {
       useCookie: true,
@@ -42,6 +51,31 @@ export default defineNuxtConfig({
       alwaysRedirect: false,
     },
     baseUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://localhost:3010',
+  },
+
+  // Static builds (the test site) prerender every story, not just what the
+  // crawler reaches from the home page. Links to pages that do not exist in
+  // Storyblok yet render the 404 page instead of failing the build.
+  hooks: {
+    async 'nitro:config'(config) {
+      if (!process.env.NUXT_STORYBLOK_ACCESS_TOKEN) return
+      const version = process.env.NUXT_PUBLIC_STORYBLOK_VERSION === 'draft' ? 'draft' : 'published'
+      const host = region === 'eu' ? 'api.storyblok.com' : `api-${region}.storyblok.com`
+      const routes: string[] = []
+      for (let page = 1; ; page++) {
+        const res = await fetch(`https://${host}/v2/cdn/links?version=${version}&per_page=1000&page=${page}&token=${process.env.NUXT_STORYBLOK_ACCESS_TOKEN}`)
+        if (!res.ok) break
+        const links = Object.values((await res.json()).links) as { slug: string, is_folder: boolean }[]
+        for (const link of links) {
+          if (link.is_folder || link.slug.startsWith('global/')) continue
+          routes.push(link.slug === 'home' ? '/' : `/${link.slug}`)
+        }
+        if (links.length < 1000) break
+      }
+      config.prerender ||= {}
+      config.prerender.routes = [...(config.prerender.routes || []), ...routes]
+      config.prerender.failOnError = false
+    },
   },
 
   routeRules: {
@@ -59,5 +93,9 @@ export default defineNuxtConfig({
   runtimeConfig: {
     storyblokAccessToken: process.env.NUXT_STORYBLOK_ACCESS_TOKEN || '',
     storyblokRegion: region,
+    public: {
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://localhost:3010',
+      storyblokVersion: process.env.NUXT_PUBLIC_STORYBLOK_VERSION || 'published',
+    },
   },
 })

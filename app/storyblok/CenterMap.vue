@@ -8,7 +8,7 @@ const { data: centers } = await useAsyncData(
     const api = useStoryblokApi()
     const { data } = await api.get('cdn/stories', {
       content_type: 'clinical_center',
-      version: import.meta.dev ? 'draft' : 'published',
+      version: useStoryblokVersion(),
       language: language.value,
       per_page: 100,
       ...(props.blok.source === 'by-region' && props.blok.region

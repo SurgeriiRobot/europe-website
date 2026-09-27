@@ -9,7 +9,8 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxt typecheck",
-    "storyblok:build": "node storyblok/build.mjs"
+    "storyblok:build": "node storyblok/build.mjs",
+    "deploy:test": "bash scripts/deploy-test.sh"
   },
   "dependencies": {
     "@nuxt/fonts": "^0.14.0",

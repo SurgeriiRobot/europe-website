@@ -1,0 +1,5 @@
+# Static hosting (Apache): pages that were not prerendered get the site's own
+# 404 page rather than the host's default one. A section whose landing page
+# does not exist yet is a bare directory, so its index falls back to the same.
+ErrorDocument 404 /404.html
+DirectoryIndex index.html /404.html

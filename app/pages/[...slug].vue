@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { ReactiveHead } from '@unhead/vue'
 const route = useRoute()
 const language = useStoryblokLanguage()
 
@@ -12,7 +13,7 @@ const slug = computed(() => {
 // switching language refetches instead of serving the previous translation.
 const { story, error } = await useAsyncStoryblok(slug.value, {
   api: {
-    version: import.meta.dev ? 'draft' : 'published',
+    version: useStoryblokVersion(),
     language: language.value,
     resolve_links: 'url',
   },
@@ -22,16 +23,30 @@ if (error.value || !story.value?.content) {
   throw createError({ statusCode: 404, statusMessage: `Story "${slug.value}" not found` })
 }
 
-// Locale head (html lang/dir + hreflang alternates) and story SEO are applied
-// as separate calls; useHead merges them, and mixing the arrays by hand widens
-// their types past what it accepts.
-useHead(useLocaleHead({ seo: true }))
+// useLocaleHead returns a ref. Handing it to useHead directly applies nothing,
+// so the html lang/dir attributes and the hreflang alternates were both absent;
+// it has to be read inside the getter.
+const localeHead = useLocaleHead({ seo: true })
+useHead(() => localeHead.value)
+
+const site = useRuntimeConfig().public.siteUrl
+const switchLocalePath = useSwitchLocalePath()
+const { locale: currentLocale, defaultLocale } = useI18n()
+
+// useLocaleHead emits one alternate per locale but no x-default, which is what
+// tells search engines where to send a visitor whose language matches none of
+// them. unhead types `rel: 'alternate'` as the feed variant, where `type` is
+// required, so the link is typed as a head link rather than inferred.
+useHead(() => ({
+  link: [{ rel: 'alternate', hreflang: 'x-default', href: site + switchLocalePath(defaultLocale) }] as ReactiveHead['link'],
+}))
 
 const seo = computed(() => story.value?.content?.seo?.[0] || {})
 
 useHead(() => ({
   title: seo.value.title || story.value?.name,
-  link: seo.value.canonical ? [{ rel: 'canonical', href: seo.value.canonical }] : [],
+  link: [{ rel: 'canonical', href: seo.value.canonical
+      || site + switchLocalePath(currentLocale.value) }],
   meta: [
     ...(seo.value.description ? [{ name: 'description', content: seo.value.description }] : []),
     ...(seo.value.og_image?.filename ? [{ property: 'og:image', content: seo.value.og_image.filename }] : []),

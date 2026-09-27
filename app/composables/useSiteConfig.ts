@@ -12,7 +12,7 @@ export async function useSiteConfig() {
       const api = useStoryblokApi()
       try {
         const { data } = await api.get('cdn/stories/global/site-config', {
-          version: import.meta.dev ? 'draft' : 'published',
+          version: useStoryblokVersion(),
           language: language.value,
           resolve_links: 'url',
         })

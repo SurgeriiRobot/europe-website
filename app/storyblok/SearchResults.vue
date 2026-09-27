@@ -11,7 +11,7 @@ const { data: results, status } = await useAsyncData(
     if (!term.value) return []
     const api = useStoryblokApi()
     const { data } = await api.get('cdn/stories', {
-      version: import.meta.dev ? 'draft' : 'published',
+      version: useStoryblokVersion(),
       language: language.value,
       search_term: term.value,
       per_page: 25,
