@@ -19,7 +19,6 @@ const videoType = computed(() => (/\.webm($|\?)/i.test(video.value) ? 'video/web
 const videoEl = ref<HTMLVideoElement>()
 const useVideo = ref(false)
 const ready = ref(false)
-const playing = ref(true)
 
 onMounted(() => {
   if (!video.value) return
@@ -28,20 +27,12 @@ onMounted(() => {
   useVideo.value = !reduce && !saveData
 })
 
-// Moving content that runs longer than five seconds needs a pause control (WCAG 2.2.2).
-const userPaused = ref(false)
-function togglePlayback() {
-  const el = videoEl.value
-  if (!el) return
-  if (el.paused) { el.play(); playing.value = true; userPaused.value = false }
-  else { el.pause(); playing.value = false; userPaused.value = true }
-}
-
-// Don't decode video nobody can see: pause off-screen and on a hidden tab, and
-// resume only if the visitor didn't pause it themselves.
+// The video loops continuously with no visitor control (people who prefer
+// reduced motion get the still poster instead). It still pauses off-screen and
+// on a hidden tab so nobody decodes video they can't see.
 onMounted(() => {
-  const resume = () => { if (!userPaused.value && videoEl.value?.paused) { videoEl.value.play(); playing.value = true } }
-  const suspend = () => { if (!videoEl.value?.paused) { videoEl.value?.pause(); playing.value = false } }
+  const resume = () => { if (videoEl.value?.paused) videoEl.value.play() }
+  const suspend = () => { if (!videoEl.value?.paused) videoEl.value?.pause() }
 
   const io = new IntersectionObserver(entries => (entries[0]?.isIntersecting ? resume() : suspend()), { threshold: 0.1 })
   watchEffect(() => { if (videoEl.value) io.observe(videoEl.value) })
@@ -92,17 +83,6 @@ const srcset = computed(() =>
       <source :src="video" :type="videoType">
     </video>
 
-    <button
-      v-if="useVideo && ready"
-      type="button"
-      class="hero-full__toggle"
-      :aria-label="playing ? 'Pause background video' : 'Play background video'"
-      @click="togglePlayback"
-    >
-      <svg v-if="playing" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg>
-      <svg v-else viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M8 5v14l11-7z" /></svg>
-    </button>
-
     <div class="hero-full__inner">
       <div class="hero-full__content">
         <h1 class="hero-full__headline"><BrandText :text="blok.headline" /></h1>
@@ -144,24 +124,6 @@ const srcset = computed(() =>
    connection never shows a blank frame. */
 .hero-full__video { opacity: 0; transition: opacity 600ms ease; }
 .hero-full__video.is-ready { opacity: 1; }
-
-.hero-full__toggle {
-  position: absolute;
-  inset-inline-end: clamp(16px, 5.2vw, 75px);
-  bottom: 32px;
-  z-index: 1;
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  border: 1px solid rgb(255 255 255 / 45%);
-  border-radius: 50%;
-  background: rgb(0 0 0 / 35%);
-  color: var(--c-white);
-  cursor: pointer;
-}
-.hero-full__toggle:hover { background: rgb(0 0 0 / 55%); }
 
 /* The design's photograph is already dark where the text sits, so it ships with
    no overlay; editors can add one for lighter images. */
