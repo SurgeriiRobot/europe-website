@@ -30,13 +30,15 @@ useClickOutside(root, () => (open.value = false))
     </button>
     <span v-else class="lang__trigger lang__trigger--static">{{ locale.toUpperCase() }}</span>
 
-    <ul v-if="open" class="lang__menu" role="menu">
-      <li v-for="option in others" :key="option.code" role="none">
-        <NuxtLink role="menuitem" :to="switchLocalePath(option.code)" class="lang__option" @click="open = false">
-          {{ option.code.toUpperCase() }}
-        </NuxtLink>
-      </li>
-    </ul>
+    <Transition name="lang-pop">
+      <ul v-if="open" class="lang__menu" role="menu">
+        <li v-for="option in others" :key="option.code" role="none">
+          <NuxtLink role="menuitem" :to="switchLocalePath(option.code)" class="lang__option" @click="open = false">
+            {{ option.code.toUpperCase() }}
+          </NuxtLink>
+        </li>
+      </ul>
+    </Transition>
   </div>
 </template>
 
@@ -54,6 +56,7 @@ useClickOutside(root, () => (open.value = false))
   letter-spacing: 0.46px;
   color: var(--c-darkblue);
   cursor: pointer;
+  transition: color 150ms ease;
 }
 .lang__trigger:hover,
 .lang__trigger.is-open { color: var(--c-blue); }
@@ -73,6 +76,7 @@ useClickOutside(root, () => (open.value = false))
   background: var(--c-leather-200);
   border-radius: 4px;
   box-shadow: 0 4px 12px rgb(0 0 0 / 12%);
+  transform-origin: top center;
 }
 .lang__option {
   display: block;
@@ -85,5 +89,12 @@ useClickOutside(root, () => (open.value = false))
   color: var(--c-neutral-1000);
   text-decoration: none;
 }
+.lang__option { transition: color 150ms ease; }
 .lang__option:hover { color: var(--c-blue); }
+
+/* Drops in from just above its resting place; `translate` stays free for the
+   centring offset, so the motion uses `transform`. */
+.lang-pop-enter-active { transition: opacity 180ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1); }
+.lang-pop-leave-active { transition: opacity 120ms ease, transform 120ms ease; }
+.lang-pop-enter-from, .lang-pop-leave-to { opacity: 0; transform: translateY(-6px) scale(0.97); }
 </style>

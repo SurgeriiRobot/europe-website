@@ -1,6 +1,8 @@
 <script setup lang="ts">
 // Figma `Frame 40` (1440x80): logo left, a right-aligned row where every item —
-// nav links, CTA, language, search — sits 40px from the next. Items with
+// nav links, CTA, language — sits 41px from the next (measured off the frame:
+// 40px drifts the row 6px right by the first link), search 35px after the
+// language and 5px in from the gutter. Items with
 // children open a full-width 50px #575d6b sub-nav bar beneath the header.
 const props = defineProps<{ blok: any, socials?: any[] }>()
 
@@ -38,13 +40,37 @@ function openMobile(search = false) {
 
 watch(() => route.fullPath, () => { openId.value = null })
 useClickOutside(root, () => { openId.value = null })
+
+// Phone design: over a page's opening hero the bar is transparent with a white
+// logo and menu icon; once the hero has scrolled away it turns white again.
+// (Desktop keeps the white bar throughout, as designed.)
+const overHero = ref(false)
+const nuxtApp = useNuxtApp()
+onMounted(() => {
+  const phone = window.matchMedia('(max-width: 1180px)')
+  const update = () => {
+    const hero = document.querySelector<HTMLElement>('.site__main .hero-full:first-child')
+    const bar = root.value?.offsetHeight || 64
+    overHero.value = phone.matches && !!hero && window.scrollY < hero.offsetHeight - bar
+  }
+  update()
+  window.addEventListener('scroll', update, { passive: true })
+  phone.addEventListener('change', update)
+  const off = nuxtApp.hook('page:finish', () => nextTick(update))
+  onBeforeUnmount(() => {
+    window.removeEventListener('scroll', update)
+    phone.removeEventListener('change', update)
+    off()
+  })
+})
 </script>
 
 <template>
-  <header ref="root" v-editable="blok" class="hdr" @keydown.esc="openId = null">
+  <header ref="root" v-editable="blok" class="hdr" :class="{ 'hdr--over-hero': overHero }" @keydown.esc="openId = null">
     <div class="hdr__bar">
       <NuxtLink :to="localePath('/')" class="hdr__logo" aria-label="SHURUI home">
-        <img :src="blok.logo?.filename || '/brand/shurui-logo.png'" alt="SHURUI" width="104" height="21">
+        <img class="hdr__logo-img" :src="blok.logo?.filename || '/brand/shurui-logo.png'" alt="SHURUI" width="105" height="21">
+        <img class="hdr__logo-img hdr__logo-img--light" src="/brand/shurui-logo-white.png" alt="" width="105" height="21">
       </NuxtLink>
 
       <div class="hdr__right">
@@ -74,34 +100,40 @@ useClickOutside(root, () => { openId.value = null })
         <HeaderSearch v-if="blok.show_search" />
       </div>
 
+      <!-- Phone design: the hamburger alone; search lives inside the menu. -->
       <div class="hdr__mobile">
-        <button v-if="blok.show_search" type="button" class="hdr__icon" aria-label="Search" @click="openMobile(true)">
-          <Icon name="search" :size="24" />
-        </button>
         <button type="button" class="hdr__icon" aria-label="Open menu" :aria-expanded="mobileOpen" @click="openMobile()">
-          <Icon name="menu" :size="28" />
+          <Icon name="menu-thin" :size="28" />
         </button>
       </div>
     </div>
 
-    <div v-if="openItem" :id="`subnav-${openItem._uid}`" class="hdr__subnav">
-      <ul class="hdr__sublinks">
-        <li v-for="link in childLinks(openItem)" :key="link._uid" v-editable="link">
-          <NuxtLink :to="sbHref(link.link)" class="hdr__sublink" :class="{ 'is-active': matches(sbHref(link.link)) }">
-            {{ link.label }}
-          </NuxtLink>
-        </li>
-      </ul>
-    </div>
+    <!-- The bar drops open from under the header; switching between two
+         menus keeps the bar and swaps only its links. -->
+    <Transition name="subnav">
+      <div v-if="openItem" :id="`subnav-${openItem._uid}`" class="hdr__subnav">
+        <Transition name="sublinks" mode="out-in">
+          <ul :key="openItem._uid" class="hdr__sublinks">
+            <li v-for="link in childLinks(openItem)" :key="link._uid" v-editable="link">
+              <NuxtLink :to="sbHref(link.link)" class="hdr__sublink" :class="{ 'is-active': matches(sbHref(link.link)) }">
+                {{ link.label }}
+              </NuxtLink>
+            </li>
+          </ul>
+        </Transition>
+      </div>
+    </Transition>
 
-    <HeaderMobileMenu
-      v-if="mobileOpen"
-      :nav="nav"
-      :cta="blok.cta || []"
-      :socials="socials || []"
-      :initial-search="mobileSearch"
-      @close="mobileOpen = false"
-    />
+    <Transition name="mm">
+      <HeaderMobileMenu
+        v-if="mobileOpen"
+        :nav="nav"
+        :cta="blok.cta || []"
+        :socials="socials || []"
+        :initial-search="mobileSearch"
+        @close="mobileOpen = false"
+      />
+    </Transition>
   </header>
 </template>
 
@@ -111,6 +143,7 @@ useClickOutside(root, () => { openId.value = null })
   top: 0;
   z-index: 50;
   background: var(--c-white);
+  transition: background-color 250ms ease;
 }
 
 .hdr__bar {
@@ -123,10 +156,12 @@ useClickOutside(root, () => { openId.value = null })
   margin-inline: auto;
   padding-inline: clamp(16px, 5.2vw, 75px);
 }
-.hdr__logo img { display: block; width: 104px; height: auto; }
+.hdr__logo { position: relative; display: block; }
+.hdr__logo img { display: block; width: 105px; height: auto; transition: opacity 250ms ease; }
+.hdr__logo-img--light { position: absolute; inset: 0; opacity: 0; }
 
-.hdr__right { display: flex; align-items: center; gap: 40px; }
-.hdr__links { display: flex; gap: 40px; margin: 0; padding: 0; list-style: none; }
+.hdr__right { display: flex; align-items: center; gap: 41px; }
+.hdr__links { display: flex; gap: 41px; margin: 0; padding: 0; list-style: none; }
 
 /* Figma nav `<Button>` (MUI text button): Inter 500 13/22, +0.46px, 4px 5px. */
 .hdr__link,
@@ -144,11 +179,18 @@ useClickOutside(root, () => { openId.value = null })
   white-space: nowrap;
   cursor: pointer;
 }
-.hdr__link { color: var(--c-darkblue); }
+.hdr__link { color: var(--c-darkblue); transition: color 150ms ease; }
 .hdr__link:hover,
 .hdr__link.is-active { color: var(--c-blue); }
 
-.hdr__subnav { background: var(--c-black-300); }
+/* Overlays the page instead of pushing it down, so opening a menu never shifts
+   the content underneath. */
+.hdr__subnav {
+  position: absolute;
+  inset-inline: 0;
+  top: 100%;
+  background: var(--c-black-300);
+}
 .hdr__sublinks {
   display: flex;
   align-items: center;
@@ -159,16 +201,48 @@ useClickOutside(root, () => { openId.value = null })
   padding: 0 var(--gutter);
   list-style: none;
 }
-.hdr__sublink { color: var(--c-white); }
+.hdr__sublink { color: var(--c-white); transition: color 150ms ease; }
 .hdr__sublink:hover,
 .hdr__sublink.is-active { color: var(--c-blue-100); }
 
+/* Bar: unrolls downward from the header's bottom edge. */
+.subnav-enter-active { transition: clip-path 320ms cubic-bezier(0.22, 1, 0.36, 1); }
+.subnav-leave-active { transition: clip-path 200ms cubic-bezier(0.4, 0, 1, 1); }
+.subnav-enter-from, .subnav-leave-to { clip-path: inset(0 0 100% 0); }
+.subnav-enter-to, .subnav-leave-from { clip-path: inset(0 0 0 0); }
+
+/* Links: settle in just behind the bar; on a menu switch they swap in place. */
+.sublinks-enter-active { transition: opacity 240ms ease 60ms, transform 320ms cubic-bezier(0.22, 1, 0.36, 1) 60ms; }
+.sublinks-leave-active { transition: opacity 120ms ease; }
+.sublinks-enter-from { opacity: 0; transform: translateY(-6px); }
+.sublinks-leave-to { opacity: 0; }
+
+/* Mobile menu: fades in while sliding down a touch. */
+.mm-enter-active { transition: opacity 260ms ease, transform 320ms cubic-bezier(0.22, 1, 0.36, 1); }
+.mm-leave-active { transition: opacity 180ms ease, transform 180ms ease; }
+.mm-enter-from, .mm-leave-to { opacity: 0; transform: translateY(-12px); }
+
 .hdr__mobile { display: none; align-items: center; gap: 18px; }
-.hdr__icon { display: inline-flex; padding: 0; border: 0; background: none; color: var(--c-darkblue); cursor: pointer; }
+.hdr__icon {
+  display: inline-flex;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--c-darkblue);
+  cursor: pointer;
+  transition: color 250ms ease;
+}
 
 /* The desktop row needs ~1180px (876px of nav plus logo and gutters). */
 @media (max-width: 1180px) {
   .hdr__right, .hdr__subnav { display: none; }
   .hdr__mobile { display: flex; }
+  /* Phone design: 92px logo and the hamburger both 26px in from the edges. */
+  .hdr__bar { padding-inline: clamp(16px, 6.67vw, 26px); }
+  .hdr__logo img { width: 92px; }
+  .hdr--over-hero { background-color: transparent; }
+  .hdr--over-hero .hdr__logo-img { opacity: 0; }
+  .hdr--over-hero .hdr__logo-img--light { opacity: 1; }
+  .hdr--over-hero .hdr__icon { color: var(--c-white); }
 }
 </style>

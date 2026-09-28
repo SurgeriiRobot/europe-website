@@ -19,6 +19,11 @@ const childLinks = (item: any) => (item.columns || []).flatMap((c: any) => c.lin
 const localeCodes = computed(() => (locales.value as any[]).map(l => (typeof l === 'string' ? l : l.code)))
 
 const ICONS: Record<string, 'linkedin' | 'phone' | 'mail'> = { linkedin: 'linkedin', phone: 'phone', email: 'mail' }
+// Entries without a link yet (phone / email, filled in later) show just the icon.
+const socialHref = (social: any) => {
+  const href = sbHref(social.url)
+  return href && href !== '#' ? href : null
+}
 
 async function submitSearch() {
   const q = term.value.trim()
@@ -51,10 +56,12 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKey))
       </div>
     </div>
 
-    <form v-if="searching" class="mm__search" role="search" @submit.prevent="submitSearch">
-      <input v-model="term" type="search" placeholder="Search input" aria-label="Search" autofocus>
-      <button type="submit" aria-label="Submit search"><Icon name="search" :size="20" /></button>
-    </form>
+    <Transition name="mm-search">
+      <form v-if="searching" class="mm__search" role="search" @submit.prevent="submitSearch">
+        <input v-model="term" type="search" placeholder="Search input" aria-label="Search" autofocus>
+        <button type="submit" aria-label="Submit search"><Icon name="search" :size="20" /></button>
+      </form>
+    </Transition>
 
     <nav class="mm__nav" aria-label="Main">
       <ul class="mm__list">
@@ -69,11 +76,15 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKey))
               {{ item.label }}
               <Icon name="expand-more" :size="20" class="mm__chevron" :class="{ 'is-open': expanded === item._uid }" />
             </button>
-            <ul v-if="expanded === item._uid" class="mm__sub">
-              <li v-for="link in childLinks(item)" :key="link._uid">
-                <NuxtLink :to="sbHref(link.link)" class="mm__sub-link">{{ link.label }}</NuxtLink>
-              </li>
-            </ul>
+            <!-- Always rendered so the panel can animate its height; `inert`
+                 keeps the collapsed links out of the tab order. -->
+            <div class="mm__sub-wrap" :class="{ 'is-open': expanded === item._uid }" :inert="expanded !== item._uid">
+              <ul class="mm__sub">
+                <li v-for="link in childLinks(item)" :key="link._uid">
+                  <NuxtLink :to="sbHref(link.link)" class="mm__sub-link">{{ link.label }}</NuxtLink>
+                </li>
+              </ul>
+            </div>
           </template>
           <NuxtLink v-else :to="sbHref(item.link)" class="mm__row">{{ item.label }}</NuxtLink>
         </li>
@@ -98,9 +109,17 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKey))
       </div>
       <ul v-if="props.socials.length" class="mm__socials">
         <li v-for="social in props.socials" :key="social._uid">
-          <a :href="sbHref(social.url)" :aria-label="social.platform" target="_blank" rel="noopener">
+          <a
+            v-if="socialHref(social)"
+            :href="socialHref(social)!"
+            :aria-label="social.platform"
+            v-bind="/^https?:/.test(socialHref(social)!) ? { target: '_blank', rel: 'noopener' } : {}"
+          >
             <Icon :name="ICONS[social.platform] || 'linkedin'" :size="32" />
           </a>
+          <span v-else :aria-label="social.platform" role="img">
+            <Icon :name="ICONS[social.platform] || 'linkedin'" :size="32" />
+          </span>
         </li>
       </ul>
     </div>
@@ -131,6 +150,9 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKey))
 .mm__icon { display: inline-flex; padding: 0; border: 0; background: none; color: inherit; cursor: pointer; }
 
 .mm__search { position: relative; margin: 0 30px 12px; }
+.mm-search-enter-active { transition: opacity 200ms ease, transform 260ms cubic-bezier(0.22, 1, 0.36, 1); }
+.mm-search-leave-active { transition: opacity 140ms ease, transform 140ms ease; }
+.mm-search-enter-from, .mm-search-leave-to { opacity: 0; transform: translateY(-8px); }
 .mm__search input {
   width: 100%;
   height: 44px;
@@ -170,7 +192,15 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKey))
 .mm__chevron { transition: rotate 200ms ease; }
 .mm__chevron.is-open { rotate: 180deg; }
 
-.mm__sub { background: var(--c-white); }
+/* Height animates via the grid-row trick: 0fr collapses the row to nothing,
+   1fr opens it to the list's natural height. */
+.mm__sub-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.mm__sub-wrap.is-open { grid-template-rows: 1fr; }
+.mm__sub { min-height: 0; overflow: hidden; background: var(--c-white); }
 .mm__sub li + li { border-top: 1px solid rgb(3 4 94 / 35%); }
 .mm__sub-link {
   display: flex;
@@ -198,5 +228,5 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKey))
 }
 .mm__cta :deep(.btn) { min-width: 206px; }
 .mm__socials { display: flex; gap: 30px; }
-.mm__socials a { display: inline-flex; color: var(--c-white); }
+.mm__socials a, .mm__socials span { display: inline-flex; color: var(--c-white); }
 </style>
