@@ -36,8 +36,8 @@ const more = computed(() => {
       <div class="slide-card__text">
         <h3 class="slide-card__title"><NuxtLink :to="href"><BrandText :text="content.title || story.name" /></NuxtLink></h3>
         <p class="slide-card__body">
-          <template v-if="content.location">{{ content.location }}<br></template>
-          {{ content.excerpt }}
+          <span v-if="content.location" class="slide-card__where">{{ content.location }}</span>
+          <BrandText :text="content.excerpt" :nowrap="false" />
         </p>
       </div>
       <NuxtLink :to="more.to" class="slide-card__more">{{ more.label }}</NuxtLink>
@@ -60,11 +60,12 @@ const more = computed(() => {
 .slide-card__media { display: block; aspect-ratio: 630 / 400; overflow: hidden; border-radius: 24px; background: var(--c-neutral-300); }
 .slide-card__media img { width: 100%; height: 100%; object-fit: cover; }
 .slide-card__row { display: flex; align-items: flex-start; justify-content: space-between; gap: 34px; margin-top: 32px; padding-inline: 34px 0; }
-.slide-card__text { display: grid; gap: 24px; max-width: 403px; }
+.slide-card__text { display: grid; gap: 30px; max-width: 403px; }   /* 30px title -> details, as in Figma */
 .slide-card__title { margin: 0; font-size: 1.5rem; font-weight: 600; line-height: 1.2083; }
 .slide-card__title a { color: var(--c-blue); text-decoration: none; }
 .slide-card__title a:hover { text-decoration: underline; }
 .slide-card__body { margin: 0; font-size: 1.125rem; font-weight: 300; line-height: 1.6111; color: var(--c-darkblue); }
+.slide-card__where { display: block; font-weight: 600; }   /* Figma sets the place / date / booth line semibold */
 .slide-card__more {
   flex: none;
   padding: 7px 21px;
@@ -79,8 +80,13 @@ const more = computed(() => {
   white-space: nowrap;
 }
 .slide-card__more:hover { background: rgb(7 69 254 / 6%); }
-@media (max-width: 640px) {
-  .slide-card__row { flex-direction: column; gap: 20px; padding-inline: 0; }
+/* Phone design: title 26px under the image and 36px above the details; 16px
+   copy (location 16/19 semibold, text 16/26); the button 20px below. */
+@media (max-width: 720px) {
+  .slide-card__row { flex-direction: column; gap: 20px; margin-top: 26px; padding-inline: 0; }
+  .slide-card__text { gap: 36px; }
+  .slide-card__body { font-size: 1rem; line-height: 1.625; }
+  .slide-card__where { line-height: 1.1875; }
 }
 
 .article-card { display: flex; flex-direction: column; gap: var(--space-2); text-decoration: none; color: inherit; }

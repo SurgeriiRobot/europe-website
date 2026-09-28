@@ -91,19 +91,26 @@
   --radius-lg: 16px;
 }
 
-/* Brand gradients — converted from the Figma gradient handles on the home page.
-   deep:   statement band and feature 3 (Figma Rectangle 12/13, 148deg)
-   bright: feature 2 panel
-   footer: vertical wash behind the footer */
+/* Brand gradients — fitted to the rendered Figma frame (Landingpage - 3, exported
+   as PDF): angle and stops chosen per region by least squares over the design's
+   own pixels, each within ~1-2/255 of it.
+   deep:     the "Innovation in movement" statement band (3711-4721)
+   band-*:   the three feature band panels, by the band's theme
+   bright:   the brand theme surface outside feature bands
+   footer:   vertical wash behind the footer */
 :root {
-  /* Figma stacks two copies of this one; alphas below are the compounded result. */
-  --grad-deep: linear-gradient(148deg, rgb(7 69 254 / 94%) -8%, rgb(16 20 77 / 99%) 50%, #1f2739 72%);
-  /* Behind all three feature bands (Figma Rectangle 11): transparent at the top-left
-     over the white page, solid navy by the bottom-right. Band panels are cut from it. */
-  --grad-features: linear-gradient(142.4deg, rgb(32 174 255 / 0) 2.5%, rgb(7 69 254 / 3%) 19.4%,
-    rgb(7 69 254 / 75%) 46.5%, rgb(16 20 77 / 89%) 84.8%, #1f2739 99.4%);
+  --grad-deep: linear-gradient(167deg, #1f2638 0%, #1e2639 16.2%, #12164d 41.2%, #12206f 56.2%, #122a90 66.2%, #1446e2 100%);
+  --grad-band-dark: linear-gradient(171deg, #202637 0%, #1e263a 5%, #242950 21.7%, #252b62 35%, #253b96 58.3%, #2344b8 75%, #2048cb 85%, #1649e7 100%);
+  /* Figma runs this panel from #d5dffe through #a0b7fe to #4a77fd, which puts the
+     white copy at 2.2:1 (title) and 3.2:1 (body). Same pale corner and periwinkle
+     blues, but the deeper stops arrive sooner so the title clears 3:1 and the
+     body 4.5:1. */
+  --grad-band-brand: linear-gradient(156deg, #d5dffe 0%, #a0b7fe 12%, #6d8efc 24%, #4a74f5 36%, #4169e8 44%, #3d62db 70%, #3858c2 100%);
+  --grad-band-gradient: linear-gradient(156deg, #3757c1 0%, #3348a0 21.7%, #292c5e 61.7%, #262a56 71.7%, #1e2639 100%);
   --grad-bright: linear-gradient(135deg, #d7e1ff 0%, #5e86fe 45%, #3959c7 100%);
-  --grad-footer: linear-gradient(180deg, #20aeff -5.5%, #0745fe 15.6%, #03045e 65.6%, #1f2739 100%);
+  /* Brand blue arrives a little earlier than in Figma (12% rather than 15.6%) so
+     the white nav links on the sky-blue top edge clear 4.5:1. */
+  --grad-footer: linear-gradient(180deg, #20aeff -5.5%, #0745fe 12%, #03045e 65.6%, #1f2739 100%);
   --line-w: 0.5px;   /* the design's hairline weight */
 
   /* 1 unit = 1% of the 1440 design width, but never larger than at 1440. Sizes
@@ -114,6 +121,8 @@
   /* Same gutter, but measured from the centred 1440 frame rather than the screen
      edge — so hairlines stay with the content on very wide displays. */
   --frame-gutter: calc(max(0px, (100vw - var(--container)) / 2) + var(--gutter-design));
+  /* Left edge of the centred 1440 frame (0 up to 1440 wide). */
+  --frame-x: max(0px, (100vw - var(--container)) / 2);
 }
 
 /* Section themes — every section blok sets one of these; nothing hardcodes colour.

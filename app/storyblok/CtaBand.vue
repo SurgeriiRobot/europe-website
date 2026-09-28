@@ -34,7 +34,7 @@ const display = computed(() => props.blok.style === 'display')
     <div v-else class="cta__inner">
       <div class="cta__content">
         <h2 class="cta__headline"><BrandText :text="blok.headline" /></h2>
-        <p v-if="blok.body" class="cta__body">{{ blok.body }}</p>
+        <p v-if="blok.body" class="cta__body"><BrandText :text="blok.body" :nowrap="false" /></p>
         <div v-if="blok.buttons?.length" class="cta__actions">
           <StoryblokComponent v-for="button in blok.buttons" :key="button._uid" :blok="button" />
         </div>
@@ -86,7 +86,23 @@ const display = computed(() => props.blok.style === 'display')
 .cta__body { margin: 0; font-size: 1.125rem; font-weight: 300; line-height: 1.6111; }
 .cta__actions { display: flex; flex-wrap: wrap; gap: 16px; }
 
+/* Phone design (390 wide): both bands are 800px tall. The display headline runs
+   at 100px Lora over three lines; its lead line moves above the photo (drawn by
+   the section before). The standard band sets its copy at the bottom-left on a
+   wash that is clear at the top and solid #1f2739 at the foot. */
 @media (max-width: 720px) {
-  .cta--standard::after { background: linear-gradient(0deg, rgb(31 39 57 / 85%) 30%, rgb(31 39 57 / 45%) 100%); }
+  .cta--display, .cta__inner { min-height: clamp(560px, 205vw, 800px); }
+  .cta--display { padding-top: 26px; }                         /* text sits 13px below centre */
+  .cta__display { font-size: 25.64vw; }                         /* 100px */
+  .cta__lead { display: none; }
+  .cta__inner { align-items: flex-end; padding: 0 16px 103px; }
+  .cta__content { gap: 24px; }
+  .cta__headline { margin-bottom: 12px; font-size: clamp(1.75rem, 8.72vw, 2.125rem); }
+  .cta--standard .cta__bg { object-position: 83% center; }    /* keep the clinician in frame */
+  /* Figma's wash clears by ~75% of the height; ours holds a little longer so a
+     longer headline than the design's still sits on 3:1 or better. */
+  .cta--standard::after {
+    background: linear-gradient(0deg, #1f2739 0%, rgb(31 39 57 / 90%) 25%, rgb(31 39 57 / 72%) 65%, rgb(31 39 57 / 0) 95%);
+  }
 }
 </style>

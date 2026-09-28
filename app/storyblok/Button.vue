@@ -59,9 +59,10 @@ const classes = computed(() => ['btn', `btn--${props.blok.variant || 'primary'}`
     0 1px 10px 0 rgb(0 0 0 / 12%);
 }
 
+/* Sky with a navy label: white on #20aeff is only 2.45:1, navy is 7:1. */
 .btn--accent {
   background: var(--c-sky);
-  color: var(--c-white);
+  color: var(--c-darkblue);
   box-shadow:
     0 3px 1px -2px rgb(0 0 0 / 20%),
     0 2px 2px 0 rgb(0 0 0 / 14%),

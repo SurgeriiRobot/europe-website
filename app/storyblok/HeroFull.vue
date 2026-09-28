@@ -86,7 +86,7 @@ const srcset = computed(() =>
     <div class="hero-full__inner">
       <div class="hero-full__content">
         <h1 class="hero-full__headline"><BrandText :text="blok.headline" /></h1>
-        <p v-if="blok.body" class="hero-full__body">{{ blok.body }}</p>
+        <p v-if="blok.body" class="hero-full__body"><BrandText :text="blok.body" :nowrap="false" /></p>
         <div v-if="blok.buttons?.length" class="hero-full__actions">
           <StoryblokComponent v-for="button in blok.buttons" :key="button._uid" :blok="button" />
         </div>
@@ -166,13 +166,15 @@ const srcset = computed(() =>
 
 .hero-full__actions { display: flex; flex-wrap: wrap; gap: 16px; }
 
+/* Phone design (390 wide): a 780px hero under the transparent header, copy at
+   the 16px gutter — Inter 600 34/41 title, 300 16/26 body — 48px above the edge. */
 @media (max-width: 720px) {
-  .hero-full__inner { padding-bottom: 56px; }
-  /* As the page's opening section it starts at y=0 behind the header, exactly as
-   in Figma (hero 0-800, header overlaid on the top 80px). */
-.hero-full:first-child { margin-top: calc(-1 * var(--header-h)); }
-.hero-full:first-child .hero-full__inner { padding-top: calc(var(--header-h) + 60px); }
-
-.hero-full__bg { object-position: 70% center; }   /* keep the instrument in frame */
+  .hero-full { min-height: clamp(560px, 200vw, 780px); }
+  .hero-full__inner { padding: calc(var(--header-h) + 60px) 16px 48px; }
+  .hero-full__content { gap: 24px; max-width: none; }
+  .hero-full__headline { max-width: 310px; font-size: clamp(1.75rem, 8.72vw, 2.125rem); line-height: 1.206; }
+  .hero-full__body { font-size: 1rem; line-height: 1.625; }
+  .hero-full__bg { object-position: 24% center; }
+  .hero-full__video { object-position: center; }
 }
 </style>

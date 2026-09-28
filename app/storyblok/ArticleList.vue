@@ -70,8 +70,12 @@ function goTo(i: number, smooth = true) {
   if (!el || !slide) return
   el.scrollTo({ left: slide.offsetLeft + slide.offsetWidth / 2 - el.clientWidth / 2, behavior: smooth ? 'smooth' : 'auto' })
 }
-// The design opens on the second card with both neighbours in view.
-onMounted(() => { if (slider.value && (data.value?.stories.length || 0) > 1) nextTick(() => goTo(1, false)) })
+// The desktop design opens on the second card with both neighbours in view; the
+// phone design starts on the first card at the gutter.
+onMounted(() => {
+  const phone = window.matchMedia('(max-width: 720px)').matches
+  if (slider.value && !phone && (data.value?.stories.length || 0) > 1) nextTick(() => goTo(1, false))
+})
 
 // The promo card replaces a grid slot rather than appending after the cards.
 const promoAt = computed(() => Number(props.blok.promo_position ?? -1))
@@ -198,4 +202,15 @@ const promoAt = computed(() => Number(props.blok.promo_position ?? -1))
 }
 .slider__track::-webkit-scrollbar { display: none; }
 .slider__slide { flex: 0 0 min(630px, 86vw); scroll-snap-align: center; }
+
+/* Phone design (390 wide): title 119px down, 20px to the intro, dots 97px below
+   it; cards 321px wide from the 16px gutter, 32px apart, the next one peeking in;
+   182px below. */
+@media (max-width: 720px) {
+  .list--slider { padding: 119px 0 182px; }
+  .list--slider :deep(.sec-title) { gap: 20px; }
+  .slider { margin-top: 97px; }
+  .slider__track { gap: 32px; padding: 0 16px; scroll-padding-inline: 16px; }
+  .slider__slide { flex-basis: 82.3vw; scroll-snap-align: start; }
+}
 </style>

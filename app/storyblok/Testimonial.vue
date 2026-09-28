@@ -1,8 +1,8 @@
 <script setup lang="ts">
 // Figma 991:18677: a 1290x600 card (75px gutters, 24px radius) on the grey field.
 // Portrait fills the card under a black wash — solid to 40% of the width, gone by
-// 70% — with the quote (Inter 600 34/41, 520 wide) and a red author line on top,
-// and the button pinned to the bottom.
+// 70% — with the quote (Inter 600 34/41, 520 wide) and a white author line on top
+// (name Inter 600 14/17, role 300 16/19), and the button pinned to the bottom.
 const props = defineProps<{ blok: any }>()
 const portrait = computed(() => props.blok.portrait)
 </script>
@@ -25,8 +25,8 @@ const portrait = computed(() => props.blok.portrait)
           <blockquote class="quote__text">{{ blok.quote }}</blockquote>
           <figcaption class="quote__author">
             <span class="quote__tick" aria-hidden="true" />
-            <span>{{ blok.author }}</span>
-            <span v-if="blok.role">{{ blok.role }}</span>
+            <span class="quote__name">{{ blok.author }}</span>
+            <span v-if="blok.role" class="quote__role">{{ blok.role }}</span>
           </figcaption>
         </div>
         <div v-if="blok.buttons?.length" class="quote__actions">
@@ -76,11 +76,10 @@ const portrait = computed(() => props.blok.portrait)
 .quote__author {
   position: relative;
   display: grid;
-  font-size: 1rem;
-  font-weight: 300;
-  line-height: 1.1875;             /* 19/16 */
-  color: var(--c-red);
+  color: var(--c-white);
 }
+.quote__name { font-size: 0.875rem; font-weight: 600; line-height: 1.2143; }   /* 14/17 */
+.quote__role { font-size: 1rem; font-weight: 300; line-height: 1.1875; }      /* 16/19 */
 /* 43px hairline from the card edge to the author line. */
 .quote__tick {
   position: absolute;
@@ -91,8 +90,17 @@ const portrait = computed(() => props.blok.portrait)
 }
 .quote__actions { display: flex; flex-wrap: wrap; gap: 16px; }
 
+/* Phone design (390 wide): a 540px card, 16px in, 16px radius; the quote sits on
+   black at the top and the portrait fills the bottom 358px, fading up into it. */
 @media (max-width: 720px) {
-  .quote__card::after { background: linear-gradient(0deg, #000 45%, rgb(0 0 0 / 30%) 100%); }
+  .quote { padding: 0 16px; }
+  .quote__card { min-height: 540px; border-radius: 16px; }
+  .quote__bg { inset: auto 0 0 0; height: 66.3%; object-position: 52% center; }
+  .quote__card::after { background: linear-gradient(180deg, #000 35%, rgb(0 0 0 / 0) 52%); }
+  .quote__content { gap: 24px; padding: 15px 16px 48px; }
+  .quote__top { gap: 35px; max-width: none; }
+  .quote__text { font-size: 1.25rem; line-height: 1.2; }           /* 20/24 */
+  .quote__role { font-size: 0.875rem; line-height: 1.2143; }       /* 14/17 */
   .quote__tick { display: none; }
 }
 </style>

@@ -89,4 +89,17 @@ const media = computed(() => props.blok.media)
   border-left: var(--line-w) solid var(--line);
 }
 .wordmark__caption { padding-block: var(--space-5); color: var(--ink-muted); }
+
+/* Phone design (390 wide): rule and tick 34px down, a 100px word, and the
+   product filling the 321x289 box the design gives it (our render's transparent
+   margins are cropped by sizing, so its ink lands 909-1198 like the design's). */
+@media (max-width: 720px) {
+  .wordmark { padding-top: 37px; }
+  .wordmark__rule { top: 34px; }
+  .wordmark__tick { right: 40px; height: 34px; }
+  .wordmark__word { font-size: 25.64vw; }                     /* 100px */
+  .wordmark__stage { margin-top: -12.46vw; }
+  .wordmark__media { width: 125.4vw; max-width: none; height: auto; margin: 0 0 -4.2vw -7.55vw; object-fit: fill; }
+  .wordmark__bracket { display: none; }
+}
 </style>

@@ -22,7 +22,7 @@ const columns = computed(() => Number(props.blok.columns) || 2)
 </template>
 
 <style scoped>
-.stats { padding: clamp(96px, 13.9vw, 200px) 0 clamp(96px, 13.9vw, 200px); }
+.stats { --connector-len: max(30px, calc(3.47 * var(--sx))); padding: clamp(96px, 13.9vw, 200px) 0 clamp(96px, 13.9vw, 200px); }   /* 50px each side */
 .stats__inner { display: grid; justify-items: center; }
 .stats__grid {
   display: grid;
@@ -32,4 +32,21 @@ const columns = computed(() => Number(props.blok.columns) || 2)
 }
 .stats__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; margin-top: 80px; }
 @media (max-width: 640px) { .stats__grid { grid-template-columns: minmax(0, 1fr); } }
+/* Phone design: title 116px down, 20px to the intro, one column of figures on a
+   321px pitch, the button 72px below them — and the lead line into the next
+   section drawn here, above its photo (desktop draws it inside the photo). */
+@media (max-width: 720px) {
+  .stats { --connector-len: 40px; padding: 116px 0 140px; }
+  .stats :deep(.sec-title) { gap: 20px; }
+  .stats__grid { gap: 156px; margin-top: 91px; }
+  .stats__actions { margin-top: 72px; }
+  .stats::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    height: 40px;
+    border-left: var(--line-w) solid var(--line);
+  }
+}
 </style>

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 // Figma footer (page y 13914, 1440x859) on the vertical brand wash:
-//   nav    — column titles, Inter 600 20/24, centred at y 51, 40px apart
+//   nav    — column titles, Inter 600 20/24, centred at y 51, 45px apart
 //   legal  — Inter 600 16/19 on a 38px pitch, left at the gutter / right-aligned
 //   social — three icons on the centre axis at y 377
-//   words  — "SP Surgical System" (600 28/34) over a 476px Lora "Shurui" that the
-//            footer's bottom edge clips
+//   words  — "SP Surgical System" (600 28/34, left edge at x 520) over a 476px
+//            Lora "Shurui" that the footer's bottom edge clips
 //   rules  — full-width hairlines at y 128 and 435, gutter verticals at 75/1365
 const props = defineProps<{ blok: any }>()
 const sbHref = useSbUrl()
@@ -18,6 +18,13 @@ const nav = computed(() =>
 const legal = computed<any[]>(() => props.blok.legal_links || [])
 const half = computed(() => Math.ceil(legal.value.length / 2))
 const ICONS: Record<string, 'linkedin' | 'phone' | 'mail'> = { linkedin: 'linkedin', phone: 'phone', email: 'mail' }
+const LABELS: Record<string, string> = { linkedin: 'LinkedIn', phone: 'Phone', email: 'Email', youtube: 'YouTube', x: 'X' }
+// A social entry without a link yet (phone / email are added later in the CMS)
+// still shows its icon, just not as a link.
+const socialHref = (social: any) => {
+  const href = sbHref(social.url)
+  return href && href !== '#' ? href : null
+}
 </script>
 
 <template>
@@ -49,9 +56,17 @@ const ICONS: Record<string, 'linkedin' | 'phone' | 'mail'> = { linkedin: 'linked
 
     <ul v-if="blok.socials?.length" class="ftr__socials">
       <li v-for="social in blok.socials" :key="social._uid" v-editable="social">
-        <a :href="sbHref(social.url)" :aria-label="social.platform" target="_blank" rel="noopener">
+        <a
+          v-if="socialHref(social)"
+          :href="socialHref(social)!"
+          :aria-label="LABELS[social.platform] || social.platform"
+          v-bind="/^https?:/.test(socialHref(social)!) ? { target: '_blank', rel: 'noopener' } : {}"
+        >
           <Icon :name="ICONS[social.platform] || 'linkedin'" :size="24" />
         </a>
+        <span v-else :aria-label="LABELS[social.platform] || social.platform" role="img">
+          <Icon :name="ICONS[social.platform] || 'linkedin'" :size="24" />
+        </span>
       </li>
     </ul>
 
@@ -88,7 +103,7 @@ const ICONS: Record<string, 'linkedin' | 'phone' | 'mail'> = { linkedin: 'linked
   inset-inline: 0;
   display: flex;
   justify-content: center;
-  gap: 40px;
+  gap: 45px;                                /* 58px between words, as in Figma */
 }
 .ftr__nav-link { padding: 4px 5px; font-size: clamp(1rem, 1.39vw, 1.25rem); font-weight: 600; line-height: 1.2; }
 
@@ -118,7 +133,7 @@ const ICONS: Record<string, 'linkedin' | 'phone' | 'mail'> = { linkedin: 'linked
   list-style: none;
   translate: -50% 0;
 }
-.ftr__socials a { display: inline-flex; }
+.ftr__socials a, .ftr__socials span { display: inline-flex; }
 
 .ftr__word {
   position: absolute;
@@ -135,12 +150,12 @@ const ICONS: Record<string, 'linkedin' | 'phone' | 'mail'> = { linkedin: 'linked
 .ftr__caption {
   position: absolute;
   top: 58.7%;                               /* 504 of 859 */
-  inset-inline: 0;
+  left: 36.15%;                             /* x 520: Figma sets it left of centre */
   margin: 0;
   font-size: clamp(1.25rem, 1.94vw, 1.75rem);
   font-weight: 600;
   line-height: 1.214;
-  text-align: center;
+  white-space: nowrap;
 }
 
 /* Below ~900px the coordinate layout gets cramped: stack it instead. */
@@ -153,5 +168,25 @@ const ICONS: Record<string, 'linkedin' | 'phone' | 'mail'> = { linkedin: 'linked
   .ftr__legal--right { text-align: center; }
   .ftr__caption { order: 9; }
   .ftr__word { order: 10; margin-bottom: -12vw; }
+}
+
+/* Phone design (390 wide): everything stacked and centred at 20px on a 64px
+   pitch — nav, a full-width hairline, the legal links, the three icons at 40px,
+   a second hairline — then the caption over a 131px "Shurui" the edge clips. */
+@media (max-width: 720px) {
+  .ftr { gap: 0; padding: 71px 16px 0; }
+  .ftr__nav { order: 1; flex-direction: column; align-items: center; gap: 40px; }
+  .ftr__nav-link { padding: 0; font-size: 1.25rem; }
+  .ftr__rule--h1, .ftr__rule--h2 { position: static; display: block; align-self: stretch; margin-inline: -16px; }
+  .ftr__rule--h1 { order: 2; margin-top: 54px; }
+  .ftr__legal { gap: 40px; font-size: 1.25rem; line-height: 1.2; }
+  .ftr__legal--left { order: 3; margin-top: 49px; }
+  .ftr__legal--right { order: 4; margin-top: 40px; }
+  .ftr__legal--right li:last-child { display: none; }       /* the locale mark isn't in the phone footer */
+  .ftr__socials { order: 5; gap: 42px; margin-top: 260px; }
+  .ftr__socials :deep(.icon) { width: 40px; height: 40px; }      /* 82px apart, centre to centre */
+  .ftr__rule--h2 { order: 6; margin-top: 57px; }
+  .ftr__caption { order: 7; margin-top: 50px; font-size: 1.75rem; }
+  .ftr__word { order: 8; margin: -22px 0 -5px; font-size: 33.6vw; }   /* 131px */
 }
 </style>

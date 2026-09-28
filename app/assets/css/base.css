@@ -79,9 +79,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
   }
 }
 
-/* BrandText — superscript registered/trademark marks and unbreakable compounds. */
+/* BrandText — superscript registered/trademark marks, unbreakable compounds and
+   the odd emphasised phrase. */
 .brand-mark { font-size: 0.5em; line-height: 0; vertical-align: 0.8em; }
 .brand-nowrap { white-space: nowrap; }
+.brand-strong { font-weight: 600; }
 
 /* Section title — the design's recurring block: Inter 600 48/58 heading over an
    Inter 300 18/29 body, 24px apart, centred. With lines, a hairline runs from each
@@ -124,6 +126,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 @media (max-width: 1000px) {
   .sec-title--lines .sec-title__h::before,
   .sec-title--lines .sec-title__h::after { display: none; }
+}
+/* The mobile design keeps section titles at 48px (only very narrow phones scale
+   them down: 48px is 12.3vw at 390). */
+@media (max-width: 720px) {
+  .sec-title__h { font-size: clamp(2.25rem, 12.3vw, 3rem); }
 }
 
 /* Display type — Lora, only for the oversized moments. */

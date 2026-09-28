@@ -10,7 +10,7 @@ withDefaults(defineProps<{
 <template>
   <div v-if="headline || body" class="sec-title" :class="{ 'sec-title--lines': lines }">
     <component :is="tag" v-if="headline" class="sec-title__h"><BrandText :text="headline" /></component>
-    <p v-if="body" class="sec-title__p">{{ body }}</p>
+    <p v-if="body" class="sec-title__p"><BrandText :text="body" :nowrap="false" /></p>
     <slot />
   </div>
 </template>

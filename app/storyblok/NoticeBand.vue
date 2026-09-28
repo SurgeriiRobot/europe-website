@@ -15,7 +15,13 @@ defineProps<{ blok: any }>()
 </template>
 
 <style scoped>
-.notice { padding: clamp(120px, 15.7vw, 226px) 0 clamp(140px, 20.8vw, 300px); }
+.notice { --connector-len: max(30px, calc(3.47 * var(--sx))); padding: clamp(120px, 15.7vw, 226px) 0 clamp(140px, 20.8vw, 300px); }   /* 50px each side */
 .notice :deep(.sec-title) { gap: 32px; }
 .notice__icon { display: block; margin: 0 auto 24px; }
+/* Phone design: title 129px down, 35px to a narrow three-line body, 190px below. */
+@media (max-width: 720px) {
+  .notice { --connector-len: 40px; padding: 129px 0 190px; }
+  .notice :deep(.sec-title) { gap: 35px; }
+  .notice :deep(.sec-title__p) { max-width: 250px; }
+}
 </style>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-// layout "bands" (Figma 991:18647-49): full-width 800px rows, image half and
-// text half, alternating sides. layout "grid": the original card grid.
+// layout "bands" (Figma 991:18647-49): full-width rows (760 / 800 / 760px), image
+// half and text half, alternating sides. layout "grid": the original card grid.
 const props = defineProps<{ blok: any }>()
 const columns = computed(() => Number(props.blok.columns) || 2)
 const bands = computed(() => props.blok.layout === 'bands')
@@ -40,7 +40,9 @@ const items = computed<any[]>(() => props.blok.items || [])
 
 <style scoped>
 .features { overflow: hidden; }
-.features--bands { padding: 0; background: var(--c-white) var(--grad-features); }
+/* Bands paint their own panels; the first band's photo also rises into the
+   section above, so this one must not clip. */
+.features--bands { padding: 0; overflow: visible; }
 .features__watermark {
   margin: 0 0 var(--space-5);
   font-size: clamp(2.5rem, 9vw, 7rem);

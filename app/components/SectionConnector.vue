@@ -1,7 +1,9 @@
 <script setup lang="ts">
 // The design joins sections with a 0.5px line on the centre axis. It takes the
 // section's own line colour, so a line crossing from a light section into a
-// dark one switches from blue to white exactly at the boundary.
+// dark one switches from blue to white exactly at the boundary. Length is 59px
+// either side by default; a section can set --connector-len (Figma uses 100px
+// into the logo wall and 50px either side of the CE / key figures boundary).
 defineProps<{ connector?: string }>()
 </script>
 
@@ -15,7 +17,7 @@ defineProps<{ connector?: string }>()
   position: absolute;
   left: 50%;
   z-index: 2;
-  height: clamp(40px, 4.2vw, 60px);   /* 59px either side of a boundary in Figma */
+  height: var(--connector-len, max(40px, calc(4.1 * var(--sx))));   /* 59 */
   border-left: var(--line-w) solid var(--line);
   pointer-events: none;
 }
