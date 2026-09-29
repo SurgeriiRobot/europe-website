@@ -17,6 +17,10 @@ const localePath = useLocalePath()
 
 const childLinks = (item: any) => (item.columns || []).flatMap((c: any) => c.links || [])
 const localeCodes = computed(() => (locales.value as any[]).map(l => (typeof l === 'string' ? l : l.code)))
+// The language list behaves like any other menu entry: the current language is
+// the row, the rest open underneath it. It used to be a row of every code laid
+// side by side, which read as five separate links rather than one control.
+const otherLocales = computed(() => localeCodes.value.filter(c => c !== locale.value))
 
 const ICONS: Record<string, 'linkedin' | 'phone' | 'mail'> = { linkedin: 'linkedin', phone: 'phone', email: 'mail' }
 // Entries without a link yet (phone / email, filled in later) show just the icon.
@@ -89,16 +93,24 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKey))
           <NuxtLink v-else :to="sbHref(item.link)" class="mm__row">{{ item.label }}</NuxtLink>
         </li>
 
-        <li class="mm__langs">
-          <NuxtLink
-            v-for="code in localeCodes"
-            :key="code"
-            :to="switchLocalePath(code)"
-            class="mm__row mm__lang"
-            :class="{ 'is-current': code === locale }"
+        <li v-if="otherLocales.length" class="mm__langs">
+          <button
+            type="button"
+            class="mm__row"
+            :aria-expanded="expanded === 'lang'"
+            aria-label="Change language"
+            @click="expanded = expanded === 'lang' ? null : 'lang'"
           >
-            {{ code.toUpperCase() }}
-          </NuxtLink>
+            {{ locale.toUpperCase() }}
+            <Icon name="expand-more" :size="20" class="mm__chevron" :class="{ 'is-open': expanded === 'lang' }" />
+          </button>
+          <div class="mm__sub-wrap" :class="{ 'is-open': expanded === 'lang' }" :inert="expanded !== 'lang'">
+            <ul class="mm__sub">
+              <li v-for="code in otherLocales" :key="code">
+                <NuxtLink :to="switchLocalePath(code)" class="mm__sub-link">{{ code.toUpperCase() }}</NuxtLink>
+              </li>
+            </ul>
+          </div>
         </li>
       </ul>
     </nav>
@@ -214,9 +226,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKey))
   text-decoration: none;
 }
 
-.mm__langs { display: flex; justify-content: center; }
-.mm__lang { width: auto; }
-.mm__lang:not(.is-current) { opacity: 0.6; }
+
 
 .mm__bottom {
   display: flex;
