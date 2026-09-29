@@ -4,9 +4,16 @@
 // style "standard" (Figma 991:18687): 700px photo under the Figma gradient (solid
 //   #1f2739 to 20%, half at 44%, clear by 66%, all at 80% opacity), content at the
 //   left gutter — Inter 600 34/41 headline 399 wide, body, button, 24px apart.
+// style "inset" (SP Robot "Designed for clinical versatility", 10553-11353): the
+//   standard look at 800px, the copy 186px in on a 280px measure.
+// `tint`: a 14% brand-blue wash over the whole band (the SP Robot photo band).
 const props = defineProps<{ blok: any }>()
 const bg = computed(() => props.blok.background)
 const display = computed(() => props.blok.style === 'display')
+const inset = computed(() => props.blok.style === 'inset')
+const bgH = computed(() => (display.value ? 810 : inset.value ? 800 : 700))
+// Phones can take their own crop (the SP Robot band frames its photo taller there).
+const bgMobile = computed(() => (props.blok.background_mobile?.filename ? props.blok.background_mobile : null))
 </script>
 
 <template>
@@ -14,15 +21,26 @@ const display = computed(() => props.blok.style === 'display')
     v-editable="blok"
     :id="blok.anchor || undefined"
     class="section cta"
-    :class="display ? 'cta--display' : 'cta--standard'"
+    :class="[display ? 'cta--display' : 'cta--standard', { 'cta--inset': inset, 'cta--tint': blok.tint }]"
     :data-theme="blok.theme || 'dark'"
   >
     <span v-if="display && (blok.connector === 'top' || blok.connector === 'both')" class="cta__lead" aria-hidden="true" />
     <SectionConnector v-else :connector="blok.connector" />
+    <picture v-if="bg?.filename && bgMobile">
+      <source media="(max-width: 720px)" :srcset="sbCrop(bgMobile, 780, 1600)">
+      <img
+        :src="sbCrop(bg, 2880, bgH * 2)"
+        :srcset="`${sbCrop(bg, 1440, bgH)} 1440w, ${sbCrop(bg, 2880, bgH * 2)} 2880w`"
+        sizes="100vw"
+        :alt="bg.alt || ''"
+        class="cta__bg"
+        loading="lazy"
+      >
+    </picture>
     <img
-      v-if="bg?.filename"
-      :src="sbCrop(bg, 2880, display ? 1620 : 1400)"
-      :srcset="`${sbCrop(bg, 1440, display ? 810 : 700)} 1440w, ${sbCrop(bg, 2880, display ? 1620 : 1400)} 2880w`"
+      v-else-if="bg?.filename"
+      :src="sbCrop(bg, 2880, bgH * 2)"
+      :srcset="`${sbCrop(bg, 1440, bgH)} 1440w, ${sbCrop(bg, 2880, bgH * 2)} 2880w`"
       sizes="100vw"
       :alt="bg.alt || ''"
       class="cta__bg"
@@ -86,6 +104,22 @@ const display = computed(() => props.blok.style === 'display')
 .cta__body { margin: 0; font-size: 1.125rem; font-weight: 300; line-height: 1.6111; }
 .cta__actions { display: flex; flex-wrap: wrap; gap: 16px; }
 
+.cta--inset .cta__inner {
+  min-height: clamp(560px, calc(55.56 * var(--sx)), 800px);                 /* 800 */
+  padding-inline: calc(var(--frame-x) + 12.92 * var(--sx));               /* x186 */
+  max-width: none;
+}
+.cta--inset .cta__body { max-width: 280px; }
+.cta--tint::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: rgb(7 68 253 / 14%);
+  pointer-events: none;
+}
+.cta--tint .cta__inner { position: relative; z-index: 1; }
+
 /* Phone design (390 wide): both bands are 800px tall. The display headline runs
    at 100px Lora over three lines; its lead line moves above the photo (drawn by
    the section before). The standard band sets its copy at the bottom-left on a
@@ -104,5 +138,10 @@ const display = computed(() => props.blok.style === 'display')
   .cta--standard::after {
     background: linear-gradient(0deg, #1f2739 0%, rgb(31 39 57 / 90%) 25%, rgb(31 39 57 / 72%) 65%, rgb(31 39 57 / 0) 95%);
   }
+  /* Inset band (SP Robot mobile 9196-9996): no button, so the copy ends 130px up. */
+  .cta--inset .cta__inner { min-height: clamp(560px, 205vw, 800px); padding: 0 16px 130px; }
+  .cta--inset .cta__body { max-width: none; }
+  .cta--inset .cta__headline { margin-bottom: 0; }
+  .cta--inset .cta__bg { object-position: 41% center; }
 }
 </style>

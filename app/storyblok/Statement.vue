@@ -3,11 +3,16 @@
 //  - light (991:18640): centred title with hairlines, body, primary button
 //  - gradient (991:18644): white title on the deep gradient, sky button, and the
 //    oversized "Key features" watermark in Lora at 37.5% opacity overhanging the edges.
+//  - watermark above (SP Robot "Operating principle"): the oversized Lora word
+//    set before the title, in pale blue on white, as written (line breaks and
+//    leading spaces kept), overhanging both page edges.
 // `title_bracket` (home, 991:18640): the right title hairline stops at x1281, drops
-// 202px and runs off the page edge.
+// 202px and runs off the page edge; `bracket_side: left` mirrors it (SP Robot).
 const props = defineProps<{ blok: any }>()
 const dark = computed(() => ['dark', 'brand', 'gradient'].includes(props.blok.theme))
 const bracket = computed(() => Boolean(props.blok.title_lines && props.blok.title_bracket))
+const bracketLeft = computed(() => bracket.value && props.blok.bracket_side === 'left')
+const watermarkAbove = computed(() => Boolean(props.blok.watermark) && props.blok.watermark_position === 'above')
 </script>
 
 <template>
@@ -15,10 +20,18 @@ const bracket = computed(() => Boolean(props.blok.title_lines && props.blok.titl
     v-editable="blok"
     :id="blok.anchor || undefined"
     class="section statement"
-    :class="{ 'statement--dark': dark, 'statement--watermarked': blok.watermark, 'statement--bracket': bracket }"
+    :class="{
+      'statement--dark': dark,
+      'statement--watermarked': blok.watermark && !watermarkAbove,
+      'statement--wm-above': watermarkAbove,
+      'statement--bracket': bracket,
+      'statement--bracket-left': bracketLeft,
+      'statement--wide': blok.width === 'wide',
+    }"
     :data-theme="blok.theme || 'light'"
   >
     <SectionConnector :connector="blok.connector" />
+    <p v-if="watermarkAbove" class="statement__watermark statement__watermark--above display-word" aria-hidden="true">{{ blok.watermark }}</p>
     <div class="container statement__inner">
       <SectionTitle :headline="blok.headline" :body="blok.body" :lines="blok.title_lines" />
       <span v-if="bracket" class="statement__bracket" aria-hidden="true" />
@@ -26,7 +39,7 @@ const bracket = computed(() => Boolean(props.blok.title_lines && props.blok.titl
         <StoryblokComponent v-for="button in blok.buttons" :key="button._uid" :blok="button" />
       </div>
     </div>
-    <p v-if="blok.watermark" class="statement__watermark display-word" aria-hidden="true">{{ blok.watermark }}</p>
+    <p v-if="blok.watermark && !watermarkAbove" class="statement__watermark display-word" aria-hidden="true">{{ blok.watermark }}</p>
     <template v-if="dark">
       <span class="statement__gutter statement__gutter--top" aria-hidden="true" />
       <span class="statement__gutter statement__gutter--bottom" aria-hidden="true" />
@@ -45,6 +58,9 @@ const bracket = computed(() => Boolean(props.blok.title_lines && props.blok.titl
 .statement__inner { position: relative; z-index: 1; display: grid; justify-items: center; gap: 24px; }
 .statement--dark .statement__inner { gap: 48px; }
 .statement :deep(.sec-title) { max-width: 632px; }
+/* SP Robot's "Single-Port Surgical System" copy: the only measure at which the
+   browser breaks both paragraphs where Figma does is 650.2-652.7px. */
+.statement--wide :deep(.sec-title) { max-width: 651.5px; }
 .statement__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; }
 
 /* White gutter line at x=75 with a tick out to the page edge, and a short
@@ -99,12 +115,45 @@ const bracket = computed(() => Boolean(props.blok.title_lines && props.blok.titl
 }
 @media (max-width: 1180px) { .statement__bracket { display: none; } }
 
+/* Mirrored bracket (SP Robot 2335-2538): the left hairline stops at x265, turns
+   down at x155 for 202px, then runs off the left edge. */
+@media (min-width: 1181px) {
+  .statement--bracket-left :deep(.sec-title--lines .sec-title__h::after) { display: block; }
+  .statement--bracket-left :deep(.sec-title--lines .sec-title__h::before) { display: none; }
+}
+.statement--bracket-left .statement__bracket {
+  left: auto;
+  right: calc(50% + 455px);
+  width: 110px;
+  border-right: 0;
+  border-left: var(--line-w) solid var(--line);
+}
+.statement--bracket-left .statement__bracket::after { left: auto; right: 100%; width: calc(50vw - 565px); }
+
+/* Watermark above the title (SP Robot 7665-8520): a 100px lead line, then the
+   Lora words on a 252px line — line 1 starting 63px off the left edge — in
+   #c1d1ff at 50%, and the title 72px under the second line's box. */
+.statement--wm-above { --connector-len: calc(6.94 * var(--sx)); padding: calc(15.49 * var(--sx)) 0 0; }   /* 100 line; 223 to the words; the rows below set the gap */
+.statement__watermark--above {
+  position: relative;
+  left: auto;
+  bottom: auto;
+  translate: none;
+  margin: 0 0 calc(5.21 * var(--sx)) calc(-4.375 * var(--sx));                    /* 75 to the title */
+  font-size: calc(17.5 * var(--sx));               /* 252/1440 */
+  line-height: 1;
+  white-space: pre;
+  color: rgb(193 209 255 / 50%);
+  opacity: 1;
+}
+
 /* Phone design (390 wide), placed last so it overrides the rules above: the light
    statement hands straight on to the next section's lead line; the gradient band
    opens 118px above its title and sets the watermark as two 100px lines, 78px
    off the bottom. Gaps stay the desktop 24 / 48. */
 @media (max-width: 720px) {
   .statement { padding-block: 39px 28px; }
+  .statement--wm-above { --connector-len: 80px; padding: 161px 0 0; }
   .statement--dark { padding-block: 30.36vw 20px; }                  /* 118 */
   .statement--watermarked { padding-bottom: 98.5vw; }                /* 384 */
   .statement__watermark {
@@ -113,6 +162,21 @@ const bracket = computed(() => Boolean(props.blok.title_lines && props.blok.titl
     font-size: 25.64vw;                                               /* 100px */
     line-height: 1;
     white-space: normal;
+    text-align: center;
+  }
+  /* Titles may run to 7px from the edges ("Surgical System" at 48px is 375 wide). */
+  .statement :deep(.sec-title__h) { width: calc(100% + 18px); margin-inline: -9px; }
+  /* The wide statement's phone copy breaks where Figma does only at 351-354px. */
+  .statement--wide :deep(.sec-title__p) { max-width: 352.5px; }
+  /* Watermark above the title (SP Robot mobile 6854-7373): 82px Lora on an 82px
+     line, both lines centred, the indent dropped. */
+  .statement__watermark.statement__watermark--above {
+    bottom: auto;
+    width: auto;
+    margin: 0 0 20px;
+    font-size: 21vw;
+    line-height: 1;
+    white-space: pre-line;
     text-align: center;
   }
 }

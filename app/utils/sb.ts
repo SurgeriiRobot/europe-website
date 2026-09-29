@@ -19,6 +19,8 @@ export function sbUrl(link?: SbLink | null): string {
 
   if (!raw) return '#'
   if (/^(https?:)?\/\//.test(raw) || /^(mailto:|tel:)/.test(raw)) return raw
+  // An in-page anchor ("#intended-use") stays on the current page.
+  if (raw.startsWith('#')) return raw
 
   // `home` is the root story, everything else keeps its full slug.
   const path = '/' + raw.replace(/^\/+/, '').replace(/^home$/, '')
