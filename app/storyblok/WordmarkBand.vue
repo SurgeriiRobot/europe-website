@@ -80,12 +80,15 @@ const media = computed(() => props.blok.media)
   border-bottom: var(--line-w) solid var(--line);
   pointer-events: none;
 }
+/* `bottom: 0` stops at the padding box, which is the top of the horizontal
+   border, leaving a hairline gap where the two should meet. Running it on past
+   the border closes the corner. */
 .wordmark__bracket::before {
   content: '';
   position: absolute;
   left: var(--frame-gutter);                   /* 75 */
   top: 0;
-  bottom: 0;
+  bottom: calc(-1 * var(--line-w));
   border-left: var(--line-w) solid var(--line);
 }
 .wordmark__caption { padding-block: var(--space-5); color: var(--ink-muted); }

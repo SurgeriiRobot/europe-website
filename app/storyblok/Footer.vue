@@ -84,10 +84,10 @@ const socialHref = (social: any) => {
   background: var(--grad-footer);
   color: var(--c-white);
 }
-.ftr a { color: inherit; text-decoration: none; }
-.ftr a:hover { text-decoration: underline; }
+.ftr a { color: inherit; text-decoration: none; transition: color 150ms ease; }
+.ftr a:hover, .ftr a:focus-visible { color: var(--c-blue-100); }
 
-.ftr__rule { position: absolute; border: 0 solid var(--c-white); }
+.ftr__rule { position: absolute; border: 0 solid var(--line-light); }
 .ftr__rule--h1, .ftr__rule--h2 { inset-inline: 0; border-top-width: var(--line-w); }
 .ftr__rule--h1 { top: 14.9%; }              /* 128 of 859 */
 .ftr__rule--h2 { top: 50.6%; }              /* 435 of 859 */
@@ -167,7 +167,7 @@ const socialHref = (social: any) => {
   .ftr__legal { gap: 12px; text-align: center; }
   .ftr__legal--right { text-align: center; }
   .ftr__caption { order: 9; }
-  .ftr__word { order: 10; margin-bottom: -12vw; }
+  .ftr__word { order: 10; margin-bottom: -14vw; }
 }
 
 /* Phone design (390 wide): everything stacked and centred at 20px on a 64px
@@ -187,6 +187,9 @@ const socialHref = (social: any) => {
   .ftr__socials :deep(.icon) { width: 40px; height: 40px; }      /* 82px apart, centre to centre */
   .ftr__rule--h2 { order: 6; margin-top: 57px; }
   .ftr__caption { order: 7; margin-top: 50px; font-size: 1.75rem; }
-  .ftr__word { order: 8; margin: -22px 0 -5px; font-size: 33.6vw; }   /* 131px */
+  /* The word sits on the bottom edge and is clipped a little by it: below the
+     baseline the line box carries about 0.2em of descender and leading, so that
+     much is pulled off plus a few px of the letterforms. */
+  .ftr__word { order: 8; margin: -22px 0 -7.7vw; font-size: 33.6vw; }   /* 131px */
 }
 </style>

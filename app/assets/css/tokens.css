@@ -107,11 +107,25 @@
      body 4.5:1. */
   --grad-band-brand: linear-gradient(156deg, #d5dffe 0%, #a0b7fe 12%, #6d8efc 24%, #4a74f5 36%, #4169e8 44%, #3d62db 70%, #3858c2 100%);
   --grad-band-gradient: linear-gradient(156deg, #3757c1 0%, #3348a0 21.7%, #292c5e 61.7%, #262a56 71.7%, #1e2639 100%);
+  /* Staggered bands (SP Robot page), fitted the same way; band 3 reuses
+     --grad-band-gradient, which matches its panel within 5/255. */
+  --grad-stagger-1: linear-gradient(170deg, #202637 0%, #1e263a 5%, #282c61 35%, #29377f 48.3%, #2743ac 68.3%, #2647b9 75%, #244bcc 85%, #1a4ce7 100%);
+  /* Figma's band 2 panel (#e8edfe -> #99b2fe at 32% -> #4976fd at 62%) puts the
+     white copy at 2.0:1 (title) and 2.9:1 (body). Same pale corner and end colour,
+     but the title (27-39% along the gradient) sits on <= #6789fb (3.1:1) and the
+     body (44-73%) on <= #4169e8 (4.8:1). */
+  --grad-stagger-2: linear-gradient(156deg, #e8edfe 0%, #c7d5fe 8%, #93adfd 16%, #6789fb 25%, #5a82fc 31%, #4c75f4 37%, #4169e8 42%, #3f66e2 60%, #3d62d8 80%, #395ccb 100%);
+  --grad-stagger-4: linear-gradient(156deg, #e1e8fe 0%, #cad7fe 5%, #527dfd 28.3%, #4572fb 31.7%, #3961e0 41.7%, #2742a9 58.3%, #192875 71.7%, #121959 78.3%, #10154d 81.7%, #1d2639 100%);
   --grad-bright: linear-gradient(135deg, #d7e1ff 0%, #5e86fe 45%, #3959c7 100%);
   /* Brand blue arrives a little earlier than in Figma (12% rather than 15.6%) so
      the white nav links on the sky-blue top edge clear 4.5:1. */
   --grad-footer: linear-gradient(180deg, #20aeff -5.5%, #0745fe 12%, #03045e 65.6%, #1f2739 100%);
-  --line-w: 0.5px;   /* the design's hairline weight */
+  --line-w: 0.5px;
+  /* A white hairline on a dark surface reads heavier than the same width of ink
+     on a light one: the antialiased edge brightens the background instead of
+     fading into it. Dropping the alpha matches the optical weight of the dark
+     hairlines without changing the geometry. */
+  --line-light: rgb(255 255 255 / 68%);   /* the design's hairline weight */
 
   /* 1 unit = 1% of the 1440 design width, but never larger than at 1440. Sizes
      written as calc(N * var(--sx)) scale down on small screens and stop growing

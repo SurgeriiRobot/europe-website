@@ -3,15 +3,30 @@
 // 410px text column set 125px off the photo's edge and centred vertically. Title
 // Inter 600 48/58, body 300 18/29.
 const props = withDefaults(
-  defineProps<{ blok: any, layout?: 'card' | 'band', flip?: boolean, decor?: number }>(),
-  { layout: 'card', flip: false, decor: 0 },
+  defineProps<{
+    blok: any
+    layout?: 'card' | 'band'
+    variant?: 'classic' | 'stagger'
+    flip?: boolean
+    decor?: number
+    first?: boolean
+    last?: boolean
+  }>(),
+  { layout: 'card', variant: 'classic', flip: false, decor: 0, first: false, last: false },
 )
 const sbHref = useSbUrl()
 const href = computed(() => (props.blok.link?.cached_url || props.blok.link?.url ? sbHref(props.blok.link) : null))
 const media = computed(() => props.blok.media)
+const stagger = computed(() => props.variant === 'stagger')
 // Photo box height at 1440 (per band position), so the CDN crop matches the box
-// exactly: band 1's photo is 760 + its 38px rise, band 3 is 760, band 2 800.
-const photoH = computed(() => (props.decor === 0 ? 798 : props.decor === 2 ? 760 : 800))
+// exactly. Classic: band 1's photo is 760 + its 38px rise, band 3 is 760, band 2
+// 800. Staggered: every photo is 800.
+const photoH = computed(() => (stagger.value ? 800 : props.decor === 0 ? 798 : props.decor === 2 ? 760 : 800))
+const bandClass = computed(() => [
+  `band--${props.variant}`,
+  stagger.value ? `band--s${props.decor}` : `band--decor-${props.decor}`,
+  { 'band--flip': props.flip, 'band--first': props.first, 'band--last': props.last },
+])
 // Phones stack the band: a 390x300 photo, from `media_mobile` when the editor set
 // one (the phone design frames these wider than the desktop halves).
 const mediaMobile = computed(() => (props.blok.media_mobile?.filename ? props.blok.media_mobile : null))
@@ -22,7 +37,7 @@ const mediaMobile = computed(() => (props.blok.media_mobile?.filename ? props.bl
     v-if="layout === 'band'"
     v-editable="blok"
     class="band"
-    :class="[{ 'band--flip': flip }, `band--decor-${decor}`]"
+    :class="bandClass"
     :data-theme="blok.theme || 'dark'"
   >
     <picture v-if="media?.filename" class="band__media">
@@ -52,13 +67,22 @@ const mediaMobile = computed(() => (props.blok.media_mobile?.filename ? props.bl
     </div>
   </div>
 
-  <component :is="href ? 'NuxtLink' : 'article'" v-else v-editable="blok" :to="href || undefined" class="card" :data-theme="blok.theme || 'light'">
+  <!-- Static tags, not <component :is="'article'">: a dynamic "article" resolves
+       to the Storyblok Article page component (registered globally) and crashes. -->
+  <NuxtLink v-else-if="href" v-editable="blok" :to="href" class="card" :data-theme="blok.theme || 'light'">
     <img v-if="media?.filename" :src="sbCrop(media, 800)" :alt="media.alt || ''" class="card__media" loading="lazy">
     <div class="card__body">
       <h3 class="card__title">{{ blok.title }}</h3>
       <p v-if="blok.body" class="card__text">{{ blok.body }}</p>
     </div>
-  </component>
+  </NuxtLink>
+  <article v-else v-editable="blok" class="card" :data-theme="blok.theme || 'light'">
+    <img v-if="media?.filename" :src="sbCrop(media, 800)" :alt="media.alt || ''" class="card__media" loading="lazy">
+    <div class="card__body">
+      <h3 class="card__title">{{ blok.title }}</h3>
+      <p v-if="blok.body" class="card__text">{{ blok.body }}</p>
+    </div>
+  </article>
 </template>
 
 <style scoped>
@@ -107,18 +131,57 @@ const mediaMobile = computed(() => (props.blok.media_mobile?.filename ? props.bl
   color: inherit;
   text-decoration: underline;
   text-underline-offset: 4px;
+  transition: color 150ms ease;
 }
+.band__link:hover, .band__link:focus-visible { color: var(--c-blue-100); }
 .band--flip .band__media { order: 2; }
 
 /* White hairlines, placed per band as in Figma (x in % of the 1440 frame, y in
    design px scaled with the layout). */
-.band__line { position: absolute; z-index: 1; border: 0 solid var(--c-white); pointer-events: none; }
+.band__line { position: absolute; z-index: 1; border: 0 solid var(--line-light); pointer-events: none; }
 .band--decor-0 .band__line--a { left: 95.07%; top: 0; bottom: 0; border-left-width: var(--line-w); }                       /* x1369, full height */
 .band--decor-0 .band__line--b { left: 89.17%; right: 0; top: calc(48.33 * var(--sx)); border-top-width: var(--line-w); }    /* 1284->1440 @696 */
 .band--decor-1 .band__line--a { left: 0; width: 50%; top: calc(51.53 * var(--sx)); border-top-width: var(--line-w); }       /* 0->720 @742 */
 .band--decor-1 .band__line--b { left: var(--frame-gutter); top: calc(45.83 * var(--sx)); bottom: 0; border-left-width: var(--line-w); }  /* x75, 660->800 */
 .band--decor-2 .band__line--a { left: 50%; right: 0; top: calc(4.375 * var(--sx)); border-top-width: var(--line-w); }      /* 720->1440 @63 */
 .band--decor-2 .band__line--b { left: 58.96%; top: calc(4.375 * var(--sx)); height: calc(3.75 * var(--sx)); border-left-width: var(--line-w); }  /* x849, 63->117 */
+
+/* ---- Staggered bands (SHURUI SP Robot, Figma bands at 3014-6254) ----------
+   Every photo is 800 tall. The first band's panel starts 40px below its photo
+   (the photo rises into the section above); the last band's panel runs 40px
+   past its photo, and a blue line drops from the photo's corner through that
+   strip into the next section. Panel colours and hairlines go by position. */
+.band--stagger { min-height: clamp(560px, calc(55.56 * var(--sx)), 800px); }                 /* 800 */
+.band--stagger.band--first { min-height: clamp(530px, calc(52.78 * var(--sx)), 760px); }     /* 760 */
+.band--stagger.band--first .band__media { margin-top: calc(-2.78 * var(--sx)); }              /* 40 */
+.band--stagger.band--last { min-height: clamp(590px, calc(58.33 * var(--sx)), 840px); }      /* 840 */
+.band--stagger.band--last .band__media { align-self: start; height: clamp(560px, calc(55.56 * var(--sx)), 800px); }
+.band--stagger.band--last::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: clamp(560px, calc(55.56 * var(--sx)), 800px);
+  bottom: 0;
+  border-left: var(--line-w) solid var(--c-blue);
+}
+/* Copy sits 10px below the first panel's centre, and the last band's copy is
+   centred on its photo rather than on the taller panel. */
+.band--stagger.band--first .band__panel { padding-top: calc(1.39 * var(--sx)); }     /* 20 */
+.band--stagger.band--last .band__panel { padding-bottom: calc(5.56 * var(--sx)); }   /* 80 */
+/* (Two classes, to outrank the per-theme panel colours above.) */
+.band--stagger.band--s0 .band__panel { background: var(--grad-stagger-1); }
+.band--stagger.band--s1 .band__panel { background: var(--grad-stagger-2); }
+.band--stagger.band--s2 .band__panel { background: var(--grad-band-gradient); }
+.band--stagger.band--s3 .band__panel { background: var(--grad-stagger-4); }
+
+.band--s0 .band__line--a { left: 50%; right: 0; top: calc(3.54 * var(--sx)); border-top-width: var(--line-w); }                   /* 720->1440 @51 */
+.band--s0 .band__line--b { left: 58.96%; top: calc(3.54 * var(--sx)); height: calc(3.75 * var(--sx)); border-left-width: var(--line-w); }  /* x849, 51->105 */
+.band--s1 .band__line--a { left: var(--frame-gutter); top: 0; bottom: 0; border-left-width: var(--line-w); }                      /* x75, full height */
+.band--s1 .band__line--b { left: 0; width: 10.63%; top: calc(4.375 * var(--sx)); border-top-width: var(--line-w); }               /* 0->153 @63 */
+.band--s2 .band__line--a { left: 95.07%; top: 0; bottom: 0; border-left-width: var(--line-w); }                                   /* x1369, full height */
+.band--s2 .band__line--b { left: 89.24%; right: 0; top: calc(52.36 * var(--sx)); border-top-width: var(--line-w); }               /* 1285->1440 @754 */
+.band--s3 .band__line--a { left: 0; width: 50%; top: calc(4.93 * var(--sx)); border-top-width: var(--line-w); }                   /* 0->720 @71 */
+.band--s3 .band__line--b { left: var(--frame-gutter); top: 0; height: calc(9.79 * var(--sx)); border-left-width: var(--line-w); } /* x75, 0->141 */
 
 /* Phone design (390 wide): a 300px photo (77vw) over the panel; the copy starts
    at the panel's top (36px in, 16px from the edge), 24px between title and body,
@@ -146,6 +209,21 @@ const mediaMobile = computed(() => (props.blok.media_mobile?.filename ? props.bl
   .band__title { font-size: clamp(2.25rem, 12.3vw, 3rem); }
   .band__link { margin-top: 8px; }
   .band__line { display: none; }   /* placed for the side-by-side layout only */
+
+  /* Staggered on phones (SP Robot mobile frame): each band 820 tall, photos of
+     293 / 280px by position, the panel taking the rest; no rise or drop. */
+  .band--stagger,
+  .band--stagger.band--first,
+  .band--stagger.band--last { grid-template-rows: auto 1fr; min-height: 210.26vw; }
+  .band--stagger .band__media,
+  .band--stagger.band--first .band__media,
+  .band--stagger.band--last .band__media { align-self: stretch; height: 75.13vw; min-height: 0; margin-top: 0; }   /* 293 */
+  .band--s1 .band__media, .band--s3 .band__media { height: 71.79vw !important; }                                  /* 280 */
+  .band--stagger.band--last::after { display: none; }
+  /* SP Robot's phone frame sets band copy 41px into the panel (home's: 36). */
+  .band--stagger .band__panel,
+  .band--stagger.band--first .band__panel,
+  .band--stagger.band--last .band__panel { padding: 42px 16px 96px; }
 }
 
 .card {
