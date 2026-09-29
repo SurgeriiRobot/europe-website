@@ -41,6 +41,18 @@ onMounted(() => {
   document.addEventListener('visibilitychange', onVisibility)
   onBeforeUnmount(() => { io.disconnect(); document.removeEventListener('visibilitychange', onVisibility) })
 })
+// An editor-set focal point positions the photo (and the video over it) when the
+// frame crops it — e.g. SP Robot's console lights stay centred on phones.
+// Storyblok asset URLs carry the pixel size: /f/<space>/<W>x<H>/...
+const focusPosition = computed(() => {
+  const focus = bg.value?.focus
+  const size = bg.value?.filename?.match(/\/(\d+)x(\d+)\//)
+  const pt = focus?.match(/^(\d+)x(\d+):(\d+)x(\d+)$/)
+  if (!size || !pt) return undefined
+  const x = (Number(pt[1]) + Number(pt[3])) / 2 / Number(size[1]) * 100
+  const y = (Number(pt[2]) + Number(pt[4])) / 2 / Number(size[2]) * 100
+  return { objectPosition: `${x.toFixed(1)}% ${y.toFixed(1)}%` }
+})
 const srcset = computed(() =>
   bg.value?.filename
     ? WIDTHS.map(w => `${sbImage(bg.value, `${w}x0/filters:format(webp):quality(80)`)} ${w}w`).join(', ')
@@ -62,6 +74,7 @@ const srcset = computed(() =>
       sizes="100vw"
       :alt="bg.alt || ''"
       class="hero-full__bg"
+      :style="focusPosition"
       loading="eager"
       fetchpriority="high"
     >
@@ -70,6 +83,7 @@ const srcset = computed(() =>
       v-if="useVideo"
       ref="videoEl"
       class="hero-full__bg hero-full__video"
+      :style="focusPosition"
       :class="{ 'is-ready': ready }"
       :poster="src"
       autoplay
@@ -86,7 +100,9 @@ const srcset = computed(() =>
     <div class="hero-full__inner">
       <div class="hero-full__content">
         <h1 class="hero-full__headline"><BrandText :text="blok.headline" /></h1>
-        <p v-if="blok.body" class="hero-full__body"><BrandText :text="blok.body" :nowrap="false" /></p>
+        <p v-if="blok.body" class="hero-full__body" :class="{ 'hero-full__body--small': blok.body_size === 'small' }">
+          <BrandText :text="blok.body" :nowrap="false" />
+        </p>
         <div v-if="blok.buttons?.length" class="hero-full__actions">
           <StoryblokComponent v-for="button in blok.buttons" :key="button._uid" :blok="button" />
         </div>
@@ -110,6 +126,14 @@ const srcset = computed(() =>
    in Figma (hero 0-800, header overlaid on the top 80px). */
 .hero-full:first-child { margin-top: calc(-1 * var(--header-h)); }
 .hero-full:first-child .hero-full__inner { padding-top: calc(var(--header-h) + 60px); }
+
+/* On desktop the opening banner fills the screen. Because it already starts at
+   y=0 behind the header, a full viewport height leaves the video alone on the
+   first screenful rather than showing the top of the next section under it.
+   Phones keep the height their design gives them. */
+@media (min-width: 721px) {
+  .hero-full:first-child { min-height: max(560px, 100svh); }
+}
 
 .hero-full__bg {
   position: absolute;
@@ -146,7 +170,7 @@ const srcset = computed(() =>
   flex-direction: column;
   align-items: flex-start;
   gap: 32px;
-  max-width: 339px;
+  max-width: 380px;                  /* home's lines fit 339; SP Robot's title needs 375 */
 }
 
 .hero-full__headline {
@@ -163,6 +187,8 @@ const srcset = computed(() =>
   font-weight: 300;
   line-height: 1.6111;                         /* 29/18 */
 }
+/* The SP Robot hero sets its body a size down (16/26), unlike the other pages. */
+.hero-full__body--small { font-size: 1rem; line-height: 1.625; }
 
 .hero-full__actions { display: flex; flex-wrap: wrap; gap: 16px; }
 
@@ -172,6 +198,9 @@ const srcset = computed(() =>
   .hero-full { min-height: clamp(560px, 200vw, 780px); }
   .hero-full__inner { padding: calc(var(--header-h) + 60px) 16px 48px; }
   .hero-full__content { gap: 24px; max-width: none; }
+  /* The phone design runs the call to action edge to edge. */
+  .hero-full__actions { width: 100%; }
+  .hero-full__actions > :deep(.btn) { flex: 1 1 100%; justify-content: center; }
   .hero-full__headline { max-width: 310px; font-size: clamp(1.75rem, 8.72vw, 2.125rem); line-height: 1.206; }
   .hero-full__body { font-size: 1rem; line-height: 1.625; }
   .hero-full__bg { object-position: 24% center; }

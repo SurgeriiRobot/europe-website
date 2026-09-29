@@ -71,6 +71,13 @@ button, input, select, textarea { font: inherit; color: inherit; }
   outline-offset: 2px;
 }
 
+/* In-page links glide rather than jump, and land clear of the sticky header
+   instead of underneath it. Honoured by the reduced-motion block below. */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--header-h);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -112,6 +119,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   font-weight: 300;
   line-height: 1.6111;
   color: var(--ink-muted);
+  white-space: pre-line;          /* an empty line in the CMS text starts a new paragraph */
 }
 .sec-title--lines .sec-title__h::before,
 .sec-title--lines .sec-title__h::after {
