@@ -5,6 +5,15 @@ type StoryblokRegion = 'eu' | 'us' | 'ap' | 'ca' | 'cn'
 
 const region = (process.env.NUXT_STORYBLOK_REGION || 'eu') as StoryblokRegion
 
+const DEFAULT_LOCALE = 'en'
+const LOCALES = [
+  { code: 'en', language: 'en-GB', name: 'English', storyblok: 'default' },
+  { code: 'de', language: 'de-DE', name: 'Deutsch', storyblok: 'de' },
+  { code: 'fr', language: 'fr-FR', name: 'Francais', storyblok: 'fr' },
+  { code: 'es', language: 'es-ES', name: 'Espanol', storyblok: 'es' },
+  { code: 'it', language: 'it-IT', name: 'Italiano', storyblok: 'it' },
+]
+
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
@@ -39,15 +48,9 @@ export default defineNuxtConfig({
   },
 
   i18n: {
-    defaultLocale: 'en',
+    defaultLocale: DEFAULT_LOCALE,
     strategy: 'prefix_except_default',
-    locales: [
-      { code: 'en', language: 'en-GB', name: 'English', storyblok: 'default' },
-      { code: 'de', language: 'de-DE', name: 'Deutsch', storyblok: 'de' },
-      { code: 'fr', language: 'fr-FR', name: 'Francais', storyblok: 'fr' },
-      { code: 'es', language: 'es-ES', name: 'Espanol', storyblok: 'es' },
-      { code: 'it', language: 'it-IT', name: 'Italiano', storyblok: 'it' },
-    ],
+    locales: LOCALES,
     detectBrowserLanguage: {
       useCookie: true,
       cookieKey: 'shurui_locale',
@@ -72,7 +75,15 @@ export default defineNuxtConfig({
         const links = Object.values((await res.json()).links) as { slug: string, is_folder: boolean }[]
         for (const link of links) {
           if (link.is_folder || link.slug.startsWith('global/')) continue
-          routes.push(link.slug === 'home' ? '/' : `/${link.slug}`)
+          const path = link.slug === 'home' ? '' : `/${link.slug}`
+          // Every locale, not just the default. The crawler cannot find the
+          // others on its own: the language switcher only renders its links
+          // once the menu is open, so nothing in the static HTML points at
+          // /de/ and the hreflang tags would advertise pages that 404.
+          for (const locale of LOCALES) {
+            const prefix = locale.code === DEFAULT_LOCALE ? '' : `/${locale.code}`
+            routes.push(`${prefix}${path}` || '/')
+          }
         }
         if (links.length < 1000) break
       }
