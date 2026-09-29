@@ -9,31 +9,19 @@ const items = computed<any[]>(() => props.blok.items || [])
 const index = ref(Math.min(Math.max(Number(props.blok.start) || 0, 0), Math.max(items.value.length - 1, 0)))
 const current = computed(() => items.value[index.value])
 
-// The side navigation offers the two other slides in list order — the nearest
-// window of three around the current one. With Console / Instruments / Patient
-// cart that gives exactly the design's three states:
-//   Console      -> ‹ Instruments       Patient cart ›
-//   Instruments  -> ‹ Surgeon Console   Patient cart ›
-//   Patient cart -> ‹ Surgeon Console   Instruments ›
-const neighbours = computed(() => {
-  const n = items.value.length
-  const i = index.value
-  if (n < 2) return [] as number[]
-  if (n === 2) return [1 - i]
-  const lo = Math.min(Math.max(i - 1, 0), n - 3)
-  return [lo, lo + 1, lo + 2].filter(j => j !== i)
-})
-// Two neighbours fill both sides; a lone one (two-slide showcase) sits on the
-// side it lies in the list.
+// The two sides are the previous and next slides, wrapping round the ends.
+// They used to be "the other two in list order", which matched the three design
+// states but meant each side only ever toggled between the same pair: from the
+// first slide the left link led to the second and back again, and the third was
+// unreachable from that side. Wrapping makes every click advance, so repeated
+// clicks walk the whole list in either direction.
 const leftIndex = computed(() => {
-  const [a, b] = neighbours.value
-  if (b !== undefined) return a
-  return a !== undefined && a < index.value ? a : undefined
+  const n = items.value.length
+  return n < 2 ? undefined : (index.value - 1 + n) % n
 })
 const rightIndex = computed(() => {
-  const [a, b] = neighbours.value
-  if (b !== undefined) return b
-  return a !== undefined && a > index.value ? a : undefined
+  const n = items.value.length
+  return n < 2 ? undefined : (index.value + 1) % n
 })
 const prev = computed(() => (leftIndex.value === undefined ? undefined : items.value[leftIndex.value]))
 const next = computed(() => (rightIndex.value === undefined ? undefined : items.value[rightIndex.value]))
@@ -150,13 +138,24 @@ const go = (i: number | undefined, from: 'next' | 'prev') => {
 .showcase__stage {
   position: relative;
   height: calc(42.43 * var(--sx));                 /* 611/1440 */
+  /* Where the side links start, measured up from the stage floor. Their type
+     stops shrinking at 16px while everything else keeps scaling with --sx, so
+     this is not a fixed fraction of the stage and the watermark has to follow
+     it rather than sit at a percentage. */
+  --nav-size: clamp(1rem, calc(1.39 * var(--sx)), 1.25rem);
+  --nav-top: calc(0.97 * var(--sx) + var(--nav-size) * 1.2 + 16px);
 }
 .showcase__slide { position: absolute; inset: 0; }
 
+/* Held 29px clear of the side links at every width, as in the design. The line
+   box runs 0.239em below the letters in Lora (0.239 x 15.28 = 3.652 of --sx),
+   so that slack is taken off the offset to leave the ink itself sitting there.
+   A percentage of the stage used to close to 7px by 900px wide. */
 .showcase__word {
   position: absolute;
   left: 50%;
-  top: 51.9%;                      /* 317 of the 611 stage */
+  top: auto;
+  bottom: calc(var(--nav-top) + 29px - 3.652 * var(--sx));
   margin: 0;
   translate: -50% 0;
   font-size: calc(15.28 * var(--sx));              /* 220/1440 */
