@@ -33,6 +33,24 @@ const isActive = (item: any) => {
 
 const toggle = (item: any) => { openId.value = openId.value === item._uid ? null : item._uid }
 
+// Sub-menus open on hover. A short close delay lets the pointer travel from a
+// nav item down into the bar beneath it without the bar collapsing on the way,
+// and a pointer-type check keeps touch devices on tap-to-open.
+let closeTimer: ReturnType<typeof setTimeout> | undefined
+const canHover = () => import.meta.client && window.matchMedia('(hover: hover)').matches
+const hoverOpen = (item: any) => {
+  if (!canHover()) return
+  clearTimeout(closeTimer)
+  openId.value = childLinks(item).length ? item._uid : null
+}
+const hoverClose = () => {
+  if (!canHover()) return
+  clearTimeout(closeTimer)
+  closeTimer = setTimeout(() => { openId.value = null }, 180)
+}
+const hoverCancel = () => clearTimeout(closeTimer)
+onBeforeUnmount(() => clearTimeout(closeTimer))
+
 function openMobile(search = false) {
   mobileSearch.value = search
   mobileOpen.value = true
@@ -45,13 +63,28 @@ useClickOutside(root, () => { openId.value = null })
 // logo and menu icon; once the hero has scrolled away it turns white again.
 // (Desktop keeps the white bar throughout, as designed.)
 const overHero = ref(false)
+// Off the top of the page the bar turns translucent and casts a soft shadow;
+// scrolling down hides it and scrolling back up brings it straight back, so the
+// navigation is never more than a flick away without sitting over the content.
+const scrolled = ref(false)
+const hidden = ref(false)
 const nuxtApp = useNuxtApp()
 onMounted(() => {
   const phone = window.matchMedia('(max-width: 1180px)')
+  let lastY = window.scrollY
   const update = () => {
     const hero = document.querySelector<HTMLElement>('.site__main .hero-full:first-child')
     const bar = root.value?.offsetHeight || 64
-    overHero.value = phone.matches && !!hero && window.scrollY < hero.offsetHeight - bar
+    const y = window.scrollY
+    overHero.value = phone.matches && !!hero && y < hero.offsetHeight - bar
+    scrolled.value = y > 8
+    // A menu that is open, or a bounce past either end of the page, must not
+    // flip the bar; only a deliberate scroll past the bar's own height does.
+    const delta = y - lastY
+    if (!openId.value && !mobileOpen.value && y > bar && Math.abs(delta) > 4)
+      hidden.value = delta > 0
+    if (y <= bar) hidden.value = false
+    lastY = y
   }
   update()
   window.addEventListener('scroll', update, { passive: true })
@@ -63,10 +96,18 @@ onMounted(() => {
     off()
   })
 })
+watch(openId, id => { if (id) hidden.value = false })
 </script>
 
 <template>
-  <header ref="root" v-editable="blok" class="hdr" :class="{ 'hdr--over-hero': overHero }" @keydown.esc="openId = null">
+  <header
+    ref="root"
+    v-editable="blok"
+    class="hdr"
+    :class="{ 'hdr--over-hero': overHero, 'hdr--scrolled': scrolled, 'hdr--hidden': hidden }"
+    @keydown.esc="openId = null"
+    @mouseleave="hoverClose"
+  >
     <div class="hdr__bar">
       <NuxtLink :to="localePath('/')" class="hdr__logo" aria-label="SHURUI home">
         <img class="hdr__logo-img" :src="blok.logo?.filename || '/brand/shurui-logo.png'" alt="SHURUI" width="105" height="21">
@@ -76,7 +117,7 @@ onMounted(() => {
       <div class="hdr__right">
         <nav aria-label="Main">
           <ul class="hdr__links">
-            <li v-for="item in nav" :key="item._uid" v-editable="item">
+            <li v-for="item in nav" :key="item._uid" v-editable="item" @mouseenter="hoverOpen(item)">
               <button
                 v-if="childLinks(item).length"
                 type="button"
@@ -111,7 +152,13 @@ onMounted(() => {
     <!-- The bar drops open from under the header; switching between two
          menus keeps the bar and swaps only its links. -->
     <Transition name="subnav">
-      <div v-if="openItem" :id="`subnav-${openItem._uid}`" class="hdr__subnav">
+      <div
+        v-if="openItem"
+        :id="`subnav-${openItem._uid}`"
+        class="hdr__subnav"
+        @mouseenter="hoverCancel"
+        @mouseleave="hoverClose"
+      >
         <Transition name="sublinks" mode="out-in">
           <ul :key="openItem._uid" class="hdr__sublinks">
             <li v-for="link in childLinks(openItem)" :key="link._uid" v-editable="link">
@@ -143,7 +190,19 @@ onMounted(() => {
   top: 0;
   z-index: 50;
   background: var(--c-white);
-  transition: background-color 250ms ease;
+  transition: background-color 250ms ease, box-shadow 250ms ease, transform 300ms ease;
+}
+/* Translucent once the page has moved, with a shadow soft enough to read as
+   depth rather than as a border. */
+.hdr--scrolled {
+  background: rgb(255 255 255 / 88%);
+  box-shadow: 0 2px 16px rgb(16 20 77 / 8%);
+  backdrop-filter: blur(12px);
+}
+.hdr--hidden { transform: translateY(-100%); }
+@media (prefers-reduced-motion: reduce) {
+  .hdr { transition: background-color 250ms ease, box-shadow 250ms ease; }
+  .hdr--hidden { transform: none; }
 }
 
 .hdr__bar {
@@ -240,7 +299,13 @@ onMounted(() => {
   /* Phone design: 92px logo and the hamburger both 26px in from the edges. */
   .hdr__bar { padding-inline: clamp(16px, 6.67vw, 26px); }
   .hdr__logo img { width: 92px; }
-  .hdr--over-hero { background-color: transparent; }
+  /* Over a hero the bar is fully transparent, so the scrolled treatment must
+     not leave a shadow or a blur hanging over the artwork. */
+  .hdr--over-hero {
+    background-color: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
   .hdr--over-hero .hdr__logo-img { opacity: 0; }
   .hdr--over-hero .hdr__logo-img--light { opacity: 1; }
   .hdr--over-hero .hdr__icon { color: var(--c-white); }
