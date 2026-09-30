@@ -18,7 +18,11 @@ const bcp47 = computed(() => {
 })
 
 const isVideo = computed(() => Boolean(props.blok.video_id))
+// An uploaded document wins over a link: the library's booklets and publications
+// are files to download rather than pages to visit.
+const doc = computed(() => props.blok.document?.filename || '')
 const href = computed(() => {
+  if (doc.value) return doc.value
   const l = props.blok.link
   return l && (l.cached_url || l.url || l.story?.full_slug) ? sbHref(l) : null
 })
@@ -49,6 +53,7 @@ const image = computed(() => props.blok.image)
         <button v-if="isVideo" type="button" class="lcard__link lcard__link--btn" @click="emit('play', blok)">
           <BrandText :text="blok.title" :nowrap="false" />
         </button>
+        <a v-else-if="doc" :href="doc" class="lcard__link" download target="_blank" rel="noopener"><BrandText :text="blok.title" :nowrap="false" /></a>
         <NuxtLink v-else-if="href" :to="href" class="lcard__link"><BrandText :text="blok.title" :nowrap="false" /></NuxtLink>
         <BrandText v-else :text="blok.title" :nowrap="false" />
       </h3>
