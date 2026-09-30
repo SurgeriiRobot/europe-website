@@ -192,6 +192,10 @@ const srcset = computed(() =>
 
 .hero-full__body {
   margin: 0;
+  /* Honour the line breaks an editor types. Several banners are drawn with
+     explicit breaks that no single measure reproduces, and a body without any
+     is unaffected. */
+  white-space: pre-line;
   font-size: 1.125rem;
   font-weight: 300;
   line-height: 1.6111;                         /* 29/18 */
