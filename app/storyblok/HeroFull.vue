@@ -11,7 +11,13 @@ const bg = computed(() => props.blok.background)
 // other measurement. Left empty, an opening banner fills the screen instead.
 const heightVar = computed(() => {
   const h = Number(props.blok.height)
-  return h > 0 ? { '--hero-h': `calc(${(h / 14.4).toFixed(2)} * var(--sx))` } : undefined
+  const m = Number(props.blok.measure)
+  return {
+    ...(h > 0 ? { '--hero-h': `calc(${(h / 14.4).toFixed(2)} * var(--sx))` } : {}),
+    // The column the copy wraps in, in design px. Banners are drawn to very
+    // different measures: home fits 339, Contact 520, the library 528.
+    ...(m > 0 ? { '--hero-measure': `${m}px` } : {}),
+  }
 })
 
 // Storyblok's image service resizes and re-encodes on the fly; the hero is the
@@ -72,7 +78,7 @@ const srcset = computed(() =>
     v-editable="blok"
     :id="blok.anchor || undefined"
     class="hero-full"
-    :class="`hero-full--overlay-${blok.overlay || 'none'}`"
+    :class="[`hero-full--overlay-${blok.overlay || 'none'}`, `hero-full--ink-${blok.ink || 'white'}`]"
     :style="heightVar"
   >
     <img
@@ -129,6 +135,7 @@ const srcset = computed(() =>
   background: var(--c-neutral-1000);
   color: var(--c-white);
 }
+.hero-full--ink-navy { color: var(--c-darkblue); }
 
 /* As the page's opening section it starts at y=0 behind the header, exactly as
    in Figma (hero 0-800, header overlaid on the top 80px). */
@@ -164,6 +171,11 @@ const srcset = computed(() =>
 .hero-full--overlay-left::after { background: linear-gradient(90deg, rgb(0 0 0 / 65%) 0%, transparent 60%); }
 .hero-full--overlay-bottom::after { background: linear-gradient(0deg, rgb(0 0 0 / 70%) 0%, transparent 65%); }
 .hero-full--overlay-full::after { background: rgb(0 0 0 / 45%); }
+/* A white wash for the banners drawn light, where the copy is navy on a pale
+   photograph rather than white on a dark one. */
+.hero-full--overlay-wash::after {
+  background: linear-gradient(90deg, rgb(255 255 255 / 90%) 0%, rgb(255 255 255 / 49%) 33%, rgb(255 255 255 / 9%) 58%, rgb(255 255 255 / 7%) 100%);
+}
 
 .hero-full__inner {
   display: flex;
@@ -179,7 +191,7 @@ const srcset = computed(() =>
   flex-direction: column;
   align-items: flex-start;
   gap: 32px;
-  max-width: 380px;                  /* home's lines fit 339; SP Robot's title needs 375 */
+  max-width: var(--hero-measure, 380px);   /* home's lines fit 339; SP Robot's title needs 375 */
 }
 
 .hero-full__headline {
@@ -210,7 +222,7 @@ const srcset = computed(() =>
 @media (max-width: 720px) {
   .hero-full { min-height: clamp(560px, 200vw, 780px); }
   .hero-full__inner { padding: calc(var(--header-h) + 60px) 16px 48px; }
-  .hero-full__content { gap: 24px; max-width: none; }
+  .hero-full__content { gap: 24px; max-width: none; }   /* phones use the full gutter-to-gutter measure */
   /* The phone design runs the call to action edge to edge. */
   .hero-full__actions { width: 100%; }
   .hero-full__actions > :deep(.btn) { flex: 1 1 100%; justify-content: center; }
