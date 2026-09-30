@@ -3,7 +3,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "corepack enable && pnpm install --frozen-lockfile && nuxt build",
+    "build": "corepack enable && pnpm install --frozen-lockfile --prod=false && nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
