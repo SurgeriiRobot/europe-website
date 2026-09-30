@@ -3,14 +3,16 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "nuxt build",
+    "build": "corepack enable && pnpm install --frozen-lockfile && nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxt typecheck",
     "storyblok:build": "node storyblok/build.mjs",
-    "deploy:test": "bash scripts/deploy-test.sh"
+    "deploy:test": "bash scripts/deploy-test.sh",
+    "build:app": "nuxt build",
+    "serve": "node .output/server/index.mjs"
   },
   "dependencies": {
     "@nuxt/fonts": "^0.14.0",
@@ -24,5 +26,9 @@
     "puppeteer-core": "^25.12.0",
     "typescript": "^5.9.3",
     "vue-tsc": "^3.3.11"
+  },
+  "packageManager": "pnpm@11.21.0",
+  "engines": {
+    "node": ">=20"
   }
 }
