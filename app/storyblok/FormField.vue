@@ -1,6 +1,23 @@
 <script setup lang="ts">
-defineProps<{ blok: any, modelValue?: any }>()
+const props = defineProps<{ blok: any, modelValue?: any }>()
 defineEmits<{ 'update:modelValue': [value: any] }>()
+
+// A select lists a datasource by slug. Without this the control held only its
+// placeholder, so a required select could never be satisfied and the form it
+// sat in could not be submitted at all.
+const { data: choices } = await useAsyncData(
+  () => `ds-${props.blok.options || 'none'}`,
+  async () => {
+    if (props.blok.type !== 'select' || !props.blok.options) return []
+    const api = useStoryblokApi()
+    const { data } = await api.get('cdn/datasource_entries', {
+      datasource: props.blok.options,
+      version: useStoryblokVersion(),
+      per_page: 100,
+    })
+    return (data.datasource_entries || []) as { name: string, value: string }[]
+  },
+)
 </script>
 
 <template>
@@ -31,6 +48,7 @@ defineEmits<{ 'update:modelValue': [value: any] }>()
       @change="$emit('update:modelValue', ($event.target as HTMLSelectElement).value)"
     >
       <option value="">{{ blok.placeholder || 'Select…' }}</option>
+      <option v-for="c in choices || []" :key="c.value" :value="c.value">{{ c.name }}</option>
       <slot name="options" />
     </select>
 
