@@ -7,6 +7,13 @@ const props = defineProps<{ blok: any }>()
 const WIDTHS = [768, 1440, 2160, 2880]
 const bg = computed(() => props.blok.background)
 
+// An explicit height is in design px at 1440, so it scales with --sx like every
+// other measurement. Left empty, an opening banner fills the screen instead.
+const heightVar = computed(() => {
+  const h = Number(props.blok.height)
+  return h > 0 ? { '--hero-h': `calc(${(h / 14.4).toFixed(2)} * var(--sx))` } : undefined
+})
+
 // Storyblok's image service resizes and re-encodes on the fly; the hero is the
 // largest paint on the page, so ship WebP at the width the viewport needs.
 const src = computed(() => bg.value?.filename ? sbImage(bg.value, '1440x0/filters:format(webp):quality(80)') : '')
@@ -66,6 +73,7 @@ const srcset = computed(() =>
     :id="blok.anchor || undefined"
     class="hero-full"
     :class="`hero-full--overlay-${blok.overlay || 'none'}`"
+    :style="heightVar"
   >
     <img
       v-if="src"
@@ -116,7 +124,7 @@ const srcset = computed(() =>
   position: relative;
   isolation: isolate;
   display: flex;
-  min-height: clamp(560px, 55.56vw, 800px);   /* 800/1440 */
+  min-height: var(--hero-h, clamp(560px, 55.56vw, 800px));   /* 800/1440 */
   overflow: hidden;
   background: var(--c-neutral-1000);
   color: var(--c-white);
@@ -127,12 +135,13 @@ const srcset = computed(() =>
 .hero-full:first-child { margin-top: calc(-1 * var(--header-h)); }
 .hero-full:first-child .hero-full__inner { padding-top: calc(var(--header-h) + 60px); }
 
-/* On desktop the opening banner fills the screen. Because it already starts at
-   y=0 behind the header, a full viewport height leaves the video alone on the
-   first screenful rather than showing the top of the next section under it.
-   Phones keep the height their design gives them. */
+/* On desktop an opening banner with no height of its own fills the screen.
+   Because it already starts at y=0 behind the header, a full viewport height
+   leaves the video alone on the first screenful rather than showing the top of
+   the next section under it. A banner that sets a height keeps it: the Contact
+   page draws an 800px one. Phones keep the height their design gives them. */
 @media (min-width: 721px) {
-  .hero-full:first-child { min-height: max(560px, 100svh); }
+  .hero-full:first-child { min-height: var(--hero-h, max(560px, 100svh)); }
 }
 
 .hero-full__bg {
