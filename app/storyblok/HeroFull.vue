@@ -17,6 +17,9 @@ const heightVar = computed(() => {
     // The column the copy wraps in, in design px. Banners are drawn to very
     // different measures: home fits 339, Contact 520, the library 528.
     ...(m > 0 ? { '--hero-measure': `${m}px` } : {}),
+    // How far the copy sits off the banner's foot, in design px. Frames draw
+    // this at 100 or 80 depending on the page.
+    ...(Number(props.blok.copy_inset) > 0 ? { '--hero-inset': `${Number(props.blok.copy_inset)}px` } : {}),
   }
 })
 
@@ -169,6 +172,9 @@ const srcset = computed(() =>
    no overlay; editors can add one for lighter images. */
 .hero-full::after { content: ''; position: absolute; inset: 0; z-index: -1; }
 .hero-full--overlay-left::after { background: linear-gradient(90deg, rgb(0 0 0 / 65%) 0%, transparent 60%); }
+/* A tighter version of the same wash, clearing at 42% rather than 60%, for the
+   frames that keep more of the photograph visible beside the copy. */
+.hero-full--overlay-left-narrow::after { background: linear-gradient(90deg, rgb(0 0 0 / 65%) 0%, transparent 42%); }
 .hero-full--overlay-bottom::after { background: linear-gradient(0deg, rgb(0 0 0 / 70%) 0%, transparent 65%); }
 .hero-full--overlay-full::after { background: rgb(0 0 0 / 45%); }
 /* A white wash for the banners drawn light, where the copy is navy on a pale
@@ -183,7 +189,7 @@ const srcset = computed(() =>
   width: 100%;
   max-width: var(--container);
   margin-inline: auto;
-  padding: 60px clamp(16px, 5.2vw, 75px) 100px;
+  padding: 60px clamp(16px, 5.2vw, 75px) var(--hero-inset, 100px);
 }
 
 .hero-full__content {
