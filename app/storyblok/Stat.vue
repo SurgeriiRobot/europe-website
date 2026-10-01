@@ -52,6 +52,9 @@ onMounted(() => {
 .stat { display: grid; justify-items: center; text-align: center; }
 .stat__value {
   display: grid;
+  /* Room for the icon that sits above the figure. A stat without one does not
+     need it, and the Clinical Evidence grid is drawn with the figure at the top
+     of its cell. */
   margin: clamp(24px, 7.6vw, 110px) 0 0;
   font-size: clamp(3.5rem, 6.67vw, 6rem);   /* 96px */
   line-height: 1.198;                        /* 115/96 */
@@ -59,6 +62,8 @@ onMounted(() => {
 }
 .stat__sizer, .stat__num { grid-area: 1 / 1; justify-self: center; }
 .stat__sizer { visibility: hidden; }
+.stat:not(:has(.stat__icon)) .stat__value { margin-top: 0; }
+
 .stat__label {
   margin: clamp(16px, 2.4vw, 35px) 0 0;
   font-size: clamp(1.125rem, 1.67vw, 1.5rem);

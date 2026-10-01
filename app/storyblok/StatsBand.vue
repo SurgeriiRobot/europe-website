@@ -11,7 +11,18 @@ const columns = computed(() => Number(props.blok.columns) || 2)
     <SectionConnector :connector="blok.connector" />
     <div class="container stats__inner">
       <SectionTitle :headline="blok.headline" :body="blok.intro" :lines="blok.title_lines" />
-      <div class="stats__grid" :style="{ '--cols': columns }">
+      <div
+        class="stats__grid"
+        :style="{
+          '--cols': columns,
+          // Compact draws the title closer to the grid, and carries the row
+          // rhythm in the gap rather than in a margin above each figure, since
+          // these figures have no icon to clear.
+          ...(blok.spacing === 'compact'
+            ? { '--stats-gap': 'clamp(32px, 4.3vw, 62px)', '--stats-rowgap': 'clamp(110px, 16.04vw, 231px)' }
+            : {}),
+        }"
+      >
         <StoryblokComponent v-for="item in blok.items || []" :key="item._uid" :blok="item" />
       </div>
       <div v-if="blok.buttons?.length" class="stats__actions">
@@ -27,8 +38,8 @@ const columns = computed(() => Number(props.blok.columns) || 2)
 .stats__grid {
   display: grid;
   grid-template-columns: repeat(var(--cols, 2), minmax(0, 408px));
-  gap: clamp(56px, 8.3vw, 120px) 30px;
-  margin-top: clamp(48px, 7.4vw, 106px);
+  gap: var(--stats-rowgap, clamp(56px, 8.3vw, 120px)) 30px;
+  margin-top: var(--stats-gap, clamp(48px, 7.4vw, 106px));
 }
 .stats__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; margin-top: 80px; }
 @media (max-width: 640px) { .stats__grid { grid-template-columns: minmax(0, 1fr); } }
