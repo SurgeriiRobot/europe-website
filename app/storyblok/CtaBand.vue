@@ -23,6 +23,7 @@ const bgMobile = computed(() => (props.blok.background_mobile?.filename ? props.
     class="section cta"
     :class="[display ? 'cta--display' : 'cta--standard', { 'cta--inset': inset, 'cta--tint': blok.tint }]"
     :data-theme="blok.theme || 'dark'"
+    :style="blok.body_width ? { '--cta-body-w': `${Number(blok.body_width)}px` } : undefined"
   >
     <span v-if="display && (blok.connector === 'top' || blok.connector === 'both')" class="cta__lead" aria-hidden="true" />
     <SectionConnector v-else :connector="blok.connector" />
@@ -97,7 +98,7 @@ const bgMobile = computed(() => (props.blok.background_mobile?.filename ? props.
 }
 .cta__content { display: grid; gap: 24px; }
 /* The headline's lines are set by explicit breaks; only the body keeps the 399px column. */
-.cta__body { max-width: 399px; }
+.cta__body { max-width: var(--cta-body-w, 399px); }
 /* Keeps editor line breaks: Figma sets this box to fit its lines with zero slack,
    so letting the browser re-wrap it would drop a word onto a fourth line. */
 .cta__headline { margin: 0; font-size: clamp(1.625rem, 2.36vw, 2.125rem); font-weight: 600; line-height: 1.206; color: inherit; white-space: pre-line; }

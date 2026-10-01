@@ -6,6 +6,13 @@ const language = useStoryblokLanguage()
 const router = useRouter()
 const perPage = computed(() => Number(props.blok.per_page) || 16)
 const slider = computed(() => props.blok.layout === 'slider')
+
+// The slider's lead-in and tail are drawn differently per page, so the section's
+// own spacing fields drive them. Values are design px at 1440.
+const spacing = computed(() => {
+  const px = (v: unknown) => (v === '' || v === null || v === undefined || !Number.isFinite(Number(v)) ? undefined : `${Number(v)}px`)
+  return { '--list-top': px(props.blok.space_top), '--list-bottom': px(props.blok.space_bottom) }
+})
 const page = computed(() => Number(route.query.page) || 1)
 
 const activeFilters = computed(() => ({
@@ -88,6 +95,7 @@ const promoAt = computed(() => Number(props.blok.promo_position ?? -1))
     class="section list"
     :class="{ 'list--slider': slider }"
     :data-theme="blok.theme || 'light'"
+    :style="spacing"
   >
     <SectionConnector :connector="blok.connector" />
     <div class="container">
@@ -173,8 +181,11 @@ const promoAt = computed(() => Number(props.blok.promo_position ?? -1))
 .list__page { padding: var(--space-2) var(--space-3); border-radius: var(--radius); text-decoration: none; }
 .list__page.is-current { background: var(--accent); color: var(--c-white); }
 
-/* Figma 991:18684-85: 232px lead-in, title, 80px, then the slider and 200px. */
-.list--slider { padding: clamp(96px, 16.1vw, 232px) 0 clamp(120px, 20.8vw, 300px); }
+/* Figma 991:18684-85: 232px lead-in, title, 80px, then the slider and 300px.
+   About draws 298/217 instead, so both ends take the section's own overrides. */
+.list--slider {
+  padding: var(--list-top, clamp(96px, 16.1vw, 232px)) 0 var(--list-bottom, clamp(120px, 20.8vw, 300px));
+}
 /* The title frame is a fixed 400px in Figma, leaving 57px above the dots. */
 .slider { margin-top: clamp(32px, 3.96vw, 57px); }
 .slider__dots { display: flex; justify-content: center; gap: 6px; margin-bottom: 32px; }
