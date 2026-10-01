@@ -60,11 +60,16 @@ export default defineNuxtConfig({
     baseUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://localhost:3010',
   },
 
-  // Static builds (the test site) prerender every story, not just what the
-  // crawler reaches from the home page. Links to pages that do not exist in
-  // Storyblok yet render the 404 page instead of failing the build.
+  // A static build (the test site) prerenders every story in every language,
+  // not just what the crawler reaches from the home page. Links to pages that do
+  // not exist in Storyblok yet render the 404 page instead of failing the build.
   hooks: {
     async 'nitro:config'(config) {
+      // Only a static build needs this. The Node server renders on request, so
+      // prerendering there would freeze the content until the next deploy and
+      // make every build walk the whole site in five languages. `nuxt generate`
+      // sets nitro's `static` flag; the preset name is not resolved this early.
+      if (!(config as { static?: boolean }).static) return
       if (!process.env.NUXT_STORYBLOK_ACCESS_TOKEN) return
       const version = process.env.NUXT_PUBLIC_STORYBLOK_VERSION === 'draft' ? 'draft' : 'published'
       const host = region === 'eu' ? 'api.storyblok.com' : `api-${region}.storyblok.com`
