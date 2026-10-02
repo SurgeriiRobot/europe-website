@@ -27,7 +27,7 @@ const columns = computed(() => Number(props.blok.columns) || 2)
           // rhythm in the gap rather than in a margin above each figure, since
           // these figures have no icon to clear.
           ...(blok.spacing === 'compact'
-            ? { '--stats-gap': 'clamp(32px, 4.3vw, 62px)', '--stats-rowgap': 'clamp(110px, 16.04vw, 231px)' }
+            ? { '--stats-gap': 'clamp(32px, 4.3vw, 62px)', '--stats-rowgap': 'clamp(110px, 16.04vw, 231px)', '--stat-margin': '0px' }
             : {}),
           // Contact draws its figures at 64px in the surface's own ink, 100px
           // above their labels, rather than the 96px blue the home band uses.

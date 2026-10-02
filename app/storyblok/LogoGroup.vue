@@ -26,8 +26,8 @@ const marquee = computed(() => props.blok.layout === 'marquee')
     <div class="group__mobile">
       <div class="group__viewport">
         <ul class="group__track">
-          <li v-for="logo in logos" :key="`m-${logo._uid}`"><StoryblokComponent :blok="logo" /></li>
-          <li v-for="logo in logos" :key="`md-${logo._uid}`" aria-hidden="true"><StoryblokComponent :blok="logo" /></li>
+          <li v-for="logo in logos" :key="`m-${logo._uid}`"><StoryblokComponent :blok="logo" eager /></li>
+          <li v-for="logo in logos" :key="`md-${logo._uid}`" aria-hidden="true"><StoryblokComponent :blok="logo" eager /></li>
         </ul>
       </div>
     </div>

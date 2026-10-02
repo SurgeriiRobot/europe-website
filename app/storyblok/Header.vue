@@ -34,7 +34,8 @@ const isActive = (item: any) => {
 const toggle = (item: any) => { openId.value = openId.value === item._uid ? null : item._uid }
 
 // Without hover there is no way to reveal the children, so the first tap opens
-// the menu and the second follows the parent's own link.
+// the menu and the second follows the parent's own link. Keyboard users get the
+// bar from `focusin` on the item, since they never produce a hover.
 const onParentClick = (item: any, e: MouseEvent) => {
   if (canHover()) return
   if (openId.value !== item._uid) { e.preventDefault(); openId.value = item._uid }
@@ -44,6 +45,7 @@ const onParentClick = (item: any, e: MouseEvent) => {
 // nav item down into the bar beneath it without the bar collapsing on the way,
 // and a pointer-type check keeps touch devices on tap-to-open.
 let closeTimer: ReturnType<typeof setTimeout> | undefined
+let anchorTimer: ReturnType<typeof setTimeout> | undefined
 const canHover = () => import.meta.client && window.matchMedia('(hover: hover)').matches
 const hoverOpen = (item: any) => {
   if (!canHover()) return
@@ -75,6 +77,7 @@ const overHero = ref(false)
 // navigation is never more than a flick away without sitting over the content.
 const scrolled = ref(false)
 const hidden = ref(false)
+const anchoring = ref(false)
 const nuxtApp = useNuxtApp()
 onMounted(() => {
   const phone = window.matchMedia('(max-width: 1180px)')
@@ -88,12 +91,28 @@ onMounted(() => {
     // A menu that is open, or a bounce past either end of the page, must not
     // flip the bar; only a deliberate scroll past the bar's own height does.
     const delta = y - lastY
-    if (!openId.value && !mobileOpen.value && y > bar && Math.abs(delta) > 4)
+    // An anchor scroll is movement the visitor did not make with the wheel, and
+    // hiding the bar on arrival left an empty strip above the section they had
+    // just asked for. `anchoring` holds the bar still until it settles.
+    if (!openId.value && !mobileOpen.value && !anchoring.value && y > bar && Math.abs(delta) > 4)
       hidden.value = delta > 0
     if (y <= bar) hidden.value = false
     lastY = y
   }
   update()
+  // Any click on a same-page link starts an anchor scroll.
+  const onAnchor = (e: Event) => {
+    const a = (e.target as HTMLElement)?.closest?.('a[href*="#"]') as HTMLAnchorElement | null
+    if (!a) return
+    const href = a.getAttribute('href') || ''
+    if (!href.includes('#') || href.startsWith('http')) return
+    anchoring.value = true
+    hidden.value = false
+    clearTimeout(anchorTimer)
+    anchorTimer = setTimeout(() => { anchoring.value = false }, 1400)
+  }
+  document.addEventListener('click', onAnchor, true)
+  onBeforeUnmount(() => document.removeEventListener('click', onAnchor, true))
   window.addEventListener('scroll', update, { passive: true })
   phone.addEventListener('change', update)
   const off = nuxtApp.hook('page:finish', () => nextTick(update))
@@ -124,7 +143,13 @@ watch(openId, id => { if (id) hidden.value = false })
       <div class="hdr__right">
         <nav aria-label="Main">
           <ul class="hdr__links">
-            <li v-for="item in nav" :key="item._uid" v-editable="item" @mouseenter="hoverOpen(item)">
+            <li
+              v-for="item in nav"
+              :key="item._uid"
+              v-editable="item"
+              @mouseenter="hoverOpen(item)"
+              @focusin="openId = childLinks(item).length ? item._uid : null"
+            >
               <!-- A parent is a real page as well as a menu, so it has to be a
                    link: as a button it had no href, which left its children
                    reachable only by opening the menu. Where there is no hover,
@@ -169,6 +194,7 @@ watch(openId, id => { if (id) hidden.value = false })
         class="hdr__subnav"
         @mouseenter="hoverCancel"
         @mouseleave="hoverClose"
+        @focusin="hoverCancel"
       >
         <Transition name="sublinks" mode="out-in">
           <ul :key="openItem._uid" class="hdr__sublinks">
@@ -311,9 +337,12 @@ watch(openId, id => { if (id) hidden.value = false })
   .hdr__bar { padding-inline: clamp(16px, 6.67vw, 26px); }
   .hdr__logo img { width: 92px; }
   /* Over a hero the bar is fully transparent, so the scrolled treatment must
-     not leave a shadow or a blur hanging over the artwork. */
+     not leave a shadow or a blur hanging over the artwork. A scrim keeps the
+     white logo and menu icon legible: several heroes are pale photographs, and
+     without it both simply vanished, leaving no way to reach the menu at all. */
   .hdr--over-hero {
     background-color: transparent;
+    background-image: linear-gradient(180deg, rgb(0 0 0 / 46%) 0%, rgb(0 0 0 / 28%) 55%, rgb(0 0 0 / 0%) 100%);
     box-shadow: none;
     backdrop-filter: none;
   }

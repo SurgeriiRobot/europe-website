@@ -68,6 +68,25 @@ const labels = computed(() => {
 })
 const labelFor = (k: string) => labels.value.get(k) || k.replace(/-/g, ' ').replace(/^./, c => c.toUpperCase())
 
+// A country can be written either way: the stories hold the datasource code
+// ("DE") while an editor naturally writes the name ("germany") in the order
+// field. Both resolve to the code, so the two always meet.
+const canonical = computed(() => {
+  const map = new Map<string, string>()
+  for (const e of source.value?.countries || []) {
+    const code = key(e.value)
+    if (code) {
+      map.set(code, code)
+      if (e.name) map.set(key(e.name), code)
+    }
+  }
+  return map
+})
+const canon = (v: unknown) => {
+  const k = key(v)
+  return canonical.value.get(k) || k
+}
+
 // "lat,lng", and nothing else. Every centre loaded so far has the field empty —
 // the coordinates were left for the client rather than guessed — so anything
 // that is not a real pair of degrees, 0,0 included, yields no location at all
@@ -87,12 +106,12 @@ const geoOf = (raw: string) => {
 // The design's country order is neither alphabetical nor by size, so it is
 // content: a comma-separated list of country keys. Anything with centres that
 // the list does not name follows, by label.
-const order = computed(() => String(props.blok.order || '').split(',').map(key).filter(Boolean))
+const order = computed(() => String(props.blok.order || '').split(',').map(canon).filter(Boolean))
 
 const groups = computed(() => {
   const by = new Map<string, any[]>()
   for (const c of source.value?.centers || []) {
-    const k = key(c.country) || 'other'
+    const k = canon(c.country) || 'other'
     if (!by.has(k)) by.set(k, [])
     by.get(k)!.push({ ...c, geo: geoOf(c.coordinates) })
   }

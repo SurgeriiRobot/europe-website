@@ -81,7 +81,11 @@ const srcset = computed(() =>
     v-editable="blok"
     :id="blok.anchor || undefined"
     class="hero-full"
-    :class="[`hero-full--overlay-${blok.overlay || 'none'}`, `hero-full--ink-${blok.ink || 'white'}`]"
+    :class="[
+      `hero-full--overlay-${blok.overlay || 'none'}`,
+      `hero-full--ink-${blok.ink || 'white'}`,
+      { 'hero-full--full': blok.full_height },
+    ]"
     :style="heightVar"
   >
     <img
@@ -145,13 +149,12 @@ const srcset = computed(() =>
 .hero-full:first-child { margin-top: calc(-1 * var(--header-h)); }
 .hero-full:first-child .hero-full__inner { padding-top: calc(var(--header-h) + 60px); }
 
-/* On desktop an opening banner with no height of its own fills the screen.
-   Because it already starts at y=0 behind the header, a full viewport height
-   leaves the video alone on the first screenful rather than showing the top of
-   the next section under it. A banner that sets a height keeps it: the Contact
-   page draws an 800px one. Phones keep the height their design gives them. */
+/* Filling the screen is opt-in. The home banner does it at the client's request,
+   because it carries the video. Every other page is drawn at its own height, and
+   defaulting to the viewport silently stretched them all by 100px. Phones keep
+   the height their design gives them. */
 @media (min-width: 721px) {
-  .hero-full:first-child { min-height: var(--hero-h, max(560px, 100svh)); }
+  .hero-full--full:first-child { min-height: var(--hero-h, max(560px, 100svh)); }
 }
 
 .hero-full__bg {
