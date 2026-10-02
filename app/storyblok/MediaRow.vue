@@ -62,7 +62,9 @@ const mediaWidth = computed(() => `calc(${(widthPx.value / 14.4).toFixed(2)} * m
 /* The 765px image is wider than its 720px half: a flex row centres it with the
    overflow split evenly (a grid item that overflows would not stay centred). */
 .mrow__media { display: flex; justify-content: center; min-width: 0; }
-.mrow__media img { display: block; flex: none; width: var(--mrow-media-w, calc(53.13 * var(--sx))); max-width: 100%; height: auto; }
+/* The drawn width wins: several rows are designed to run wider than their own
+   column and bleed toward the page edge, so this must not be clamped to 100%. */
+.mrow__media img { display: block; flex: none; width: var(--mrow-media-w, calc(53.13 * var(--sx))); max-width: none; height: auto; }
 
 .mrow__title { margin: 0; font-size: clamp(2rem, 3.33vw, 3rem); font-weight: 600; line-height: 1.2083; color: var(--ink); }
 .mrow--accent .mrow__title { color: var(--c-blue); }
