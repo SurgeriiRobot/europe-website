@@ -33,6 +33,13 @@ const isActive = (item: any) => {
 
 const toggle = (item: any) => { openId.value = openId.value === item._uid ? null : item._uid }
 
+// Without hover there is no way to reveal the children, so the first tap opens
+// the menu and the second follows the parent's own link.
+const onParentClick = (item: any, e: MouseEvent) => {
+  if (canHover()) return
+  if (openId.value !== item._uid) { e.preventDefault(); openId.value = item._uid }
+}
+
 // Sub-menus open on hover. A short close delay lets the pointer travel from a
 // nav item down into the bar beneath it without the bar collapsing on the way,
 // and a pointer-type check keeps touch devices on tap-to-open.
@@ -118,17 +125,21 @@ watch(openId, id => { if (id) hidden.value = false })
         <nav aria-label="Main">
           <ul class="hdr__links">
             <li v-for="item in nav" :key="item._uid" v-editable="item" @mouseenter="hoverOpen(item)">
-              <button
+              <!-- A parent is a real page as well as a menu, so it has to be a
+                   link: as a button it had no href, which left its children
+                   reachable only by opening the menu. Where there is no hover,
+                   the first tap opens the menu instead of navigating. -->
+              <NuxtLink
                 v-if="childLinks(item).length"
-                type="button"
+                :to="sbHref(item.link)"
                 class="hdr__link"
                 :class="{ 'is-active': isActive(item) }"
                 :aria-expanded="openId === item._uid"
                 :aria-controls="`subnav-${item._uid}`"
-                @click="toggle(item)"
+                @click="onParentClick(item, $event)"
               >
                 {{ item.label }}
-              </button>
+              </NuxtLink>
               <NuxtLink v-else :to="sbHref(item.link)" class="hdr__link" :class="{ 'is-active': isActive(item) }">
                 {{ item.label }}
               </NuxtLink>

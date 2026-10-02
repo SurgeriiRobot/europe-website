@@ -98,9 +98,14 @@ export default defineNuxtConfig({
     },
   },
 
-  routeRules: {
-    '/home': { redirect: { to: '/', statusCode: 301 } },
-  },
+  // `home` is the story behind `/`, so its own slug must not be a second copy of
+  // the home page. The same applies under every locale prefix.
+  routeRules: Object.fromEntries(
+    LOCALES.map(l => [
+      l.code === DEFAULT_LOCALE ? '/home' : `/${l.code}/home`,
+      { redirect: { to: l.code === DEFAULT_LOCALE ? '/' : `/${l.code}`, statusCode: 301 } },
+    ]),
+  ),
 
   devServer: {
     port: 3010,

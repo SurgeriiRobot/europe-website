@@ -40,6 +40,9 @@ const { data: source } = await useAsyncData(
     return {
       centers: (stories as any[]).map(s => ({
         uuid: s.uuid,
+        // Each centre has its own page; without the slug the list rendered 20
+        // names with nothing linking to them, so those pages were unreachable.
+        slug: s.full_slug,
         name: s.content?.name || s.name,
         country: s.content?.country || '',
         city: s.content?.city || '',
@@ -183,7 +186,8 @@ const style = computed(() => ({
               itemscope
               itemtype="https://schema.org/Hospital"
             >
-              <span class="cl__name" itemprop="name">{{ center.name }}</span>
+              <NuxtLink v-if="center.slug" :to="`/${center.slug}`" class="cl__name" itemprop="name">{{ center.name }}</NuxtLink>
+              <span v-else class="cl__name" itemprop="name">{{ center.name }}</span>
               <span v-if="center.city" class="cl__where" itemprop="address">{{ center.city }}</span>
               <!-- Only a centre with real degrees carries a location. -->
               <span v-if="center.geo" itemprop="geo" itemscope itemtype="https://schema.org/GeoCoordinates">
