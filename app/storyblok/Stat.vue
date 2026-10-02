@@ -56,16 +56,18 @@ onMounted(() => {
      need it, and the Clinical Evidence grid is drawn with the figure at the top
      of its cell. */
   margin: clamp(24px, 7.6vw, 110px) 0 0;
-  font-size: clamp(3.5rem, 6.67vw, 6rem);   /* 96px */
-  line-height: 1.198;                        /* 115/96 */
-  color: var(--c-blue);
+  font-size: var(--stat-size, clamp(3.5rem, 6.67vw, 6rem));   /* 96px */
+  line-height: 1.198;                                          /* 115/96 */
+  /* Blue on a light surface; on the dark and gradient bands the figures are
+     drawn white, which is what the surface's own ink colour already is. */
+  color: var(--stat-ink, var(--c-blue));
 }
 .stat__sizer, .stat__num { grid-area: 1 / 1; justify-self: center; }
 .stat__sizer { visibility: hidden; }
 .stat:not(:has(.stat__icon)) .stat__value { margin-top: 0; }
 
 .stat__label {
-  margin: clamp(16px, 2.4vw, 35px) 0 0;
+  margin: var(--stat-gap, clamp(16px, 2.4vw, 35px)) 0 0;
   font-size: clamp(1.125rem, 1.67vw, 1.5rem);
   font-weight: 600;
   line-height: 1.2083;

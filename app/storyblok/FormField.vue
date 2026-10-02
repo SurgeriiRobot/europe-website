@@ -79,16 +79,35 @@ const { data: choices } = await useAsyncData(
 </template>
 
 <style scoped>
-.field { display: grid; gap: var(--space-1); }
+/* Figma: a 16px navy label with its baseline 31.5px above a 38px control.
+   The shared caption style rendered the label at 12px in muted grey. */
+.field { display: grid; gap: calc(0.9 * var(--sx)); }
 .field--full { grid-column: 1 / -1; }
-.field__label { color: var(--ink-muted); }
-.field__control {
-  width: 100%;
-  padding: var(--space-3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--c-white);
-  color: var(--c-black);
+.field__label {
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.22;
+  color: var(--ink);
 }
+.field__control {
+  height: calc(2.64 * var(--sx));             /* 38px */
+  min-height: 38px;
+  width: 100%;
+  padding: 0 12px;
+  border: 1px solid #e1e2e5;
+  border-radius: 6px;
+  background: #f9f9fb;
+  color: var(--ink);
+}
+select.field__control {
+  background: var(--c-white);
+  border-color: #e4e5e7;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 13%);
+  color: var(--accent);
+  font-weight: 500;
+}
+select.field__control:invalid { color: #969ba3; font-weight: 400; }
+textarea.field__control { height: calc(7.5 * var(--sx)); min-height: 108px; padding: 10px 12px; }
+
 .field__checkbox { display: flex; gap: var(--space-3); align-items: flex-start; font-size: var(--t-body-sm); }
 </style>

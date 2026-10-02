@@ -55,6 +55,20 @@ const style = computed(() => ({
     #ffffff 100%
   );
 }
+/* Contact 800-2560: one ramp behind the figures and the form together. Fitted
+   to the frame's own pixels at 171deg, mean error 3.25/255. Confining it to the
+   figures left a hard white seam where the form began. */
+.gband--night-to-white {
+  background: linear-gradient(
+    171deg,
+    #151a45 2.8%, #0d1050 8.3%, #05075c 13.9%, #030d76 19.4%,
+    #041a94 25%, #0526b3 30.6%, #0533d2 36.1%, #063eef 41.7%,
+    #1857fe 47.2%, #3c7afe 52.8%, #629dfe 58.3%, #7fb4fe 63.9%,
+    #a1cdfe 69.4%, #c0e0fe 75%, #ddf0fe 80.6%, #fafdfe 86.1%,
+    #ffffff 91.7%, #ffffff 100%
+  );
+}
+
 /* The sections inside show the band through instead of filling themselves. */
 .gband :deep(.section) { background: transparent; }
 

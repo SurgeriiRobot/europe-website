@@ -21,8 +21,8 @@ async function submit() {
 
 <template>
   <section v-editable="blok" :id="blok.anchor || undefined" class="section form" :data-theme="blok.theme || 'brand'">
-    <div class="container container--narrow">
-      <h2 v-if="blok.headline" class="form__headline display-2">{{ blok.headline }}</h2>
+    <div class="form__inner">
+      <h2 v-if="blok.headline" class="form__headline">{{ blok.headline }}</h2>
 
       <p v-if="state === 'sent'" class="form__success">
         {{ blok.success_message || 'Thank you — we will be in touch shortly.' }}
@@ -57,7 +57,26 @@ async function submit() {
 
 <style scoped>
 .form__headline { text-align: center; margin-bottom: var(--space-6); }
-.form__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+/* Figma draws the grid 848 wide, centred: two 408px columns 32px apart. The
+   shared narrow container is 760, which squeezed every field by 94px. */
+.form__inner {
+  width: min(100% - 2 * clamp(16px, 5.2vw, 75px), calc(58.89 * var(--sx)));
+  margin-inline: auto;
+}
+.form__headline {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 6.67vw, 6rem);   /* 96px */
+  font-weight: 600;
+  line-height: 1.198;
+  text-align: center;
+  color: var(--ink);
+}
+.form__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px calc(2.22 * var(--sx));          /* 32px between the columns */
+}
 .form__consent, .form__note, .form__error, .form__submit { grid-column: 1 / -1; }
 .form__submit {
   justify-self: start;

@@ -7,7 +7,15 @@ const columns = computed(() => Number(props.blok.columns) || 2)
 </script>
 
 <template>
-  <section v-editable="blok" :id="blok.anchor || undefined" class="section stats" :data-theme="blok.theme || 'light'">
+  <section
+    v-editable="blok"
+    :id="blok.anchor || undefined"
+    class="section stats"
+    :data-theme="blok.theme || 'light'"
+    :style="blok.title_size === 'large'
+      ? { '--sec-title-size': 'clamp(2.5rem, 5vw, 4.5rem)', '--sec-title-measure': 'calc(68 * var(--sx))' }
+      : undefined"
+  >
     <SectionConnector :connector="blok.connector" />
     <div class="container stats__inner">
       <SectionTitle :headline="blok.headline" :body="blok.intro" :lines="blok.title_lines" />
@@ -20,6 +28,15 @@ const columns = computed(() => Number(props.blok.columns) || 2)
           // these figures have no icon to clear.
           ...(blok.spacing === 'compact'
             ? { '--stats-gap': 'clamp(32px, 4.3vw, 62px)', '--stats-rowgap': 'clamp(110px, 16.04vw, 231px)' }
+            : {}),
+          // Contact draws its figures at 64px in the surface's own ink, 100px
+          // above their labels, rather than the 96px blue the home band uses.
+          ...(blok.figures === 'inline'
+            ? {
+                '--stat-size': 'clamp(2.5rem, 4.44vw, 4rem)',
+                '--stat-ink': 'var(--ink)',
+                '--stat-gap': 'clamp(28px, 3.68vw, 53px)',
+              }
             : {}),
         }"
       >

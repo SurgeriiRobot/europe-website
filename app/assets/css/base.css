@@ -100,7 +100,9 @@ html {
   justify-items: center;
   gap: 24px;
   width: 100%;
-  max-width: 630px;
+  /* 630px suits a 48px heading over a short intro. A band drawn with a larger
+     heading widens this so the heading keeps to one line. */
+  max-width: var(--sec-title-measure, 630px);
   margin-inline: auto;
   text-align: center;
 }
@@ -108,7 +110,8 @@ html {
   position: relative;
   width: 100%;
   margin: 0;
-  font-size: clamp(2rem, 3.33vw, 3rem);
+  /* 48px by default; some bands are drawn at 72. */
+  font-size: var(--sec-title-size, clamp(2rem, 3.33vw, 3rem));
   font-weight: 600;
   line-height: 1.2083;
   color: var(--ink);
