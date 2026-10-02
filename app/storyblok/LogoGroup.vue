@@ -70,7 +70,9 @@ const marquee = computed(() => props.blok.layout === 'marquee')
   .group { padding-bottom: 112px; }
   .group:last-child { padding-bottom: 189px; }
   .group__title { margin-bottom: 80px; padding-inline: 16px; }
-  .group__viewport, .group__row { display: none; }
+  /* Only the desktop row and marquee, which are direct children. The phone's
+     own marquee lives inside .group__mobile and must stay visible. */
+  .group > .group__viewport, .group > .group__row { display: none; }
   .group__mobile { display: block; }
 
   /* 87x73 slots, 38px apart, scrolling on their own. */
