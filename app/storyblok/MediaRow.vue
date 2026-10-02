@@ -5,14 +5,35 @@
 const props = withDefaults(defineProps<{ blok: any, side?: 'left' | 'right', tone?: 'default' | 'accent' }>(), { side: 'right', tone: 'default' })
 const media = computed(() => props.blok.media)
 const mediaMobile = computed(() => (props.blok.media_mobile?.filename ? props.blok.media_mobile : null))
+
+// Art in these rows ranges from a 765px photograph to a 311px icon. Pinning it
+// at 765 pushed the smaller ones off both edges of the page.
+const widthPx = computed(() => Number(props.blok.media_width) || 765)
+const mediaWidth = computed(() => `calc(${(widthPx.value / 14.4).toFixed(2)} * min(1vw, 14.4px))`)
 </script>
 
 <template>
-  <div v-editable="blok" class="mrow" :class="[`mrow--media-${side}`, `mrow--${tone}`]">
+  <div
+    v-editable="blok"
+    class="mrow"
+    :class="[`mrow--media-${side}`, `mrow--${tone}`]"
+    :style="{ '--mrow-media-w': mediaWidth }"
+  >
     <div class="mrow__text">
       <h3 v-if="blok.headline" class="mrow__title"><BrandText :text="blok.headline" /></h3>
+      <p v-if="blok.subtitle" class="mrow__subtitle">{{ blok.subtitle }}</p>
       <!-- StoryblokRichText renders bare paragraphs, so it needs a wrapper to style. -->
       <div v-if="blok.body" class="mrow__body"><StoryblokRichText :document="blok.body" /></div>
+      <!-- The list and its heading were in the schema and in the content, but
+           nothing output them, so every row lost its procedures. -->
+      <template v-if="blok.list_items?.length">
+        <p v-if="blok.list_title" class="mrow__list-title">{{ blok.list_title }}</p>
+        <ul class="mrow__list">
+          <li v-for="item in blok.list_items" :key="item._uid">
+            <StoryblokComponent :blok="item" />
+          </li>
+        </ul>
+      </template>
       <div v-if="blok.buttons?.length" class="mrow__actions">
         <StoryblokComponent v-for="button in blok.buttons" :key="button._uid" :blok="button" />
       </div>
@@ -22,7 +43,7 @@ const mediaMobile = computed(() => (props.blok.media_mobile?.filename ? props.bl
       <img
         :src="sbCrop(media, 1530)"
         :srcset="`${sbCrop(media, 765)} 765w, ${sbCrop(media, 1530)} 1530w`"
-        sizes="(max-width: 720px) 92vw, calc(53.13 * min(1vw, 14.4px))"
+        :sizes="`(max-width: 720px) 92vw, ${mediaWidth}`"
         :alt="media.alt || ''"
         loading="lazy"
       >
@@ -41,7 +62,7 @@ const mediaMobile = computed(() => (props.blok.media_mobile?.filename ? props.bl
 /* The 765px image is wider than its 720px half: a flex row centres it with the
    overflow split evenly (a grid item that overflows would not stay centred). */
 .mrow__media { display: flex; justify-content: center; min-width: 0; }
-.mrow__media img { display: block; flex: none; width: calc(53.13 * var(--sx)); max-width: none; height: auto; }   /* 765 */
+.mrow__media img { display: block; flex: none; width: var(--mrow-media-w, calc(53.13 * var(--sx))); max-width: 100%; height: auto; }
 
 .mrow__title { margin: 0; font-size: clamp(2rem, 3.33vw, 3rem); font-weight: 600; line-height: 1.2083; color: var(--ink); }
 .mrow--accent .mrow__title { color: var(--c-blue); }

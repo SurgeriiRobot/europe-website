@@ -21,6 +21,7 @@ defineProps<{ blok: any }>()
 <style scoped>
 .wmband { padding: calc(40.65 * var(--sx)) 0 calc(5.19 * var(--sx)); overflow: hidden; }   /* 585 to the words / 75 */
 .wmband--fade-to-brand { background: var(--grad-fade-to-brand); }
+.wmband--fade-to-grey { background: var(--grad-fade-to-grey); }
 /* 252px Lora on a 252px line, white at 50%, each line centred on the page even
    where it runs wider than the screen. */
 .wmband__word {

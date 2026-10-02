@@ -120,6 +120,14 @@
   /* Brand blue arrives a little earlier than in Figma (12% rather than 15.6%) so
      the white nav links on the sky-blue top edge clear 4.5:1. */
   --grad-footer: linear-gradient(180deg, #20aeff -5.5%, #0745fe 12%, #03045e 65.6%, #1f2739 100%);
+  /* Watermark bands. `fade-to-brand` carries the page from white down into
+     brand blue; `fade-to-grey` brings the dark band back out to the grey the
+     figures sit on. Both are sampled from the Clinical Application frame, which
+     draws them as one continuous fall rather than a flat fill. The component
+     referenced the first of these before either existed, so the band painted
+     nothing and its white word sat on white. */
+  --grad-fade-to-brand: linear-gradient(180deg, #ffffff 0%, #b6c8fe 35%, #90abfe 63%, #4875fd 92%, #0745fe 100%);
+  --grad-fade-to-grey: linear-gradient(180deg, #2b4dc0 0%, #4974f4 38%, #9bafea 78%, #cdd3dd 92%, #e2e2e2 100%);
   --line-w: 0.5px;
   /* A white hairline on a dark surface reads heavier than the same width of ink
      on a light one: the antialiased edge brightens the background instead of

@@ -42,6 +42,9 @@ const columns = computed(() => Number(props.blok.columns) || 2)
       >
         <StoryblokComponent v-for="item in blok.items || []" :key="item._uid" :blok="item" />
       </div>
+      <!-- A closing line between the figures and the button. The field existed
+           and carried copy, but nothing rendered it. -->
+      <p v-if="blok.outro" class="stats__outro">{{ blok.outro }}</p>
       <div v-if="blok.buttons?.length" class="stats__actions">
         <StoryblokComponent v-for="button in blok.buttons" :key="button._uid" :blok="button" />
       </div>
@@ -58,7 +61,17 @@ const columns = computed(() => Number(props.blok.columns) || 2)
   gap: var(--stats-rowgap, clamp(56px, 8.3vw, 120px)) 30px;
   margin-top: var(--stats-gap, clamp(48px, 7.4vw, 106px));
 }
-.stats__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; margin-top: 80px; }
+.stats__outro {
+  margin: clamp(48px, 7.4vw, 106px) auto 0;
+  max-width: calc(49.3 * var(--sx));
+  font-size: clamp(2rem, 3.33vw, 3rem);
+  font-weight: 600;
+  line-height: 1.2083;
+  white-space: pre-line;
+  text-align: center;
+  color: var(--ink);
+}
+.stats__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; margin-top: 48px; }
 @media (max-width: 640px) { .stats__grid { grid-template-columns: minmax(0, 1fr); } }
 /* Phone design: title 116px down, 20px to the intro, one column of figures on a
    321px pitch, the button 72px below them — and the lead line into the next
