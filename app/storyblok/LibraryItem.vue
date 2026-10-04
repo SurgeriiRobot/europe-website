@@ -49,14 +49,14 @@ const image = computed(() => props.blok.image)
           <span v-for="tag in tags" :key="tag" class="lcard__tag">{{ tag }}</span>
         </span>
       </p>
-      <h3 class="lcard__title">
+      <h2 class="lcard__title">
         <button v-if="isVideo" type="button" class="lcard__link lcard__link--btn" @click="emit('play', blok)">
           <BrandText :text="blok.title" :nowrap="false" />
         </button>
         <a v-else-if="doc" :href="doc" class="lcard__link" download target="_blank" rel="noopener"><BrandText :text="blok.title" :nowrap="false" /></a>
         <NuxtLink v-else-if="href" :to="href" class="lcard__link"><BrandText :text="blok.title" :nowrap="false" /></NuxtLink>
         <BrandText v-else :text="blok.title" :nowrap="false" />
-      </h3>
+      </h2>
       <p v-if="blok.excerpt" class="lcard__excerpt"><BrandText :text="blok.excerpt" :nowrap="false" /></p>
     </div>
 

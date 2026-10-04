@@ -57,7 +57,7 @@ const tags = computed(() =>
           <span v-for="tag in tags" :key="tag" class="lcard__tag">{{ tag }}</span>
         </span>
       </p>
-      <h3 class="lcard__title">{{ content.title || story.name }}</h3>
+      <h2 class="lcard__title">{{ content.title || story.name }}</h2>
       <p class="lcard__excerpt">{{ content.excerpt }}</p>
     </div>
     <img
