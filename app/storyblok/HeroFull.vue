@@ -237,13 +237,19 @@ const srcset = computed(() =>
   .hero-full__actions > :deep(.btn) { flex: 1 1 100%; justify-content: center; }
   .hero-full__headline { max-width: 310px; font-size: clamp(1.75rem, 8.72vw, 2.125rem); line-height: 1.206; }
   .hero-full__body { font-size: 1rem; line-height: 1.625; }
-  /* The wash is drawn for the 1440 frame, where the copy sits in the left
-     third and the ramp has faded to 7% by the right edge. On a phone the copy
-     runs gutter to gutter, so that ramp leaves the end of every line over the
-     bare photograph: Contact measured 1.78:1 on its headline and 2.08:1 on its
-     body. Phones get the veil under the copy instead of beside it. */
+  /* Every side-to-side overlay is drawn for the 1440 frame, where the copy sits
+     in the left third and the ramp has faded out well before the right edge. On
+     a phone the copy runs gutter to gutter, so those ramps leave the end of
+     every line over the bare photograph: Contact measured 1.78:1 on its
+     headline and 2.08:1 on its body, Training 2.56:1 and 2.10:1. Phones get the
+     veil under the copy instead of beside it, in the same direction the copy is
+     anchored. */
   .hero-full--overlay-wash::after {
     background: linear-gradient(0deg, rgb(255 255 255 / 94%) 0%, rgb(255 255 255 / 90%) 52%, rgb(255 255 255 / 38%) 76%, rgb(255 255 255 / 12%) 100%);
+  }
+  .hero-full--overlay-left::after,
+  .hero-full--overlay-left-narrow::after {
+    background: linear-gradient(0deg, rgb(0 0 0 / 82%) 0%, rgb(0 0 0 / 74%) 52%, rgb(0 0 0 / 34%) 78%, rgb(0 0 0 / 10%) 100%);
   }
   .hero-full__bg { object-position: 24% center; }
   .hero-full__video { object-position: center; }
