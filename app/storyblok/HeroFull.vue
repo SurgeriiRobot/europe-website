@@ -174,7 +174,11 @@ const srcset = computed(() =>
 /* The design's photograph is already dark where the text sits, so it ships with
    no overlay; editors can add one for lighter images. */
 .hero-full::after { content: ''; position: absolute; inset: 0; z-index: -1; }
-.hero-full--overlay-left::after { background: linear-gradient(90deg, rgb(0 0 0 / 65%) 0%, transparent 60%); }
+/* 65% to clear by 60% left the last words of the 18px body at 4.05:1 over the
+   Instruments banner, just under the 4.5:1 it needs. Deepened at the gutter and
+   the fade carried further across, which keeps the photograph reading on the
+   right while the copy sits on a dark enough ground. */
+.hero-full--overlay-left::after { background: linear-gradient(90deg, rgb(0 0 0 / 74%) 0%, rgb(0 0 0 / 52%) 38%, transparent 72%); }
 /* A tighter version of the same wash, clearing at 42% rather than 60%, for the
    frames that keep more of the photograph visible beside the copy. */
 .hero-full--overlay-left-narrow::after { background: linear-gradient(90deg, rgb(0 0 0 / 65%) 0%, transparent 42%); }

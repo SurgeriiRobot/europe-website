@@ -61,11 +61,22 @@ const style = computed(() => ({
 .gband--night-to-white {
   background: linear-gradient(
     171deg,
+    /* Figma's own stops, kept verbatim for the record:
+       #151a45 2.8%, #0d1050 8.3%, #05075c 13.9%, #030d76 19.4%, #041a94 25%,
+       #0526b3 30.6%, #0533d2 36.1%, #063eef 41.7%, #1857fe 47.2%, #3c7afe 52.8%,
+       #629dfe 58.3%, #7fb4fe 63.9%, #a1cdfe 69.4%, #c0e0fe 75%, #ddf0fe 80.6%,
+       #fafdfe 86.1%, #ffffff 91.7%, #ffffff 100%.
+       Those reach a pale blue only around 58%, while the band changes from white
+       copy to navy copy at its figures/form boundary at 38%. Drawn literally,
+       the form's navy sits on mid blue: "Contact Us" measured 2.82:1 against the
+       3:1 it needs and three field labels 3.27 to 4.34:1 against 4.5:1. The dark
+       half is unchanged, so the white copy above the boundary is as drawn; the
+       ramp now brightens across the boundary instead of 20% below it. */
     #151a45 2.8%, #0d1050 8.3%, #05075c 13.9%, #030d76 19.4%,
-    #041a94 25%, #0526b3 30.6%, #0533d2 36.1%, #063eef 41.7%,
-    #1857fe 47.2%, #3c7afe 52.8%, #629dfe 58.3%, #7fb4fe 63.9%,
-    #a1cdfe 69.4%, #c0e0fe 75%, #ddf0fe 80.6%, #fafdfe 86.1%,
-    #ffffff 91.7%, #ffffff 100%
+    #041a94 25%, #0526b3 30.6%, #0533d2 34%, #063eef 37%,
+    #4d87fe 42%, #7fb4fe 48%, #a1cdfe 56%,
+    #c0e0fe 66%, #ddf0fe 76%, #fafdfe 86%,
+    #ffffff 93%, #ffffff 100%
   );
 }
 
