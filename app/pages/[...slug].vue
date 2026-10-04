@@ -4,7 +4,13 @@ const route = useRoute()
 const language = useStoryblokLanguage()
 
 const slug = computed(() => {
-  const raw = Array.isArray(route.params.slug) ? route.params.slug.join('/') : route.params.slug
+  const parts = Array.isArray(route.params.slug) ? route.params.slug : [route.params.slug]
+  // Static hosting serves /about out of /about/index.html and redirects the
+  // bare path to the trailing slash, which the router then hands over as a
+  // final empty segment. Joined as it comes that asks Storyblok for "about/",
+  // which does not exist, so every inner page threw a 404 and rendered blank
+  // once it hydrated, while the prerendered HTML underneath was correct.
+  const raw = parts.filter(Boolean).join('/')
   return raw || 'home'
 })
 
