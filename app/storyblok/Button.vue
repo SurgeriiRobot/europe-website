@@ -43,6 +43,23 @@ const classes = computed(() => ['btn', `btn--${props.blok.variant || 'primary'}`
 .btn--md { padding: 7px 21px; }          /* 8/22 minus the 1px border */
 .btn--lg { padding: 10px 27px; font-size: 1rem; }
 
+/* `link` had no styles at all, so it rendered as a borderless box that still
+   carried the md padding: the text sat 22px in from the copy it belongs under.
+   The design draws it as the words alone, flush, with a 2px rule 3px below the
+   baseline running their full width (Clinical Applications, "View all urology
+   cases", rule y2225-2226 under ink ending at 2222). */
+.btn--link {
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--c-darkblue);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+.btn--link:hover { color: var(--c-blue); }
+
 .btn--primary {
   background: var(--c-blue);
   color: var(--c-white);

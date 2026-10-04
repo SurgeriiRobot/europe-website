@@ -72,7 +72,51 @@ const mediaWidth = computed(() => `calc(${(widthPx.value / 14.4).toFixed(2)} * m
 .mrow__body :deep(p) { margin: 0; }
 .mrow__body :deep(p + p) { margin-top: 29px; }
 .mrow__body :deep(b), .mrow__body :deep(strong) { font-weight: 600; }
+/* The subtitle is the schema's "short semibold lead between the title and the
+   text" (Instruments Ecosystem, "Seamlessly switch between Cobra and Reverse
+   Cobra"). It had markup but no styles, so it rendered as a browser-default
+   paragraph. */
+.mrow__subtitle { margin: 24px 0 0; font-size: 1.125rem; font-weight: 600; line-height: 1.6111; color: var(--ink); }
+
+/* Clinical Applications draws the procedure list in the title's semibold at
+   20/32, each entry behind a 7px dot: the dot's left edge 11.5px in from the
+   copy column and the words 30px in (design row 1: title y2041, entries 2073 /
+   2105 / 2137, dot x748-754). These also had markup but no styles, so the list
+   fell back to the browser's 16px bulleted 40px indent. */
+.mrow__list-title { margin: 25px 0 0; font-size: 1.25rem; font-weight: 600; line-height: 1.6; color: var(--ink); }
+.mrow__list { margin: 0; padding: 0; list-style: none; }
+.mrow__list li { position: relative; padding-left: 30px; line-height: 1.6; }
+.mrow__list li::before {
+  content: '';
+  position: absolute;
+  left: 11.5px;
+  top: 12.5px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentcolor;
+}
+/* `nav_link` is the header's own component; inside a row it is a plain entry,
+   so its padding and small-label step aside. */
+.mrow__list :deep(.nav-link) { display: block; padding: 0; color: var(--ink); }
+.mrow__list :deep(.nav-link__label) { font-size: 1.25rem; font-weight: 600; line-height: 1.6; }
+
 .mrow__actions { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 32px; }
+/* The design leaves 34px between the last entry and the link under it. */
+.mrow__list + .mrow__actions { margin-top: 34px; }
+
+/* Clinical Applications draws its rows in from the page edges rather than
+   filling the halves: the copy column and the picture each sit 300px in from
+   their own side of the page, so they meet near the centre line (design: the
+   picture's outer edge at x300 on the left rows and x1140 on the right ones,
+   the copy at x300 when it is on the left and x736.5 when it is on the right).
+   Without this the row shrink-wraps its content and the positions follow the
+   width of whatever is in it. */
+.rows--compact .mrow { width: 100%; }
+.rows--compact .mrow--media-right .mrow__text { margin-left: calc(20.83 * var(--sx)); }   /* x300 */
+.rows--compact .mrow--media-left .mrow__text { margin-left: calc(1.15 * var(--sx)); }     /* x736.5 */
+.rows--compact .mrow--media-left .mrow__media { justify-content: flex-start; padding-left: calc(20.83 * var(--sx)); }
+.rows--compact .mrow--media-right .mrow__media { justify-content: flex-end; padding-right: calc(20.83 * var(--sx)); }
 
 /* Phones: copy then image, 16px gutters, 48px titles kept. */
 @media (max-width: 720px) {
