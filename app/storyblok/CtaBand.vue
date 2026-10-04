@@ -45,7 +45,11 @@ const spacing = computed(() => ({
     <span v-if="display && (blok.connector === 'top' || blok.connector === 'both')" class="cta__lead" aria-hidden="true" />
     <SectionConnector v-else :connector="blok.connector" />
     <picture v-if="bg?.filename && bgMobile">
-      <source media="(max-width: 720px)" :srcset="sbCrop(bgMobile, 780, 1600)">
+      <!-- The phone crops are authored at the shape they are meant to be shown
+           at, so the service is asked for a width only: forcing 780x1600 here
+           re-cropped anything that was not already that shape. The two existing
+           phone crops are exactly 780x1600, so this returns them unchanged. -->
+      <source media="(max-width: 720px)" :srcset="sbCrop(bgMobile, 780)">
       <img
         :src="sbCrop(bg, 2880, bgH * 2)"
         :srcset="`${sbCrop(bg, 1440, bgH)} 1440w, ${sbCrop(bg, 2880, bgH * 2)} 2880w`"
@@ -163,7 +167,14 @@ const spacing = computed(() => ({
   .cta__inner { align-items: flex-end; padding: var(--cta-top-m, 0) 16px var(--cta-bottom-m, 103px); }
   .cta__content { gap: 24px; }
   .cta__headline { margin-bottom: 12px; font-size: clamp(1.75rem, 8.72vw, 2.125rem); }
-  .cta--standard .cta__bg { object-position: 83% center; }    /* keep the clinician in frame */
+  /* The phone frame does not bleed this photograph over the whole band: it sits
+     across the top at its own 3:2 proportion (design: the 2281x1521 file placed
+     906 wide and 604 tall from the band's top, so the two clinicians fill the
+     frame) and the band carries on in flat navy underneath, with the headline
+     over the photo's lower edge. Cropping it to the full 800 instead showed a
+     390-wide slice of the wall behind them, which is what read as "no image".
+     154.87vw is that 604 at the 390 frame; 43% puts the pair in the slice. */
+  .cta--standard .cta__bg { height: 154.87vw; bottom: auto; object-position: 43% center; }
   /* Figma's wash clears by ~75% of the height; ours holds a little longer so a
      longer headline than the design's still sits on 3:1 or better. */
   .cta--standard::after {
