@@ -78,6 +78,7 @@ const overHero = ref(false)
 const scrolled = ref(false)
 const hidden = ref(false)
 const anchoring = ref(false)
+const run = ref(0)
 const nuxtApp = useNuxtApp()
 onMounted(() => {
   const phone = window.matchMedia('(max-width: 1180px)')
@@ -94,9 +95,21 @@ onMounted(() => {
     // An anchor scroll is movement the visitor did not make with the wheel, and
     // hiding the bar on arrival left an empty strip above the section they had
     // just asked for. `anchoring` holds the bar still until it settles.
-    if (!openId.value && !mobileOpen.value && !anchoring.value && y > bar && Math.abs(delta) > 4)
-      hidden.value = delta > 0
-    if (y <= bar) hidden.value = false
+    // A few pixels used to be enough to hide the bar, so a nudge of the wheel
+    // took the navigation away. It now has to be a deliberate run in one
+    // direction: downward travel accumulates and only hides past a threshold,
+    // and any upward movement brings it straight back.
+    if (!openId.value && !mobileOpen.value && !anchoring.value && y > bar) {
+      if (delta > 0) {
+        run.value = Math.max(0, run.value) + delta
+        if (run.value > 140) hidden.value = true
+      }
+      else if (delta < 0) {
+        run.value = 0
+        hidden.value = false
+      }
+    }
+    if (y <= bar) { hidden.value = false; run.value = 0 }
     lastY = y
   }
   update()

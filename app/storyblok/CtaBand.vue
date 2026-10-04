@@ -74,7 +74,17 @@ const bgMobile = computed(() => (props.blok.background_mobile?.filename ? props.
   padding: 0 var(--gutter);
 }
 .cta--display::after { background: rgb(0 0 0 / 35%); }
-.cta__lead { position: absolute; left: 50%; top: 66px; z-index: 1; height: 50px; border-left: var(--line-w) solid var(--c-blue); }
+/* The lead line joins this band to the section above, so it starts at the
+   boundary rather than 66px inside, where it read as floating. Its length is
+   settable per band through the usual connector field. */
+.cta__lead {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  z-index: 1;
+  height: var(--connector-len, 116px);
+  border-left: var(--line-w) solid var(--c-blue);
+}
 .cta__display {
   margin: 0;
   font-size: clamp(3rem, 9.72vw, 8.75rem);      /* 140px */
