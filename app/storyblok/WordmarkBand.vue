@@ -75,7 +75,13 @@ const media = computed(() => props.blok.media)
   position: absolute;
   left: 0;
   top: calc(8.61 * var(--sx));
-  width: calc(11.88 * var(--sx));                /* 171 */
+  /* The vertical below sits at the frame gutter, which grows once the viewport
+     passes the 1440 frame and the layout starts centring. A fixed 171 left the
+     horizontal stranded at the page edge while the vertical walked right, so on
+     a 1920 screen the two no longer met. Measured from the gutter instead: 96px
+     past it, which is the design's own overhang (vertical x75, bracket ends
+     x171). Below 1440 this is arithmetically identical to the old 11.88 * sx. */
+  width: calc(var(--frame-gutter) + 6.67 * var(--sx));   /* 75 + 96 = 171 at 1440 */
   height: calc(23.4 * var(--sx));                /* 337 */
   border-bottom: var(--line-w) solid var(--line);
   pointer-events: none;
