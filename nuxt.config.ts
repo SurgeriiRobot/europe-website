@@ -73,7 +73,10 @@ export default defineNuxtConfig({
       if (!process.env.NUXT_STORYBLOK_ACCESS_TOKEN) return
       const version = process.env.NUXT_PUBLIC_STORYBLOK_VERSION === 'draft' ? 'draft' : 'published'
       const host = region === 'eu' ? 'api.storyblok.com' : `api-${region}.storyblok.com`
-      const routes: string[] = []
+      // The sitemap is a Nitro server route, so a static build has to render it
+      // to a file or the host answers /sitemap.xml with the 404 page, as the
+      // test site did.
+      const routes: string[] = ['/sitemap.xml']
       for (let page = 1; ; page++) {
         const res = await fetch(`https://${host}/v2/cdn/links?version=${version}&per_page=1000&page=${page}&token=${process.env.NUXT_STORYBLOK_ACCESS_TOKEN}`)
         if (!res.ok) break
