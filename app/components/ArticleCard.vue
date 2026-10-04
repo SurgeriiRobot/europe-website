@@ -65,7 +65,11 @@ const more = computed(() => {
 .slide-card__title a { color: var(--c-blue); text-decoration: none; }
 .slide-card__title a:hover { text-decoration: underline; }
 .slide-card__body { margin: 0; font-size: 1.125rem; font-weight: 300; line-height: 1.6111; color: var(--c-darkblue); }
-.slide-card__where { display: block; font-weight: 600; }   /* Figma sets the place / date / booth line semibold */
+/* Figma sets the place / date / booth line semibold, and at 16/26 rather than
+   the 18/29 of the copy under it (about-desktop y9613, size 16 against the
+   body's 18 at y9645). At 18 it ran to a second line and pushed every card in
+   the row 29px taller. */
+.slide-card__where { display: block; font-size: 1rem; font-weight: 600; line-height: 1.625; }
 .slide-card__more {
   flex: none;
   padding: 7px 21px;

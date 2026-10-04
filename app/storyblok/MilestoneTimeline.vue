@@ -43,9 +43,11 @@ const style = computed(() => ({
     <span v-if="lead('bottom')" class="tl__lead tl__lead--bottom" aria-hidden="true" />
 
     <div v-if="current" class="tl__stage">
-      <!-- The year is drawn as a 220px watermark in #f4f4f8, which measures
-           1.29:1 against the band behind it: nowhere near the 3:1 even display
-           type needs, and it is the only place the milestone's year is written.
+      <!-- The year is drawn as a 220px watermark in #f4f4f4, which measures
+           1.95:1 at its head and 1.55:1 at its foot against the band behind it
+           (the ramp is at rgb(128,179,254) by design y2573 and rgb(160,202,254)
+           by y2734): nowhere near the 3:1 even display type needs, and it is
+           the only place the milestone's year is written.
            Darkening it to 3:1 means a mid-grey number taller than the disc it
            sits behind, which is a different design, not a fixed one. So the
            watermark stays as drawn and is marked decorative, and the year goes
@@ -128,7 +130,11 @@ const style = computed(() => ({
   margin: calc(-3.74 * var(--sx)) 0 0;                                        /* -53.8 */
   font-size: calc(15.28 * var(--sx));                                         /* 220 */
   line-height: 1;
-  color: var(--c-neutral-300);
+  /* The design's own grey, sampled off the glyphs at about:2540-2800: a flat
+     #f4f4f4. `--c-neutral-300` is the near neighbour at #f4f4f8, and the blue
+     in its last channel reads against a band that is already blue here, so the
+     watermark takes the drawn value rather than the token. */
+  color: #f4f4f4;
   text-align: center;
 }
 
