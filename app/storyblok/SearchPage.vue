@@ -190,15 +190,18 @@ const style = computed(() => ({
         </li>
       </ol>
 
+      <!-- Every step points at this same path, which is what the router calls
+           "exact active", so each link that is not the current page has to clear
+           the aria-current the router would otherwise mark it with. -->
       <nav v-if="pages > 1" class="pager" :aria-label="blok.pager_label || 'Search result pages'">
-        <NuxtLink v-if="page > 1" :to="to(1)" class="pager__step" aria-label="First page">
+        <NuxtLink v-if="page > 1" :to="to(1)" class="pager__step" :aria-current="undefined" aria-label="First page">
           <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path fill="currentColor" d="M18.41 16.59 13.82 12l4.59-4.59L17 6l-6 6 6 6zM6 6h2v12H6z" /></svg>
         </NuxtLink>
         <span v-else class="pager__step is-off" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M18.41 16.59 13.82 12l4.59-4.59L17 6l-6 6 6 6zM6 6h2v12H6z" /></svg>
         </span>
 
-        <NuxtLink v-if="page > 1" :to="to(page - 1)" class="pager__step" aria-label="Previous page" rel="prev">
+        <NuxtLink v-if="page > 1" :to="to(page - 1)" class="pager__step" :aria-current="undefined" aria-label="Previous page" rel="prev">
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M15.41 16.59 10.83 12l4.58-4.59L14 6l-6 6 6 6z" /></svg>
         </NuxtLink>
         <span v-else class="pager__step is-off" aria-hidden="true">
@@ -217,14 +220,14 @@ const style = computed(() => ({
           {{ n }}
         </NuxtLink>
 
-        <NuxtLink v-if="page < pages" :to="to(page + 1)" class="pager__step" aria-label="Next page" rel="next">
+        <NuxtLink v-if="page < pages" :to="to(page + 1)" class="pager__step" :aria-current="undefined" aria-label="Next page" rel="next">
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z" /></svg>
         </NuxtLink>
         <span v-else class="pager__step is-off" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z" /></svg>
         </span>
 
-        <NuxtLink v-if="page < pages" :to="to(pages)" class="pager__step" aria-label="Last page">
+        <NuxtLink v-if="page < pages" :to="to(pages)" class="pager__step" :aria-current="undefined" aria-label="Last page">
           <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path fill="currentColor" d="M5.59 7.41 10.18 12l-4.59 4.59L7 18l6-6-6-6zM16 6h2v12h-2z" /></svg>
         </NuxtLink>
         <span v-else class="pager__step is-off" aria-hidden="true">
