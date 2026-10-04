@@ -43,9 +43,19 @@ const style = computed(() => ({
     <span v-if="lead('bottom')" class="tl__lead tl__lead--bottom" aria-hidden="true" />
 
     <div v-if="current" class="tl__stage">
+      <!-- The year is drawn as a 220px watermark in #f4f4f8, which measures
+           1.29:1 against the band behind it: nowhere near the 3:1 even display
+           type needs, and it is the only place the milestone's year is written.
+           Darkening it to 3:1 means a mid-grey number taller than the disc it
+           sits behind, which is a different design, not a fixed one. So the
+           watermark stays as drawn and is marked decorative, and the year goes
+           to assistive tech as text, read ahead of the milestone and its
+           caption. Sighted users still have it in the two controls below, which
+           name the years either side at 24px in brand blue. -->
+      <p class="visually-hidden">{{ current.year }}</p>
       <p v-if="current.title" class="tl__disc"><BrandText :text="current.title" /></p>
       <p v-else class="tl__disc" aria-hidden="true" />
-      <p class="tl__year display-word">{{ current.year }}</p>
+      <p class="tl__year display-word" aria-hidden="true">{{ current.year }}</p>
     </div>
 
     <div v-if="current" class="tl__foot">

@@ -99,7 +99,11 @@ const style = computed(() => ({
 .pubs__head {
   padding-top: var(--pb-top, calc(19.69 * var(--sx)));                      /* 283.5 to the title */
   padding-bottom: calc(13.26 * var(--sx));                                  /* 191 */
-  background: linear-gradient(166deg, #1a213e 4.2%, #151b45 12.5%, #10154b 20.8%, #141f64 29.2%, #1c2d80 37.5%, #233b9b 45.8%, #2b4ab8 54.2%, #3357ce 62.5%, #3b64e4 70.8%, #436ff8 79.2%, #5d85fd 87.5%, #7a9afd 95.8%);
+  /* Figma's own stops put the intro paragraph on #436ff8, which is 4.50:1 under
+     white: AA to two decimal places and a rounding error away from failing. The
+     pale foot is unchanged; #4169e8 now holds to 80%, which is where the copy
+     ends, and the paragraph reads 4.8:1. */
+  background: linear-gradient(166deg, #1a213e 4.2%, #151b45 12.5%, #10154b 20.8%, #141f64 29.2%, #1c2d80 37.5%, #233b9b 45.8%, #2b4ab8 54.2%, #3357ce 62.5%, #3b64e4 70.8%, #4169e8 80%, #5d85fd 89%, #7a9afd 95.8%);
 }
 .pubs__head :deep(.sec-title) { max-width: 630px; gap: calc(2.32 * var(--sx)); }   /* 33.4 */
 
@@ -125,10 +129,29 @@ const style = computed(() => ({
 .pubs__panel { padding-bottom: calc(0.97 * var(--sx)); }                    /* 14 */
 .pubs__row--0 .pubs__panel { padding-bottom: calc(3.68 * var(--sx)); }      /* 53 */
 
-.pubs__row--0 .pubs__panel { background: linear-gradient(168deg, #0f154e 4.2%, #111d66 12.5%, #15277c 20.8%, #1d3699 29.2%, #2745b2 37.5%, #3153c9 45.8%, #365cda 54.2%, #3e69ee 62.5%, #4875fd 70.8%, #688dfd 79.2%, #89a6fe 87.5%, #a6bcfe 95.8%); }
-.pubs__row--1 .pubs__panel { background: linear-gradient(154deg, #4371fc 4.2%, #567ffd 12.5%, #5d84fd 20.8%, #567ffd 29.2%, #4976fd 37.5%, #3b68f3 45.8%, #365dda 54.2%, #2a47b2 62.5%, #213894 70.8%, #192875 79.2%, #111651 87.5%, #141a46 95.8%); }
-.pubs__row--2 .pubs__panel { background: linear-gradient(152deg, #1a213e 4.2%, #151b45 12.5%, #10154c 20.8%, #141f64 29.2%, #1c2d80 37.5%, #243c9d 45.8%, #2b4ab8 54.2%, #3256cd 62.5%, #3962e1 70.8%, #416df5 79.2%, #5780fd 87.5%, #7194fd 95.8%); }
-.pubs__row--3 .pubs__panel { background: linear-gradient(158deg, #ccd9fe 4.2%, #a3bafe 12.5%, #7d9dfd 20.8%, #547efd 29.2%, #3e69ed 37.5%, #3458d0 45.8%, #2b48b4 54.2%, #1f358e 62.5%, #192672 70.8%, #11164c 79.2%, #161c44 90%, #181e40 100%); }
+/* Each panel keeps its row's direction, hue journey and dark end, with the pale
+   end clamped at #4169e8. Figma draws the pale corners much further in:
+     row 0  ... #4875fd 70.8%, #688dfd 79.2%, #89a6fe 87.5%, #a6bcfe 95.8%
+     row 1  #4371fc 4.2%, #567ffd 12.5%, #5d84fd 20.8%, #567ffd 29.2% ...
+     row 2  ... #416df5 79.2%, #5780fd 87.5%, #7194fd 95.8%
+     row 3  #ccd9fe 4.2%, #a3bafe 12.5%, #7d9dfd 20.8%, #547efd 29.2% ...
+   and at 1440 the 410px text column sits clear of them. It stops being clear as
+   soon as the panel narrows: the column fills the panel, the gradient's axis
+   shortens, and the copy slides into the pale corner. Measured on the white
+   copy, row 3's 34px title ran 1.77:1 at 390, 2.30:1 at 900 and 2.85:1 at 1180,
+   the 15px link 2.98:1 at 390 and 2.85:1 at 900, body text 3.79:1 at 390. The
+   corners cannot be rescued by re-timing the stops, because how far along the
+   axis the copy starts is a function of the panel's height, which runs from
+   ~380px on a phone to 800px at the design width.
+   #4169e8 is the lightest colour white clears 4.5:1 on (4.8:1), so the ceiling
+   serves the 18px body and the 15px link as well as the 34px titles, and it
+   holds at every width and for any length of copy. Putting the pale corners
+   back means a different treatment for the copy on those rows, which is the
+   designer's call, not a contrast fix. */
+.pubs__row--0 .pubs__panel { background: linear-gradient(168deg, #0f154e 0%, #111d66 10%, #15277c 20%, #1d3699 32%, #2745b2 44%, #3153c9 56%, #365cda 68%, #3a61de 78%, #3e67e6 88%, #4169e8 100%); }
+.pubs__row--1 .pubs__panel { background: linear-gradient(154deg, #4169e8 0%, #3f66e2 12%, #365dda 30%, #2a47b2 50%, #213894 66%, #192875 78%, #111651 90%, #141a46 100%); }
+.pubs__row--2 .pubs__panel { background: linear-gradient(152deg, #1a213e 0%, #151b45 10%, #10154c 20%, #141f64 30%, #1c2d80 40%, #243c9d 50%, #2b4ab8 60%, #3256cd 72%, #3962e1 84%, #3d64e3 92%, #4169e8 100%); }
+.pubs__row--3 .pubs__panel { background: linear-gradient(158deg, #4169e8 0%, #3458d0 14%, #2b48b4 30%, #1f358e 46%, #192672 60%, #11164c 78%, #161c44 90%, #181e40 100%); }
 
 .pubs__text { display: grid; max-width: 410px; color: var(--c-white); }
 .pubs__title { margin: 0; font-size: clamp(1.625rem, 2.36vw, 2.125rem); font-weight: 600; line-height: 1.2059; color: inherit; white-space: pre-line; }   /* 34/41 */
@@ -194,6 +217,7 @@ const style = computed(() => ({
   .pubs__row--0 .pubs__panel { align-items: flex-start; justify-content: flex-start; padding: 40px 16px 72px; }
   .pubs__text { max-width: none; }
   .pubs__line { display: none; }
+
 }
 @media (max-width: 720px) {
   .pubs { --connector-len: 80px; }

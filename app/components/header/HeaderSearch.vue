@@ -7,6 +7,7 @@ const emit = defineEmits<{ searched: [] }>()
 const open = ref(false)
 const term = ref('')
 const input = ref<HTMLInputElement>()
+const toggle = ref<HTMLButtonElement>()
 const localePath = useLocalePath()
 
 function expand() {
@@ -15,6 +16,19 @@ function expand() {
 // The field mounts after the icon has left (the swap is out-in), so focus it
 // when it actually exists rather than on the next tick.
 watch(input, el => el?.focus())
+
+// Escape used to collapse the field and leave focus on <body>, which sent the
+// next Tab back to the top of the document. The icon takes the field's place,
+// so focus belongs there; it mounts after the field has gone, hence the watch.
+let returning = false
+watch(toggle, (el) => {
+  if (el && returning) { returning = false; el.focus() }
+})
+function dismiss() {
+  returning = true
+  term.value = ''
+  open.value = false
+}
 
 function collapse() {
   if (!term.value) open.value = false
@@ -42,7 +56,7 @@ async function submit() {
         placeholder="Search input"
         aria-label="Search"
         @blur="collapse"
-        @keydown.esc="term = ''; open = false"
+        @keydown.esc.stop="dismiss"
       >
       <button class="search__submit" type="submit" aria-label="Submit search">
         <Icon name="search" :size="18" />
@@ -51,10 +65,12 @@ async function submit() {
 
     <button
       v-else
+      ref="toggle"
       class="search search__toggle"
       :class="`search--${props.tone}`"
       type="button"
       aria-label="Open search"
+      :aria-expanded="open"
       @click="expand"
     >
       <Icon name="search" :size="18" />
@@ -113,9 +129,10 @@ async function submit() {
   font-size: 0.875rem;
   color: var(--c-black);
 }
-/* The field only exists once search is activated and carries a caret, so it is
-   its own focus indicator — matching the design's plain grey border. */
-.search__input:focus-visible { outline: none; }
+/* The field used to suppress the focus indicator on the grounds that the caret
+   stood in for it. base.css now draws a light/dark/light ring that reads on the
+   white bar and on a hero scrim alike, and the `outline: none` here would have
+   cost forced-colors mode its own ring, so it is gone. */
 .search__input::placeholder { color: var(--c-black-200); }
 /* Native clear button fights the custom icon. */
 .search__input::-webkit-search-cancel-button { display: none; }

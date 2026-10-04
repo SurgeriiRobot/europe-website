@@ -5,6 +5,13 @@
 // edge at its x-height, then a product shot bleeding off the right edge.
 const props = defineProps<{ blok: any }>()
 const media = computed(() => props.blok.media)
+// An ampersand read aloud as "and"; anything else the CMS puts here is already
+// a word, so it goes through unchanged.
+// The spaces are inside the string, not text nodes of their own: the span is
+// out of flow, so nothing it contains can touch the visible line. Line 1 and
+// line 2 are adjacent inline spans with no whitespace between them, and without
+// a leading space the name came out as "System purposeand intended use".
+const accentWord = computed(() => ` ${String(props.blok.accent || '').trim() === '&' ? 'and' : props.blok.accent} `)
 </script>
 
 <template>
@@ -13,7 +20,15 @@ const media = computed(() => props.blok.media)
     <h2 class="display__heading">
       <span class="display__line display__line--1"><span class="display__text"><BrandText :text="blok.line_1" /></span></span>
       <span v-if="blok.line_2 || blok.accent" class="display__line display__line--2">
-        <span v-if="blok.accent" class="display__accent">{{ blok.accent }}</span>
+        <!-- The accent is the heading's conjunction set at 1.4x in #e2e2e2,
+             which measures 1.30:1 on the white band: a flourish, not something
+             anyone reads. Legible would mean a 140px grey ampersand heavier
+             than the words either side of it, so it stays as drawn, is marked
+             decorative, and the heading's accessible text carries the word
+             instead: "System purpose and intended use" rather than the two
+             halves run together. -->
+        <span v-if="blok.accent" class="display__accent" aria-hidden="true">{{ blok.accent }}</span>
+        <span v-if="blok.accent" class="visually-hidden">{{ accentWord }}</span>
         {{ ' ' }}<span class="display__text"><BrandText :text="blok.line_2" /></span>
       </span>
     </h2>

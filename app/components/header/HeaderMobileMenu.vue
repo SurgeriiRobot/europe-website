@@ -14,6 +14,9 @@ const expanded = ref<string | null>(null)
 const searching = ref(props.initialSearch ?? false)
 const term = ref('')
 const localePath = useLocalePath()
+const root = ref<HTMLElement>()
+const searchInput = ref<HTMLInputElement>()
+const searchToggle = ref<HTMLButtonElement>()
 
 const childLinks = (item: any) => (item.columns || []).flatMap((c: any) => c.links || [])
 const localeCodes = computed(() => (locales.value as any[]).map(l => (typeof l === 'string' ? l : l.code)))
@@ -35,26 +38,130 @@ async function submitSearch() {
   await navigateTo({ path: localePath('/search'), query: { q } })
 }
 
-// Lock page scroll behind the overlay; close on navigation or Escape.
-onMounted(() => { document.documentElement.style.overflow = 'hidden' })
-onBeforeUnmount(() => { document.documentElement.style.overflow = '' })
-watch(() => route.fullPath, () => emit('close'))
-const onKey = (e: KeyboardEvent) => e.key === 'Escape' && emit('close')
-onMounted(() => document.addEventListener('keydown', onKey))
-onBeforeUnmount(() => document.removeEventListener('keydown', onKey))
+// ---- a real modal ------------------------------------------------------
+// The overlay claimed role="dialog" aria-modal="true" without behaving like one:
+// opening it left focus on the hamburger, the page behind stayed in the tab
+// order (stop 12 walked out of the overlay into it), and Escape dropped focus on
+// <body>. The four things that claim owes: move focus in, keep Tab inside,
+// take the rest of the page out of reach, and hand focus back on the way out.
+
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+
+function focusables(): HTMLElement[] {
+  const el = root.value
+  if (!el) return []
+  return Array.from(el.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
+    // The collapsed sub-panels are already `inert`, so their links are out.
+    n => !n.closest('[inert]') && n.checkVisibility?.({ checkOpacity: true, checkVisibilityCSS: true }) !== false,
+  )
+}
+
+// Everything outside the overlay, marked branch by branch up to <body>: the
+// header bar the hamburger sits in, then <main>, the footer and the cookie
+// notice, then whatever sits beside the app root. `inert` blocks pointer and
+// keyboard alike; aria-hidden says the same thing to a screen reader that has
+// not implemented inert yet.
+let shielded: HTMLElement[] = []
+function shield() {
+  const el = root.value
+  if (!el) return
+  for (let node: HTMLElement | null = el; node && node !== document.body; node = node.parentElement) {
+    for (const sibling of Array.from(node.parentElement?.children || [])) {
+      if (!(sibling instanceof HTMLElement) || sibling === node) continue
+      if (sibling.hasAttribute('inert')) continue
+      sibling.setAttribute('inert', '')
+      sibling.setAttribute('aria-hidden', 'true')
+      shielded.push(sibling)
+    }
+  }
+}
+function unshield() {
+  for (const el of shielded) {
+    el.removeAttribute('inert')
+    el.removeAttribute('aria-hidden')
+  }
+  shielded = []
+}
+
+// Synchronous, so the hamburger is focusable again by the time the header's
+// close handler reaches for it on the next tick.
+function requestClose() {
+  unshield()
+  emit('close')
+}
+
+function onKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape') {
+    e.stopPropagation()
+    requestClose()
+    return
+  }
+  if (e.key !== 'Tab') return
+  const items = focusables()
+  const el = root.value
+  if (!el) return
+  if (!items.length) { e.preventDefault(); el.focus(); return }
+  const first = items[0]!
+  const last = items[items.length - 1]!
+  const active = document.activeElement as HTMLElement | null
+  if (e.shiftKey && (active === first || active === el || !el.contains(active))) {
+    e.preventDefault()
+    last.focus()
+  }
+  else if (!e.shiftKey && (active === last || !el.contains(active))) {
+    e.preventDefault()
+    first.focus()
+  }
+}
+
+// Lock page scroll behind the overlay; close on navigation.
+onMounted(() => {
+  document.documentElement.style.overflow = 'hidden'
+  shield()
+  // The dialog itself rather than its first link, so a screen reader reads the
+  // label before the contents, and Tab then starts at the top of the overlay.
+  if (!searching.value) root.value?.focus()
+})
+onBeforeUnmount(() => {
+  document.documentElement.style.overflow = ''
+  unshield()
+})
+watch(() => route.fullPath, () => requestClose())
+
+// The field mounts inside a transition, so focus it when it exists. Turning
+// search off would otherwise drop focus on <body>; hand it back to the toggle.
+watch(searchInput, (el, was) => {
+  if (el) el.focus()
+  else if (was) searchToggle.value?.focus()
+})
 </script>
 
 <template>
-  <div class="mm" role="dialog" aria-modal="true" aria-label="Site menu">
+  <div
+    ref="root"
+    class="mm"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Site menu"
+    tabindex="-1"
+    @keydown="onKeydown"
+  >
     <div class="mm__top">
       <NuxtLink :to="localePath('/')" class="mm__logo" aria-label="SHURUI home">
         <img src="/brand/shurui-logo-white.png" alt="SHURUI" width="90" height="18">
       </NuxtLink>
       <div class="mm__controls">
-        <button type="button" class="mm__icon" :aria-expanded="searching" aria-label="Search" @click="searching = !searching">
+        <button
+          ref="searchToggle"
+          type="button"
+          class="mm__icon"
+          :aria-expanded="searching"
+          aria-label="Search"
+          @click="searching = !searching"
+        >
           <Icon name="search" :size="33" />
         </button>
-        <button type="button" class="mm__icon" aria-label="Close menu" @click="emit('close')">
+        <button type="button" class="mm__icon" aria-label="Close menu" @click="requestClose()">
           <Icon name="close-thin" :size="24" />
         </button>
       </div>
@@ -62,7 +169,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKey))
 
     <Transition name="mm-search">
       <form v-if="searching" class="mm__search" role="search" @submit.prevent="submitSearch">
-        <input v-model="term" type="search" placeholder="Search input" aria-label="Search" autofocus>
+        <input ref="searchInput" v-model="term" type="search" placeholder="Search input" aria-label="Search">
         <button type="submit" aria-label="Submit search"><Icon name="search" :size="20" /></button>
       </form>
     </Transition>
@@ -149,6 +256,9 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKey))
   background: linear-gradient(160deg, #4169e8 0%, var(--c-black) 100%);
   color: var(--c-white);
 }
+/* The dialog takes focus on open so its label is read first; it is not a
+   control, so it draws no ring of its own. */
+.mm:focus { outline: none; }
 
 .mm__top {
   display: flex;

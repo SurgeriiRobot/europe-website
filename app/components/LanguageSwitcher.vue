@@ -10,21 +10,71 @@ const available = computed(() =>
 const others = computed(() => available.value.filter(l => l.code !== locale.value))
 const open = ref(false)
 const root = ref<HTMLElement>()
+const trigger = ref<HTMLButtonElement>()
 
 useClickOutside(root, () => (open.value = false))
+
+// The card is role="menu" with role="menuitem" children, which asks for the
+// menu-button keyboard contract and had none of it: the arrow keys did nothing,
+// and @keydown.esc sat on the trigger alone, so Escape from inside an open menu
+// never reached it. The options carry tabindex="-1" and are reached with the
+// arrows, as that role expects; Tab leaves the menu and closes it.
+const options = () => Array.from(root.value?.querySelectorAll<HTMLElement>('.lang__option') || [])
+
+async function openMenu(at: number) {
+  open.value = true
+  await nextTick()
+  const els = options()
+  if (!els.length) return
+  ;(at < 0 ? els[els.length - 1] : els[at])?.focus()
+}
+
+function closeMenu(returnFocus = true) {
+  if (!open.value) return
+  open.value = false
+  // Escape and a chosen option both hand focus back to the code that opened the
+  // menu; without this it fell to <body>.
+  if (returnFocus) trigger.value?.focus()
+}
+
+function onKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape') {
+    if (!open.value) return
+    e.preventDefault()
+    e.stopPropagation()
+    closeMenu()
+    return
+  }
+  const onTrigger = document.activeElement === trigger.value
+  if (!open.value) {
+    if (onTrigger && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+      e.preventDefault()
+      openMenu(e.key === 'ArrowDown' ? 0 : -1)
+    }
+    return
+  }
+  if (e.key === 'Tab') { closeMenu(false); return }
+  const els = options()
+  if (!els.length) return
+  const at = els.indexOf(document.activeElement as HTMLElement)
+  if (e.key === 'ArrowDown') { e.preventDefault(); els[at < 0 ? 0 : (at + 1) % els.length]?.focus() }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); els[at < 0 ? els.length - 1 : (at - 1 + els.length) % els.length]?.focus() }
+  else if (e.key === 'Home') { e.preventDefault(); els[0]?.focus() }
+  else if (e.key === 'End') { e.preventDefault(); els[els.length - 1]?.focus() }
+}
 </script>
 
 <template>
-  <div ref="root" class="lang">
+  <div ref="root" class="lang" @keydown="onKeydown">
     <button
       v-if="others.length"
+      ref="trigger"
       class="lang__trigger"
       :class="{ 'is-open': open }"
       type="button"
       :aria-expanded="open"
-      aria-haspopup="true"
-      @click="open = !open"
-      @keydown.esc="open = false"
+      aria-haspopup="menu"
+      @click="open ? closeMenu() : openMenu(0)"
     >
       {{ locale.toUpperCase() }}
     </button>
@@ -33,7 +83,13 @@ useClickOutside(root, () => (open.value = false))
     <Transition name="lang-pop">
       <ul v-if="open" class="lang__menu" role="menu">
         <li v-for="option in others" :key="option.code" role="none">
-          <NuxtLink role="menuitem" :to="switchLocalePath(option.code)" class="lang__option" @click="open = false">
+          <NuxtLink
+            role="menuitem"
+            tabindex="-1"
+            :to="switchLocalePath(option.code)"
+            class="lang__option"
+            @click="closeMenu(false)"
+          >
             {{ option.code.toUpperCase() }}
           </NuxtLink>
         </li>

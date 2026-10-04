@@ -60,9 +60,21 @@ const hoverClose = () => {
 const hoverCancel = () => clearTimeout(closeTimer)
 onBeforeUnmount(() => clearTimeout(closeTimer))
 
+const burger = ref<HTMLButtonElement>()
+
 function openMobile(search = false) {
   mobileSearch.value = search
   mobileOpen.value = true
+}
+
+// Closing the overlay has to put focus back on the control that opened it, or a
+// keyboard user is dropped at the top of the document (Escape used to leave
+// focus on <body>, and the next Tab landed somewhere in the page behind). The
+// menu releases its own `inert` synchronously before it emits, so the hamburger
+// is focusable by the time this runs.
+function closeMobile() {
+  mobileOpen.value = false
+  nextTick(() => burger.value?.focus())
 }
 
 watch(() => route.fullPath, () => { openId.value = null })
@@ -166,14 +178,17 @@ watch(openId, id => { if (id) hidden.value = false })
               <!-- A parent is a real page as well as a menu, so it has to be a
                    link: as a button it had no href, which left its children
                    reachable only by opening the menu. Where there is no hover,
-                   the first tap opens the menu instead of navigating. -->
+                   the first tap opens the menu instead of navigating.
+                   No aria-controls: only one sub-nav bar is in the DOM at a
+                   time, and only while it is open, so the id it named resolved
+                   to nothing on every page at every width. aria-expanded alone
+                   is valid and is what screen readers act on. -->
               <NuxtLink
                 v-if="childLinks(item).length"
                 :to="sbHref(item.link)"
                 class="hdr__link"
                 :class="{ 'is-active': isActive(item) }"
                 :aria-expanded="openId === item._uid"
-                :aria-controls="`subnav-${item._uid}`"
                 @click="onParentClick(item, $event)"
               >
                 {{ item.label }}
@@ -192,7 +207,15 @@ watch(openId, id => { if (id) hidden.value = false })
 
       <!-- Phone design: the hamburger alone; search lives inside the menu. -->
       <div class="hdr__mobile">
-        <button type="button" class="hdr__icon" aria-label="Open menu" :aria-expanded="mobileOpen" @click="openMobile()">
+        <button
+          ref="burger"
+          type="button"
+          class="hdr__icon"
+          aria-label="Open menu"
+          aria-haspopup="dialog"
+          :aria-expanded="mobileOpen"
+          @click="openMobile()"
+        >
           <Icon name="menu-thin" :size="28" />
         </button>
       </div>
@@ -228,7 +251,7 @@ watch(openId, id => { if (id) hidden.value = false })
         :cta="blok.cta || []"
         :socials="socials || []"
         :initial-search="mobileSearch"
-        @close="mobileOpen = false"
+        @close="closeMobile"
       />
     </Transition>
   </header>
