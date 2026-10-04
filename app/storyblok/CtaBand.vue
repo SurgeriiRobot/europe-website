@@ -91,15 +91,17 @@ const spacing = computed(() => ({
   padding: var(--cta-top, 0) var(--gutter) var(--cta-bottom, 0);
 }
 .cta--display::after { background: rgb(0 0 0 / 35%); }
-/* The lead line joins this band to the section above, so it starts at the
-   boundary rather than 66px inside, where it read as floating. Its length is
-   settable per band through the usual connector field. */
+/* The lead line joins this band to the section above. It is only ever the half
+   below the boundary: the section above draws the half above it, the way every
+   other joined pair on the page does, so the line reads as one line centred on
+   the transition rather than hanging off it. 50px matches the other boundary on
+   this page (the CE notice into the key figures). */
 .cta__lead {
   position: absolute;
   left: 50%;
   top: 0;
   z-index: 1;
-  height: var(--connector-len, 116px);
+  height: var(--connector-len, max(30px, calc(3.47 * var(--sx))));
   border-left: var(--line-w) solid var(--c-blue);
 }
 .cta__display {
