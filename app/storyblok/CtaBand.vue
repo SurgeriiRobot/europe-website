@@ -14,6 +14,23 @@ const inset = computed(() => props.blok.style === 'inset')
 const bgH = computed(() => (display.value ? 810 : inset.value ? 800 : 700))
 // Phones can take their own crop (the SP Robot band frames its photo taller there).
 const bgMobile = computed(() => (props.blok.background_mobile?.filename ? props.blok.background_mobile : null))
+
+// Spacing overrides. The editor types px as drawn at 1440, so the desktop pair
+// scales with --sx; the _mobile pair is raw px at 390 and does not. An empty
+// field has to come back as undefined, never null: Vue's style binding takes
+// string | number | undefined only, and every fallback below keeps the value
+// the band had before the field existed.
+const n = (v: unknown) => (v === '' || v === null || v === undefined || !Number.isFinite(Number(v)) ? undefined : Number(v))
+const sx = (v: unknown) => { const x = n(v); return x === undefined ? undefined : `calc(${x} / 14.4 * var(--sx))` }
+const px = (v: unknown) => { const x = n(v); return x === undefined ? undefined : `${x}px` }
+const spacing = computed(() => ({
+  '--cta-top': sx(props.blok.space_top),
+  '--cta-bottom': sx(props.blok.space_bottom),
+  '--cta-top-m': px(props.blok.space_top_mobile),
+  '--cta-bottom-m': px(props.blok.space_bottom_mobile),
+  '--connector-len': sx(props.blok.connector_length),
+  ...(props.blok.body_width ? { '--cta-body-w': `${Number(props.blok.body_width)}px` } : {}),
+}))
 </script>
 
 <template>
@@ -23,7 +40,7 @@ const bgMobile = computed(() => (props.blok.background_mobile?.filename ? props.
     class="section cta"
     :class="[display ? 'cta--display' : 'cta--standard', { 'cta--inset': inset, 'cta--tint': blok.tint }]"
     :data-theme="blok.theme || 'dark'"
-    :style="blok.body_width ? { '--cta-body-w': `${Number(blok.body_width)}px` } : undefined"
+    :style="spacing"
   >
     <span v-if="display && (blok.connector === 'top' || blok.connector === 'both')" class="cta__lead" aria-hidden="true" />
     <SectionConnector v-else :connector="blok.connector" />
@@ -71,7 +88,7 @@ const bgMobile = computed(() => (props.blok.background_mobile?.filename ? props.
   display: grid;
   place-items: center;
   min-height: clamp(420px, 56.25vw, 810px);   /* 810/1440 */
-  padding: 0 var(--gutter);
+  padding: var(--cta-top, 0) var(--gutter) var(--cta-bottom, 0);
 }
 .cta--display::after { background: rgb(0 0 0 / 35%); }
 /* The lead line joins this band to the section above, so it starts at the
@@ -104,7 +121,8 @@ const bgMobile = computed(() => (props.blok.background_mobile?.filename ? props.
   max-width: var(--container);
   min-height: clamp(520px, 48.6vw, 700px);
   margin-inline: auto;
-  padding: clamp(96px, 13.9vw, 200px) clamp(16px, 5.2vw, 75px);
+  padding: var(--cta-top, clamp(96px, 13.9vw, 200px)) clamp(16px, 5.2vw, 75px)
+           var(--cta-bottom, clamp(96px, 13.9vw, 200px));
 }
 .cta__content { display: grid; gap: 24px; }
 /* The headline's lines are set by explicit breaks; only the body keeps the 399px column. */
@@ -112,7 +130,7 @@ const bgMobile = computed(() => (props.blok.background_mobile?.filename ? props.
 /* Keeps editor line breaks: Figma sets this box to fit its lines with zero slack,
    so letting the browser re-wrap it would drop a word onto a fourth line. */
 .cta__headline { margin: 0; font-size: clamp(1.625rem, 2.36vw, 2.125rem); font-weight: 600; line-height: 1.206; color: inherit; white-space: pre-line; }
-.cta__body { margin: 0; font-size: 1.125rem; font-weight: 300; line-height: 1.6111; }
+.cta__body { margin: 0; font-size: 1.125rem; font-weight: 300; line-height: 1.6111; white-space: pre-line; }
 .cta__actions { display: flex; flex-wrap: wrap; gap: 16px; }
 
 .cta--inset .cta__inner {
@@ -120,7 +138,7 @@ const bgMobile = computed(() => (props.blok.background_mobile?.filename ? props.
   padding-inline: calc(var(--frame-x) + 12.92 * var(--sx));               /* x186 */
   max-width: none;
 }
-.cta--inset .cta__body { max-width: 280px; }
+.cta--inset .cta__body { max-width: var(--cta-body-w, 280px); }
 .cta--tint::before {
   content: '';
   position: absolute;
@@ -137,10 +155,10 @@ const bgMobile = computed(() => (props.blok.background_mobile?.filename ? props.
    wash that is clear at the top and solid #1f2739 at the foot. */
 @media (max-width: 720px) {
   .cta--display, .cta__inner { min-height: clamp(560px, 205vw, 800px); }
-  .cta--display { padding-top: 26px; }                         /* text sits 13px below centre */
+  .cta--display { padding: var(--cta-top-m, 26px) var(--gutter) var(--cta-bottom-m, 0); }   /* text sits 13px below centre */
   .cta__display { font-size: 25.64vw; }                         /* 100px */
   .cta__lead { display: none; }
-  .cta__inner { align-items: flex-end; padding: 0 16px 103px; }
+  .cta__inner { align-items: flex-end; padding: var(--cta-top-m, 0) 16px var(--cta-bottom-m, 103px); }
   .cta__content { gap: 24px; }
   .cta__headline { margin-bottom: 12px; font-size: clamp(1.75rem, 8.72vw, 2.125rem); }
   .cta--standard .cta__bg { object-position: 83% center; }    /* keep the clinician in frame */
@@ -150,7 +168,7 @@ const bgMobile = computed(() => (props.blok.background_mobile?.filename ? props.
     background: linear-gradient(0deg, #1f2739 0%, rgb(31 39 57 / 90%) 25%, rgb(31 39 57 / 72%) 65%, rgb(31 39 57 / 0) 95%);
   }
   /* Inset band (SP Robot mobile 9196-9996): no button, so the copy ends 130px up. */
-  .cta--inset .cta__inner { min-height: clamp(560px, 205vw, 800px); padding: 0 16px 130px; }
+  .cta--inset .cta__inner { min-height: clamp(560px, 205vw, 800px); padding: var(--cta-top-m, 0) 16px var(--cta-bottom-m, 130px); }
   .cta--inset .cta__body { max-width: none; }
   .cta--inset .cta__headline { margin-bottom: 0; }
   .cta--inset .cta__bg { object-position: 41% center; }

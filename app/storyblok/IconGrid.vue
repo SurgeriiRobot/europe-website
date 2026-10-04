@@ -4,11 +4,27 @@
 // 32px apart, a row every 486px, a short last row centred; one column on phones.
 // Each drawing sits on a 240x185 artboard, so the labels line up whatever shape
 // the drawing is.
-defineProps<{ blok: any }>()
+const props = defineProps<{ blok: any }>()
+
+// Spacing overrides. The editor types px as drawn at 1440, so the desktop pair
+// scales with --sx; the _mobile pair is raw px at 390 and does not. Empty
+// fields have to come back as undefined, never null: Vue's style binding takes
+// string | number | undefined only, and each fallback below is the spacing the
+// section already drew.
+const n = (v: unknown) => (v === '' || v === null || v === undefined || !Number.isFinite(Number(v)) ? undefined : Number(v))
+const sx = (v: unknown) => { const x = n(v); return x === undefined ? undefined : `calc(${x} / 14.4 * var(--sx))` }
+const px = (v: unknown) => { const x = n(v); return x === undefined ? undefined : `${x}px` }
+const spacing = computed(() => ({
+  '--icons-top': sx(props.blok.space_top),
+  '--icons-bottom': sx(props.blok.space_bottom),
+  '--icons-top-m': px(props.blok.space_top_mobile),
+  '--icons-bottom-m': px(props.blok.space_bottom_mobile),
+  '--connector-len': sx(props.blok.connector_length),
+}))
 </script>
 
 <template>
-  <section v-editable="blok" :id="blok.anchor || undefined" class="section icons" :data-theme="blok.theme || 'light'">
+  <section v-editable="blok" :id="blok.anchor || undefined" class="section icons" :data-theme="blok.theme || 'light'" :style="spacing">
     <SectionConnector :connector="blok.connector" />
     <div class="container">
       <SectionTitle :headline="blok.headline" :body="blok.body" />
@@ -22,7 +38,7 @@ defineProps<{ blok: any }>()
 <style scoped>
 .icons {
   --connector-len: calc(6.94 * var(--sx));                                  /* 100 */
-  padding: calc(13.85 * var(--sx)) 0 calc(22.68 * var(--sx));               /* 199 to the title / 327 */
+  padding: var(--icons-top, calc(13.85 * var(--sx))) 0 var(--icons-bottom, calc(22.68 * var(--sx)));   /* 199 to the title / 327 */
 }
 .icons :deep(.sec-title) { max-width: 632px; }
 /* "Actuation / and control" on phones: even lines rather than a lone word; the
@@ -43,7 +59,7 @@ defineProps<{ blok: any }>()
 
 /* Phone design: an 80px line in, a 40px line out, one icon every 452px. */
 @media (max-width: 720px) {
-  .icons { --connector-top-len: 80px; --connector-bottom-len: 40px; padding: 178px 0 169px; }
+  .icons { --connector-top-len: 80px; --connector-bottom-len: 40px; padding: var(--icons-top-m, 178px) 0 var(--icons-bottom-m, 169px); }
   .icons__grid { flex-direction: column; align-items: center; row-gap: 152px; max-width: 358px; margin-top: 135px; }
   .icons__grid > :deep(*) { flex: none; width: 100%; }
 }

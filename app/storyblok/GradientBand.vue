@@ -96,5 +96,29 @@ const style = computed(() => ({
       #ffffff 100%
     );
   }
+  /* Contact's band, for the same reason, and it had no phone stops at all. The
+     171deg desktop ramp spent most of its length off the sides, which put the
+     white "CE-Marked for adult & pediatric clinical use" label at 56.9% of the
+     band on #629dfe: 2.99:1 against the 3:1 large text needs. The deep blues are
+     held to the figures/form boundary at 61% so the white copy above it clears
+     3:1 with room to spare, and the band only brightens past it, where the
+     form's navy labels need a pale ground to clear 4.5:1. */
+  .gband--night-to-white {
+    background: linear-gradient(
+      180deg,
+      #151a45 0%,
+      #05075c 12%,
+      #041a94 26%,
+      #0533d2 41%,
+      #1857fe 55%,
+      #4875fd 61%,
+      #7fb4fe 66%,
+      #a1cdfe 72%,
+      #c0e0fe 79%,
+      #ddf0fe 86%,
+      #fafdfe 93%,
+      #ffffff 100%
+    );
+  }
 }
 </style>

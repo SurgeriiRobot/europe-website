@@ -2,6 +2,20 @@
 const props = defineProps<{ blok: any }>()
 
 const fields = computed(() => props.blok.fields || [])
+
+// The schema offers the usual section spacing, but nothing read it, so the band
+// kept base.css's 96px block padding whatever the story said. Desktop values
+// are authored as px at 1440 and scale with --sx; the phone ones are real px.
+// undefined, not null: Vue's style binding rejects null.
+const n = (v: unknown) => (v === '' || v === null || v === undefined || !Number.isFinite(Number(v)) ? undefined : String(Number(v)))
+const px = (v: unknown) => { const t = n(v); return t === undefined ? undefined : `${t}px` }
+const spacing = computed(() => ({
+  '--form-top': n(props.blok.space_top),
+  '--form-bottom': n(props.blok.space_bottom),
+  '--form-top-m': px(props.blok.space_top_mobile),
+  '--form-bottom-m': px(props.blok.space_bottom_mobile),
+  '--connector-len': px(props.blok.connector_length),
+}))
 const values = reactive<Record<string, any>>({})
 const state = ref<'idle' | 'sending' | 'sent' | 'error'>('idle')
 const error = ref('')
@@ -20,12 +34,18 @@ async function submit() {
 </script>
 
 <template>
-  <section v-editable="blok" :id="blok.anchor || undefined" class="section form" :data-theme="blok.theme || 'brand'">
+  <section
+    v-editable="blok"
+    :id="blok.anchor || undefined"
+    class="section form"
+    :data-theme="blok.theme || 'brand'"
+    :style="spacing"
+  >
     <div class="form__inner">
       <h2 v-if="blok.headline" class="form__headline">{{ blok.headline }}</h2>
 
       <p v-if="state === 'sent'" class="form__success">
-        {{ blok.success_message || 'Thank you — we will be in touch shortly.' }}
+        {{ blok.success_message || 'Thank you, we will be in touch shortly.' }}
       </p>
 
       <form v-else class="form__grid" @submit.prevent="submit">
@@ -59,6 +79,16 @@ async function submit() {
 .form__headline { text-align: center; margin-bottom: var(--space-6); }
 /* Figma draws the grid 848 wide, centred: two 408px columns 32px apart. The
    shared narrow container is 760, which squeezed every field by 94px. */
+.form {
+  padding-top: calc(var(--form-top, 96) / 14.4 * var(--sx));
+  padding-bottom: calc(var(--form-bottom, 96) / 14.4 * var(--sx));
+}
+@media (max-width: 720px) {
+  .form {
+    padding-top: var(--form-top-m, 96px);
+    padding-bottom: var(--form-bottom-m, 96px);
+  }
+}
 .form__inner {
   width: min(100% - 2 * clamp(16px, 5.2vw, 75px), calc(58.89 * var(--sx)));
   margin-inline: auto;

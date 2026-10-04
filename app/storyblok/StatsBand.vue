@@ -4,6 +4,25 @@
 // centred button 80px below.
 const props = defineProps<{ blok: any }>()
 const columns = computed(() => Number(props.blok.columns) || 2)
+
+// Spacing overrides. The editor types px as drawn at 1440, so the desktop pair
+// scales with --sx; the _mobile pair is raw px at 390 and does not. Empty
+// fields have to come back as undefined, never null: Vue's style binding takes
+// string | number | undefined only, and each fallback below is the spacing the
+// band already drew.
+const n = (v: unknown) => (v === '' || v === null || v === undefined || !Number.isFinite(Number(v)) ? undefined : Number(v))
+const sx = (v: unknown) => { const x = n(v); return x === undefined ? undefined : `calc(${x} / 14.4 * var(--sx))` }
+const px = (v: unknown) => { const x = n(v); return x === undefined ? undefined : `${x}px` }
+const style = computed(() => ({
+  ...(props.blok.title_size === 'large'
+    ? { '--sec-title-size': 'clamp(2.5rem, 5vw, 4.5rem)', '--sec-title-measure': 'calc(68 * var(--sx))' }
+    : {}),
+  '--stats-top': sx(props.blok.space_top),
+  '--stats-bottom': sx(props.blok.space_bottom),
+  '--stats-top-m': px(props.blok.space_top_mobile),
+  '--stats-bottom-m': px(props.blok.space_bottom_mobile),
+  '--connector-len': sx(props.blok.connector_length),
+}))
 </script>
 
 <template>
@@ -11,10 +30,9 @@ const columns = computed(() => Number(props.blok.columns) || 2)
     v-editable="blok"
     :id="blok.anchor || undefined"
     class="section stats"
+    :class="{ 'stats--inline': blok.figures === 'inline', 'stats--large-title': blok.title_size === 'large' }"
     :data-theme="blok.theme || 'light'"
-    :style="blok.title_size === 'large'
-      ? { '--sec-title-size': 'clamp(2.5rem, 5vw, 4.5rem)', '--sec-title-measure': 'calc(68 * var(--sx))' }
-      : undefined"
+    :style="style"
   >
     <SectionConnector :connector="blok.connector" />
     <div class="container stats__inner">
@@ -29,13 +47,18 @@ const columns = computed(() => Number(props.blok.columns) || 2)
           ...(blok.spacing === 'compact'
             ? { '--stats-gap': 'clamp(32px, 4.3vw, 62px)', '--stats-rowgap': 'clamp(110px, 16.04vw, 231px)', '--stat-margin': '0px' }
             : {}),
-          // Contact draws its figures at 64px in the surface's own ink, 100px
-          // above their labels, rather than the 96px blue the home band uses.
+          // Contact draws its figures at 64px in the surface's own ink and sets
+          // them straight under the intro: no icon rhythm above them (Contact
+          // 1122 to 1205 is the whole gap, carried here rather than in the cell)
+          // and 26px down to the labels, which puts the label ink at 1313 under
+          // figure ink that ends at 1274.
           ...(blok.figures === 'inline'
             ? {
                 '--stat-size': 'clamp(2.5rem, 4.44vw, 4rem)',
                 '--stat-ink': 'var(--ink)',
-                '--stat-gap': 'clamp(28px, 3.68vw, 53px)',
+                '--stat-margin': '0px',
+                '--stat-gap': 'calc(1.795 * var(--sx))',
+                '--stats-gap': 'calc(5.74 * var(--sx))',
               }
             : {}),
         }"
@@ -53,7 +76,10 @@ const columns = computed(() => Number(props.blok.columns) || 2)
 </template>
 
 <style scoped>
-.stats { --connector-len: max(30px, calc(3.47 * var(--sx))); padding: clamp(96px, 13.9vw, 200px) 0 clamp(96px, 13.9vw, 200px); }   /* 50px each side */
+.stats {
+  --connector-len: max(30px, calc(3.47 * var(--sx)));                                        /* 50px each side */
+  padding: var(--stats-top, clamp(96px, 13.9vw, 200px)) 0 var(--stats-bottom, clamp(96px, 13.9vw, 200px));
+}
 .stats__inner { display: grid; justify-items: center; }
 .stats__grid {
   display: grid;
@@ -61,8 +87,10 @@ const columns = computed(() => Number(props.blok.columns) || 2)
   gap: var(--stats-rowgap, clamp(56px, 8.3vw, 120px)) 30px;
   margin-top: var(--stats-gap, clamp(48px, 7.4vw, 106px));
 }
+/* Clinical Applications 8240-8500: the closing title sits 231px under the last
+   row of labels, which is far more air than the band gives its own title. */
 .stats__outro {
-  margin: clamp(48px, 7.4vw, 106px) auto 0;
+  margin: calc(16.15 * var(--sx)) auto 0;                                     /* 232.6 */
   max-width: calc(49.3 * var(--sx));
   font-size: clamp(2rem, 3.33vw, 3rem);
   font-weight: 600;
@@ -71,16 +99,47 @@ const columns = computed(() => Number(props.blok.columns) || 2)
   text-align: center;
   color: var(--ink);
 }
+/* A 72px heading stands further off its intro than the 48px one the shared
+   title draws: Contact 1003 to 1035. The intro keeps the 630 measure the
+   default title uses, which the widened box would otherwise give away, and
+   which is what sets its three lines. */
+.stats--large-title :deep(.sec-title) { gap: calc(2.22 * var(--sx)); }                 /* 32 */
+.stats--large-title :deep(.sec-title__p) { max-width: calc(43.75 * var(--sx)); }       /* 630 */
+
+/* Contact 1212-1266: the CE mark is drawn at the size of a figure, on the
+   figures' own line, not on a line of its own above them. Stat puts an icon in
+   a row before the value, so here the icon shares the value's cell and the row
+   keeps the figure's height; the cell packs from the top so a two-line label
+   cannot push the other columns' figures down with it. */
+.stats--inline :deep(.stat) { align-content: start; }
+.stats--inline :deep(.stat__icon) {
+  grid-area: 1 / 1;
+  align-self: center;
+  height: calc(3.82 * var(--sx));                                                      /* 55 */
+  width: auto;
+}
+.stats--inline :deep(.stat__value) { grid-area: 1 / 1; }
+.stats--inline :deep(.stat__label) { grid-area: 2 / 1; }
+
 .stats__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; margin-top: 48px; }
+/* A closing title already carries the air above it, so the design sets the
+   button 23px under it (8617 to 8641) rather than the usual 48. */
+.stats__outro + .stats__actions { margin-top: calc(1.625 * var(--sx)); }      /* 23.4 */
 @media (max-width: 640px) { .stats__grid { grid-template-columns: minmax(0, 1fr); } }
 /* Phone design: title 116px down, 20px to the intro, one column of figures on a
    321px pitch, the button 72px below them — and the lead line into the next
    section drawn here, above its photo (desktop draws it inside the photo). */
 @media (max-width: 720px) {
-  .stats { --connector-len: 40px; padding: 116px 0 140px; }
+  .stats { --connector-len: 40px; padding: var(--stats-top-m, 116px) 0 var(--stats-bottom-m, 140px); }
   .stats :deep(.sec-title) { gap: 20px; }
   .stats__grid { gap: 156px; margin-top: 91px; }
-  .stats__actions { margin-top: 72px; }
+  /* No phone frame is drawn for the Contact band, so its intro keeps the whole
+     title measure there and the CE mark the 80px crop it is served at, which is
+     the same share of the 96px phone figure as 55 is of the 64px desktop one. */
+  .stats--large-title :deep(.sec-title__p) { max-width: none; }
+  .stats--inline :deep(.stat__icon) { height: 80px; }
+  .stats__outro { margin-top: 48px; }
+  .stats__actions, .stats__outro + .stats__actions { margin-top: 72px; }
   .stats::after {
     content: '';
     position: absolute;

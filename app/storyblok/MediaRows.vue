@@ -79,9 +79,16 @@ const headSize = computed(() => (props.blok.headline_size === 'large'
   padding: calc(var(--rows-top, 105) / 14.4 * var(--sx)) 0 calc(var(--rows-bottom, 220) / 14.4 * var(--sx));
   overflow: hidden;
 }
-.rows__head { margin-bottom: calc(7.5 * var(--sx)); }
+/* System Principles is the only section in the space that carries a headline,
+   and the design leaves 30px between its ink and the first row rather than the
+   108 this held: measured heading ink to first row body ink 133 in the design
+   against 211 in the build. */
+.rows__head { margin-bottom: calc(2.08 * var(--sx)); }
 .rows__list { display: grid; gap: calc(var(--rows-gap, 240) / 14.4 * var(--sx)); }
-.rows__actions { display: flex; justify-content: center; margin-top: calc(5.56 * var(--sx)); }   /* 80 */
+/* Instruments Ecosystem is the only section with a button under the rows. The
+   design puts 210 between the last body line's ink top and the button box
+   (4803 to 5013), where 80 here produced 279. */
+.rows__actions { display: flex; justify-content: center; margin-top: calc(0.76 * var(--sx)); }   /* 11 */
 
 @media (max-width: 720px) {
   .rows {

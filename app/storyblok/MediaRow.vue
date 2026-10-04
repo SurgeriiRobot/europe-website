@@ -75,8 +75,14 @@ const mediaWidth = computed(() => `calc(${(widthPx.value / 14.4).toFixed(2)} * m
 /* The subtitle is the schema's "short semibold lead between the title and the
    text" (Instruments Ecosystem, "Seamlessly switch between Cobra and Reverse
    Cobra"). It had markup but no styles, so it rendered as a browser-default
-   paragraph. */
-.mrow__subtitle { margin: 24px 0 0; font-size: 1.125rem; font-weight: 600; line-height: 1.6111; color: var(--ink); }
+   paragraph. The design sets it at 16/30 semibold, not at the body's 18/29:
+   instruments-ecosystem-desktop draws it on two lines at y3912 and y3942, and
+   at 18 it took three and pushed the body down. */
+.mrow__subtitle { margin: 24px 0 0; font-size: 1rem; font-weight: 600; line-height: 1.875; color: var(--ink); }
+/* The subtitle's own 30px line already carries the air under it: the design
+   starts the body where the subtitle's last line box ends (y3968 against a box
+   running to 3972), so the body's usual 24px does not apply after one. */
+.mrow__subtitle + .mrow__body { margin-top: 0; }
 
 /* Clinical Applications draws the procedure list in the title's semibold at
    20/32, each entry behind a 7px dot: the dot's left edge 11.5px in from the
