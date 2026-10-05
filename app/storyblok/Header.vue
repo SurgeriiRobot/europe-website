@@ -74,7 +74,10 @@ function openMobile(search = false) {
 // is focusable by the time this runs.
 function closeMobile() {
   mobileOpen.value = false
-  nextTick(() => burger.value?.focus())
+  // preventScroll: the bar is sticky, and on the tick the overlay unmounts the
+  // browser would scroll the page up to wherever the button's own box sits,
+  // losing the reader's place by a few hundred pixels.
+  nextTick(() => burger.value?.focus({ preventScroll: true }))
 }
 
 watch(() => route.fullPath, () => { openId.value = null })
@@ -244,16 +247,25 @@ watch(openId, id => { if (id) hidden.value = false })
       </div>
     </Transition>
 
-    <Transition name="mm">
-      <HeaderMobileMenu
-        v-if="mobileOpen"
-        :nav="nav"
-        :cta="blok.cta || []"
-        :socials="socials || []"
-        :initial-search="mobileSearch"
-        @close="closeMobile"
-      />
-    </Transition>
+    <!-- Teleported out of the header on purpose. Once the page has scrolled the
+         bar carries `backdrop-filter`, and a filtered element becomes the
+         containing block for any fixed-position descendant: the overlay's
+         `inset: 0` then resolved against the 64px bar instead of the viewport,
+         so the menu opened as a sliver over the top of the page. Above the fold
+         `.hdr--over-hero` sets `backdrop-filter: none`, which is why it only
+         failed after scrolling. `.hdr--hidden`'s transform would do the same. -->
+    <Teleport to="body">
+      <Transition name="mm">
+        <HeaderMobileMenu
+          v-if="mobileOpen"
+          :nav="nav"
+          :cta="blok.cta || []"
+          :socials="socials || []"
+          :initial-search="mobileSearch"
+          @close="closeMobile"
+        />
+      </Transition>
+    </Teleport>
   </header>
 </template>
 

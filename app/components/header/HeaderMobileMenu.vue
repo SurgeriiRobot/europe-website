@@ -120,7 +120,9 @@ onMounted(() => {
   shield()
   // The dialog itself rather than its first link, so a screen reader reads the
   // label before the contents, and Tab then starts at the top of the overlay.
-  if (!searching.value) root.value?.focus()
+  // preventScroll: focusing a full-screen overlay otherwise scrolls the page
+  // behind it to wherever the element happens to sit.
+  if (!searching.value) root.value?.focus({ preventScroll: true })
 })
 onBeforeUnmount(() => {
   document.documentElement.style.overflow = ''
