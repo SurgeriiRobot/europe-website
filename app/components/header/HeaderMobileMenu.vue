@@ -266,7 +266,10 @@ watch(searchInput, (el, was) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 100px;
+  /* The same height as the header bar, so the logo and the icons stay on the
+     line they sit on with the menu closed: the expanded frame draws the logo at
+     y23-41, exactly where the collapsed one does. */
+  min-height: var(--header-h);
   padding-inline: 27px 28px;   /* logo ink lands at x30, as in Figma */
 }
 .mm__logo img { display: block; }
