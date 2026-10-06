@@ -184,7 +184,10 @@ html {
   content: '';
   position: absolute;
   top: 0.6em;
-  width: calc(50vw - 455px);
+  /* Ends 265px in from the page edge at 1440. The bands drawn with an
+     oversized heading pull it back to 157, which is where their own design puts
+     it, so the rule does not run into the words. */
+  width: calc(50vw - var(--sec-title-line-inset, 455px));
   border-top: var(--line-w) solid var(--line);
 }
 .sec-title--lines .sec-title__h::before { left: calc(50% - 50vw); }

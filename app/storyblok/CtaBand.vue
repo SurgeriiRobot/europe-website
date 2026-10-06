@@ -175,10 +175,12 @@ const spacing = computed(() => ({
      390-wide slice of the wall behind them, which is what read as "no image".
      154.87vw is that 604 at the 390 frame; 43% puts the pair in the slice. */
   .cta--standard .cta__bg { height: 154.87vw; bottom: auto; object-position: 43% center; }
-  /* Figma's wash clears by ~75% of the height; ours holds a little longer so a
-     longer headline than the design's still sits on 3:1 or better. */
+  /* The wash only has to carry the copy, which is bottom anchored, so it holds
+     its full strength to just above the headline and then clears quickly. It
+     used to sit at 72% as high as 65% of the band, which dulled the top of the
+     photograph for no benefit. */
   .cta--standard::after {
-    background: linear-gradient(0deg, #1f2739 0%, rgb(31 39 57 / 90%) 25%, rgb(31 39 57 / 72%) 65%, rgb(31 39 57 / 0) 95%);
+    background: linear-gradient(0deg, #1f2739 0%, rgb(31 39 57 / 92%) 32%, rgb(31 39 57 / 62%) 50%, rgb(31 39 57 / 22%) 68%, rgb(31 39 57 / 0) 84%);
   }
   /* Inset band (SP Robot mobile 9196-9996): no button, so the copy ends 130px up. */
   .cta--inset .cta__inner { min-height: clamp(560px, 205vw, 800px); padding: var(--cta-top-m, 0) 16px var(--cta-bottom-m, 130px); }

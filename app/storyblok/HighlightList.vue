@@ -59,6 +59,10 @@ const active = ref(0)
 }
 /* 100px title; its hairlines stop at 157px, like the other oversized titles. */
 .hl__head { --title-line: calc(50vw - 563px); }
+/* The 100px heading reaches much further out than a 48px one, so the flanking
+   hairlines stop at 157px from the page edge rather than the usual 265, which
+   is where the design draws them (instruments-ecosystem-desktop y999, x0-156). */
+.hl__head { --sec-title-line-inset: calc(39.1 * var(--sx)); }
 .hl__head :deep(.sec-title) { max-width: none; }
 .hl__head :deep(.sec-title__h) { font-size: clamp(3rem, 6.94vw, 6.25rem); line-height: 1.21; }
 

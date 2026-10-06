@@ -63,7 +63,9 @@ const accentWord = computed(() => ` ${String(props.blok.accent || '').trim() ===
 /* Baselines 140px apart (993.9 / 1133.9): line 2 sits in a 140px line box. */
 .display__line--2 { justify-self: end; margin-top: calc(0.69 * var(--sx)); line-height: calc(9.72 * var(--sx)); }
 .display__text, .display__accent { position: relative; }
-.display__accent { font-size: 1.4em; line-height: 0; color: var(--c-leather); }
+/* The conjunction is set in Lora at both sizes, not just on phones: it is the
+   display face, and the sans ampersand reads as a different mark entirely. */
+.display__accent { font-family: var(--font-display); font-size: 1.4em; line-height: 0; color: var(--c-leather); }
 
 /* Hairlines at each line's x-height (Figma 969 and 1107): from 184px after
    line 1 to the right edge, and from the left edge to 103px before the accent. */

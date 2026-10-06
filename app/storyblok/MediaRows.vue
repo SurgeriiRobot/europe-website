@@ -33,7 +33,7 @@ const style = computed(() => ({
 // A large section title is the 72px one System Principles draws over "Dual
 // Continuum Mechanism", on the same measure StatsBand uses for its own.
 const headSize = computed(() => (props.blok.headline_size === 'large'
-  ? { '--sec-title-size': 'clamp(2.5rem, 5vw, 4.5rem)', '--sec-title-measure': 'calc(68 * var(--sx))' }
+  ? { '--sec-title-size': 'clamp(2.5rem, 5vw, 4.5rem)', '--sec-title-measure': 'calc(68 * var(--sx))', '--sec-title-line-inset': 'calc(39.1 * var(--sx))' }
   : {}))
 </script>
 

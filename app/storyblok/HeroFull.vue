@@ -235,12 +235,19 @@ const srcset = computed(() =>
 @media (max-width: 720px) {
   .hero-full { min-height: clamp(560px, 200vw, 780px); }
   .hero-full__inner { padding: calc(var(--header-h) + 60px) 16px 48px; }
-  .hero-full__content { gap: 24px; max-width: none; }   /* phones use the full gutter-to-gutter measure */
+  /* width, not just max-width: the content is a flex item, so without it the
+     box shrink-wraps the longest line and a page with a shorter headline got a
+     narrower call to action than the rest (System Principles measured 310
+     against 358 on Home). */
+  .hero-full__content { gap: 24px; width: 100%; max-width: none; }
   /* The phone design runs the call to action edge to edge. */
   .hero-full__actions { width: 100%; }
   .hero-full__actions > :deep(.btn) { flex: 1 1 100%; justify-content: center; }
   .hero-full__headline { max-width: 310px; font-size: clamp(1.75rem, 8.72vw, 2.125rem); line-height: 1.206; }
-  .hero-full__body { font-size: 1rem; line-height: 1.625; }
+  /* The breaks in the body are typeset for the 1440 frame. On a phone they fall
+     in the wrong places (Instruments broke before "3D visualization"), so the
+     copy wraps to the phone measure instead. The headline keeps its breaks. */
+  .hero-full__body { font-size: 1rem; line-height: 1.625; white-space: normal; }
   /* Every side-to-side overlay is drawn for the 1440 frame, where the copy sits
      in the left third and the ramp has faded out well before the right edge. On
      a phone the copy runs gutter to gutter, so those ramps leave the end of

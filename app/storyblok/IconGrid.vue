@@ -56,6 +56,10 @@ const spacing = computed(() => ({
   list-style: none;
 }
 .icons__grid > :deep(*) { flex: 0 0 calc(23.26 * var(--sx)); }             /* 335 */
+/* The label under each icon is the dark brand blue in this band, not the bright
+   one. Scoped here rather than on `icon_item` itself, which Clinical Evidence
+   also uses and which keeps the brighter blue there. */
+.icons__grid :deep(.icon-item__label) { color: var(--c-darkblue); }
 
 /* Phone design: an 80px line in, a 40px line out, one icon every 452px. */
 @media (max-width: 720px) {
