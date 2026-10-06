@@ -6,6 +6,7 @@ const props = defineProps<{ blok: any }>()
 
 const WIDTHS = [768, 1440, 2160, 2880]
 const bg = computed(() => props.blok.background)
+const bgMobile = computed(() => (props.blok.background_mobile?.filename ? props.blok.background_mobile : null))
 
 // An explicit height is in design px at 1440, so it scales with --sx like every
 // other measurement. Left empty, an opening banner fills the screen instead.
@@ -88,17 +89,22 @@ const srcset = computed(() =>
     ]"
     :style="heightVar"
   >
-    <img
-      v-if="src"
-      :src="src"
-      :srcset="srcset"
-      sizes="100vw"
-      :alt="bg.alt || ''"
-      class="hero-full__bg"
-      :style="focusPosition"
-      loading="eager"
-      fetchpriority="high"
-    >
+    <!-- `background_mobile` has been in the schema and set on several banners
+         since they were built, but nothing read it, so phones were served the
+         1440 crop and showed whichever sliver of it the box happened to cover. -->
+    <picture v-if="src">
+      <source v-if="bgMobile" media="(max-width: 720px)" :srcset="sbCrop(bgMobile, 780)">
+      <img
+        :src="src"
+        :srcset="srcset"
+        sizes="100vw"
+        :alt="bg.alt || ''"
+        class="hero-full__bg"
+        :style="focusPosition"
+        loading="eager"
+        fetchpriority="high"
+      >
+    </picture>
 
     <video
       v-if="useVideo"

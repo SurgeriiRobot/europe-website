@@ -174,7 +174,8 @@ const spacing = computed(() => ({
      over the photo's lower edge. Cropping it to the full 800 instead showed a
      390-wide slice of the wall behind them, which is what read as "no image".
      154.87vw is that 604 at the 390 frame; 43% puts the pair in the slice. */
-  .cta--standard .cta__bg { height: 154.87vw; bottom: auto; object-position: 43% center; }
+  .cta--standard:not(.cta--inset) .cta__bg { height: 154.87vw; bottom: auto; object-position: 43% center; }
+  /* The inset band is a full bleed photograph, so it keeps the whole band. */
   /* The wash only has to carry the copy, which is bottom anchored, so it holds
      its full strength to just above the headline and then clears quickly. It
      used to sit at 72% as high as 65% of the band, which dulled the top of the
@@ -186,6 +187,9 @@ const spacing = computed(() => ({
   .cta--inset .cta__inner { min-height: clamp(560px, 205vw, 800px); padding: var(--cta-top-m, 0) 16px var(--cta-bottom-m, 130px); }
   .cta--inset .cta__body { max-width: none; }
   .cta--inset .cta__headline { margin-bottom: 0; }
-  .cta--inset .cta__bg { object-position: 41% center; }
+  /* The phone crop is already the exact slice the frame shows, so it only needs
+     anchoring to the foot: the frame hangs the picture 51px above the band and
+     clips that much off the top. */
+  .cta--inset .cta__bg { object-position: center bottom; }
 }
 </style>
