@@ -131,5 +131,16 @@ const mediaWidth = computed(() => `calc(${(widthPx.value / 14.4).toFixed(2)} * m
   .mrow--media-right .mrow__media, .mrow--media-left .mrow__media { grid-column: 1; grid-row: auto; }
   .mrow__media img { flex: auto; width: 100%; }
   .mrow__title { font-size: clamp(2.25rem, 12.3vw, 3rem); }
+  /* `phone_layout` has been in the schema and in the content since these pages
+     were built but nothing read it. `media-first` puts the picture above the
+     copy, which is the order the phone frames draw (System Principles shows the
+     heading, then the tube, then the text); `-centred` also centres the copy
+     and its button, as those frames do. Lists keep their left edge so the
+     bullets line up. */
+  .rows--phone-media-first .mrow__media,
+  .rows--phone-media-first-centred .mrow__media { order: -1; }
+  .rows--phone-media-first-centred .mrow__text { text-align: center; }
+  .rows--phone-media-first-centred .mrow__actions { justify-content: center; }
+  .rows--phone-media-first-centred .mrow__list { text-align: left; }
 }
 </style>

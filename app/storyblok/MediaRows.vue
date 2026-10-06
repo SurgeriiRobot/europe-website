@@ -96,6 +96,12 @@ const headSize = computed(() => (props.blok.headline_size === 'large'
     padding: var(--rows-top-m, 59px) 0 var(--rows-bottom-m, 180px);
   }
   .rows__list { gap: 48px; }
+  /* The phone frames keep the hairlines beside an oversized section heading,
+     shortened to a 16px tick from each edge (system-principles-mobile y950).
+     The desktop rule hides them below 1000px, so they are restored here only
+     for the band that draws the large heading. */
+  .rows__head :deep(.sec-title--lines .sec-title__h::before),
+  .rows__head :deep(.sec-title--lines .sec-title__h::after) { display: block; width: 16px; }
   .rows__actions { margin-top: 40px; padding-inline: 16px; }
 }
 </style>
