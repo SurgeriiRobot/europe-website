@@ -249,8 +249,11 @@ const go = (i: number | undefined, from: 'next' | 'prev') => {
   .showcase__stage { height: 118.1vw; }                       /* 461: lead to side links */
   /* 100px, but a long word shrinks to fit the width (Lora runs ~0.54em a letter),
      as the phone carousel design does with "Instruments". */
-  .showcase__word { top: auto; bottom: 15vw; font-size: min(25.64vw, calc(97vw / (0.54 * var(--chars, 7)))); }
-  .showcase__image { bottom: 18.2vw; width: 127.4vw; }        /* 497 wide */
+  /* The picture and the watermark overlap by design, but ours buried most of
+     the word: the picture now sits a little higher and the word a little lower,
+     which leaves the letterforms readable under it as the phone frame draws. */
+  .showcase__word { top: auto; bottom: 10vw; font-size: min(25.64vw, calc(97vw / (0.54 * var(--chars, 7)))); }
+  .showcase__image { bottom: 24vw; width: 127.4vw; }          /* 497 wide */
   .showcase__nav { bottom: 0; font-size: 1.125rem; }
   .showcase__nav--prev { left: 12px; }
   .showcase__nav--next { right: 12px; }

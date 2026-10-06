@@ -102,5 +102,9 @@ const portrait = computed(() => props.blok.portrait)
   .quote__text { font-size: 1.25rem; line-height: 1.2; }           /* 20/24 */
   .quote__role { font-size: 0.875rem; line-height: 1.2143; }       /* 14/17 */
   .quote__tick { display: none; }
+  /* The attribution is held to the measure the phone frame gives it (its widest
+     line is 174px) so it stacks beside the surgeon rather than running across
+     him. */
+  .quote__author { max-width: 180px; }
 }
 </style>
