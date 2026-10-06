@@ -8,6 +8,11 @@ export function useSbUrl() {
 
   return (link?: SbLink | null): string => {
     const href = sbUrl(link)
-    return href.startsWith('/') ? localePath(href) : href
+    if (!href.startsWith('/')) return href
+    // The fragment is kept out of the resolve and put back after it: the
+    // "Contact our team" buttons now carry one, so that every page's invitation
+    // to get in touch lands on the form rather than the top of the page.
+    const hash = href.indexOf('#')
+    return hash === -1 ? localePath(href) : localePath(href.slice(0, hash)) + href.slice(hash)
   }
 }

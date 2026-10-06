@@ -22,6 +22,11 @@ const mobileSearch = ref(false)
 const current = computed(() => route.path.replace(/\/$/, '') || '/')
 const matches = (href: string) =>
   href !== '#' && href !== '/' && (current.value === href || current.value.startsWith(`${href}/`))
+// A sub-nav link stands for one page, not a branch. `matches` is a prefix test,
+// so "Robot overview" (/shurui-sp-robot) stayed lit on System Principles and
+// Instruments Ecosystem, which live underneath it, and two links in the bar read
+// as current at once.
+const isCurrent = (href: string) => href !== '#' && current.value === href.replace(/\/$/, '')
 
 // A top-level item reads as active while its bar is open, or when the current
 // page lives under it — so the header still orients you after navigating.
@@ -238,7 +243,7 @@ watch(openId, id => { if (id) hidden.value = false })
         <Transition name="sublinks" mode="out-in">
           <ul :key="openItem._uid" class="hdr__sublinks">
             <li v-for="link in childLinks(openItem)" :key="link._uid" v-editable="link">
-              <NuxtLink :to="sbHref(link.link)" class="hdr__sublink" :class="{ 'is-active': matches(sbHref(link.link)) }">
+              <NuxtLink :to="sbHref(link.link)" class="hdr__sublink" :class="{ 'is-active': isCurrent(sbHref(link.link)) }">
                 {{ link.label }}
               </NuxtLink>
             </li>
@@ -361,10 +366,14 @@ watch(openId, id => { if (id) hidden.value = false })
 .sublinks-enter-from { opacity: 0; transform: translateY(-6px); }
 .sublinks-leave-to { opacity: 0; }
 
-/* Mobile menu: fades in while sliding down a touch. */
-.mm-enter-active { transition: opacity 260ms ease, transform 320ms cubic-bezier(0.22, 1, 0.36, 1); }
-.mm-leave-active { transition: opacity 180ms ease, transform 180ms ease; }
-.mm-enter-from, .mm-leave-to { opacity: 0; transform: translateY(-12px); }
+/* Mobile menu: a fade, with nothing to travel. The overlay used to drop in from
+   -12px, which read on a phone as the menu settling downwards after it had
+   appeared: once it opened reliably past the fold, that slide was the movement
+   still being reported. The logo and icons sit on the header's own line, so any
+   travel at all pulls them off it for the length of the transition. */
+.mm-enter-active { transition: opacity 220ms ease; }
+.mm-leave-active { transition: opacity 160ms ease; }
+.mm-enter-from, .mm-leave-to { opacity: 0; }
 
 .hdr__mobile { display: none; align-items: center; gap: 18px; }
 .hdr__icon {
