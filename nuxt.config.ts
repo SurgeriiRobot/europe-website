@@ -103,11 +103,28 @@ export default defineNuxtConfig({
 
   // `home` is the story behind `/`, so its own slug must not be a second copy of
   // the home page. The same applies under every locale prefix.
+  // The pages moved under /shurui-sp-robot and /clinical to match the agreed
+  // structure. Anything that was shared at the old address still resolves.
   routeRules: Object.fromEntries(
-    LOCALES.map(l => [
-      l.code === DEFAULT_LOCALE ? '/home' : `/${l.code}/home`,
-      { redirect: { to: l.code === DEFAULT_LOCALE ? '/' : `/${l.code}`, statusCode: 301 } },
-    ]),
+    LOCALES.flatMap((l) => {
+      const p = l.code === DEFAULT_LOCALE ? '' : `/${l.code}`
+      const moved: [string, string][] = [
+        ['/sp-robot', '/shurui-sp-robot'],
+        ['/system-principles', '/shurui-sp-robot/system-principles'],
+        ['/instruments-ecosystem', '/shurui-sp-robot/instruments-ecosystem'],
+        ['/clinical-application', '/clinical/clinical-applications'],
+        ['/clinical-applications', '/clinical/clinical-applications'],
+        ['/clinical-evidence', '/clinical/clinical-evidence'],
+        ['/clinical-library', '/clinical/clinical-library'],
+        ['/training-and-proctoring', '/clinical/training-and-proctoring'],
+        ['/news-events', '/news-and-events'],
+        ['/news-events/**', '/news-and-events/**'],
+      ]
+      return [
+        [`${p}/home`, { redirect: { to: p || '/', statusCode: 301 } }],
+        ...moved.map(([from, to]) => [`${p}${from}`, { redirect: { to: `${p}${to}`, statusCode: 301 } }] as const),
+      ]
+    }),
   ),
 
   devServer: {

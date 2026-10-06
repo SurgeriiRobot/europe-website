@@ -14,8 +14,8 @@ const date = computed(() => {
 // The design's button leads to the listing filtered to the card's type.
 const more = computed(() => {
   const type = content.value.article_type
-  if (type === 'event') return { label: 'All events', to: { path: localePath('/news-events'), query: { type: 'event' } } }
-  if (type === 'news') return { label: 'All news', to: { path: localePath('/news-events'), query: { type: 'news' } } }
+  if (type === 'event') return { label: 'All events', to: { path: localePath('/news-and-events'), query: { type: 'event' } } }
+  if (type === 'news') return { label: 'All news', to: { path: localePath('/news-and-events'), query: { type: 'news' } } }
   return { label: 'Read more', to: href.value }
 })
 </script>
