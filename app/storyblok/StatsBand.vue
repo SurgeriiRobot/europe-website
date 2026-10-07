@@ -15,7 +15,11 @@ const sx = (v: unknown) => { const x = n(v); return x === undefined ? undefined 
 const px = (v: unknown) => { const x = n(v); return x === undefined ? undefined : `${x}px` }
 const style = computed(() => ({
   ...(props.blok.title_size === 'large'
-    ? { '--sec-title-size': 'clamp(2.5rem, 5vw, 4.5rem)', '--sec-title-measure': 'calc(68 * var(--sx))' }
+    // The hairline inset the other large-heading bands already carry. Without
+    // it the band kept the 48px default, and on Contact the rules ran right up
+    // against the "W" and the "?" of "Why connect with SHURUI?". The design
+    // stops them at x157 and x1285 against ink at 241 and 1198.
+    ? { '--sec-title-size': 'clamp(2.5rem, 5vw, 4.5rem)', '--sec-title-measure': 'calc(68 * var(--sx))', '--sec-title-line-inset': 'calc(39.1 * var(--sx))' }
     : {}),
   '--stats-top': sx(props.blok.space_top),
   '--stats-bottom': sx(props.blok.space_bottom),

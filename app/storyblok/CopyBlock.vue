@@ -99,6 +99,12 @@ const style = computed(() => ({
    the full gutter-to-gutter measure. */
 @media (max-width: 720px) {
   .cblock { padding: var(--cb-top-m, 72px) 0 var(--cb-bottom-m, 72px); }
+  /* A block the centre-axis line runs into needs room for it. The desktop
+     design leaves 222-245px above these headings; on phones the shared 72px
+     default left the 40px line ending 17px inside the heading's cap, which read
+     as the line striking through the words. An editor-set space_top_mobile
+     still wins. */
+  .cblock:has(> .connector--top) { padding-top: var(--cb-top-m, 128px); }
   .cblock__title { font-size: clamp(2.25rem, 12.3vw, 3rem); }
   .cblock--display .cblock__title { font-size: clamp(2.25rem, 10.77vw, 2.625rem); line-height: 1.1905; }   /* 42/50 */
   .cblock__body { max-width: none; margin-top: var(--cb-gap-m, 24px); }
