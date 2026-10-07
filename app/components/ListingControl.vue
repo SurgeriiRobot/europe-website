@@ -98,8 +98,12 @@ const emit = defineEmits<{ change: [value: string], toggle: [] }>()
    24px glyph. Declared after `--select` so it wins on the same specificity. */
 .ctrl--wide {
   padding: 0 37px 0 13px;
-  background-position: right 13px center;
-  background-size: 24px 24px;
+  /* The glyph matches every other dropdown's 20px. It was drawn at 24 here,
+     which is what Waitak spotted ("the arrows are different size"); the inset
+     carries the 4px difference so the chevron's centre, the label and the
+     control's width all stay exactly where they were. */
+  background-position: right 15px center;
+  background-size: 20px 20px;
 }
 .ctrl--disclosure.is-open {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2303045e'%3E%3Cpath d='M12 8.59 6 14.59 7.41 16 12 11.42 16.59 16 18 14.59z'/%3E%3C/svg%3E");
@@ -121,7 +125,10 @@ const emit = defineEmits<{ change: [value: string], toggle: [] }>()
   cursor: inherit;
 }
 
-.ctrl--toggle { padding-inline: 21px; }
+/* Centred, not packed to the start: the Video chip is drawn 115px wide against
+   an 86px label, so flex-start left its word 14px off centre while Publication
+   and Booklet, which hug their labels, looked fine. */
+.ctrl--toggle { justify-content: center; padding-inline: 21px; }
 .ctrl--toggle.is-on { border-color: var(--c-blue); background-color: var(--c-blue); color: var(--c-white); }
 
 .ctrl:focus-within, .ctrl:focus-visible { outline: 2px solid var(--c-blue); outline-offset: 2px; }
@@ -136,8 +143,8 @@ const emit = defineEmits<{ change: [value: string], toggle: [] }>()
 @media (max-width: 720px) {
   .ctrl--select {
     padding: 0 37px 0 13px;
-    background-position: right 13px center;
-    background-size: 24px 24px;
+    background-position: right 15px center;
+    background-size: 20px 20px;
   }
   .ctrl--toggle { padding-inline: 13px; }
 }

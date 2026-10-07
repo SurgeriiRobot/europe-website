@@ -46,10 +46,12 @@ const style = computed(() => ({
         >
         <h3 class="icols__title"><BrandText :text="item.title" /></h3>
         <p v-if="item.body" class="icols__body"><BrandText :text="item.body" :nowrap="false" /></p>
-        <a v-if="hrefOf(item.link)" class="icols__link" :href="hrefOf(item.link)">
-          <span>{{ item.link_label || 'Learn more' }}</span>
-          <Icon name="arrow-forward" :size="20" />
-        </a>
+        <!-- The arrow is part of the last line, not a flex item of its own: as a
+             wrapping flex row it dropped onto a line below the label whenever
+             the label took two lines, which is what Waitak saw under "Product
+             regulatory compliance". -->
+        <a v-if="hrefOf(item.link)" class="icols__link" :href="hrefOf(item.link)"
+        >{{ item.link_label || 'Learn more' }}<Icon name="arrow-forward" :size="20" class="icols__arrow" /></a>
       </li>
     </ul>
   </section>
@@ -85,11 +87,7 @@ const style = computed(() => ({
   white-space: pre-wrap;                                                      /* the standards are separated by two spaces */
 }
 .icols__link {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 0 8px;
+  display: inline;
   margin-top: calc(2.01 * var(--sx));                                         /* 29 */
   font-size: 1.125rem;
   font-weight: 300;
@@ -99,6 +97,7 @@ const style = computed(() => ({
   text-underline-offset: 4px;
 }
 .icols__link:hover { color: var(--c-blue-500); }
+.icols__arrow { display: inline-block; margin-left: 8px; vertical-align: -4px; }
 
 /* Phones take one column at the 16px gutter, the drawings a little smaller. */
 @media (max-width: 720px) {

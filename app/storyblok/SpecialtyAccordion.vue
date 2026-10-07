@@ -14,6 +14,25 @@ const props = defineProps<{ blok: any }>()
 const icons = computed<any[]>(() => props.blok.icons || [])
 const items = computed<any[]>(() => props.blok.items || [])
 
+// The row a link asks for. Clinical Applications sends people here with
+// ?specialty=urology, and the drawings above the list are shortcuts to the same
+// rows: both were dead until now, the icons because they only ever looked
+// clickable. Matching is on the slug and tolerates "thoracic" for
+// "Thoracic surgery", since the library's own values are the short forms.
+const route = useRoute()
+const slug = (v: unknown) => String(v ?? '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+const open = ref('')
+const wanted = computed(() => slug(route.query.specialty) || open.value)
+const isOpen = (label: string) => {
+  const want = wanted.value
+  if (!want) return false
+  const have = slug(label)
+  return have === want || have.startsWith(`${want}-`) || want.startsWith(`${have}-`)
+}
+// Opening one row closes the rest, which is how a <details> group reads when it
+// is driven from a link rather than from its own summary.
+const show = (label: string) => { open.value = isOpen(label) ? '' : slug(label) }
+
 const px = (v: unknown) => (Number(v) > 0 ? `${Number(v)}px` : undefined)
 // A negative `space_top` lifts the section into the one above instead of padding
 // it: `stats_band` draws its figures 110px lower than this page's design wants
@@ -48,6 +67,7 @@ const style = computed(() => ({
 
       <ul v-if="icons.length" class="spec__icons">
         <li v-for="icon in icons" :key="icon._uid" v-editable="icon" class="spec__icon">
+          <button type="button" class="spec__icon-btn" @click="show(icon.label)">
           <img
             v-if="icon.icon?.filename"
             class="spec__icon-img"
@@ -60,12 +80,20 @@ const style = computed(() => ({
             loading="lazy"
           >
           <span class="spec__icon-label">{{ icon.label }}</span>
+          </button>
         </li>
       </ul>
 
       <div v-if="items.length" class="spec__list">
-        <details v-for="item in items" :key="item._uid" v-editable="item" class="spec__row">
-          <summary class="spec__summary">
+        <details
+          v-for="item in items"
+          :key="item._uid"
+          v-editable="item"
+          :id="`specialty-${slug(item.label)}`"
+          class="spec__row"
+          :open="isOpen(item.label)"
+        >
+          <summary class="spec__summary" @click="show(item.label)">
             <span class="spec__label">{{ item.label }}</span>
             <span class="spec__mark" aria-hidden="true">
               <svg viewBox="0 0 28 28" width="28" height="28" focusable="false">
@@ -90,6 +118,20 @@ const style = computed(() => ({
   padding-top: var(--sa-top, calc(5.49 * var(--sx)));                       /* 79 */
   padding-bottom: var(--sa-bottom, calc(14.51 * var(--sx)));                /* 209 */
 }
+/* The drawing and its label are one control; it carries no look of its own, so
+   the row of specialties is drawn exactly as before. */
+.spec__icon-btn {
+  display: contents;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.spec__icon:hover .spec__icon-label { text-decoration: underline; }
+.spec__icon-btn:focus-visible { outline: 2px solid var(--c-blue); outline-offset: 4px; }
+
 .spec__inner {
   width: 100%;
   max-width: var(--container);

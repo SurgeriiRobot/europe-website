@@ -42,6 +42,10 @@ const style = computed(() => ({
     <span v-if="lead('top')" class="tl__lead tl__lead--top" aria-hidden="true" />
     <span v-if="lead('bottom')" class="tl__lead tl__lead--bottom" aria-hidden="true" />
 
+    <!-- The redesign dropped the title over the timeline; the client asked for
+         it back. -->
+    <h2 v-if="blok.headline" class="tl__title"><BrandText :text="blok.headline" /></h2>
+
     <div v-if="current" class="tl__stage">
       <!-- The year is drawn as a 220px watermark in #f4f4f4, which measures
            1.95:1 at its head and 1.55:1 at its foot against the band behind it
@@ -92,6 +96,14 @@ const style = computed(() => ({
 
 <style scoped>
 .tl { padding: var(--tl-top, calc(13.61 * var(--sx))) 0 var(--tl-bottom, calc(26.53 * var(--sx))); }   /* 196 / 382 */
+.tl__title {
+  margin: 0 auto calc(4.17 * var(--sx));          /* 60 */
+  text-align: center;
+  font-size: var(--sec-title-size, clamp(2rem, 3.33vw, 3rem));
+  font-weight: 600;
+  line-height: 1.2083;
+  color: var(--ink);
+}
 
 .tl__lead {
   position: absolute;
@@ -184,6 +196,7 @@ const style = computed(() => ({
    rather than beside it, since there is no room for them at the gutters. */
 @media (max-width: 720px) {
   .tl { padding: var(--tl-top-m, 96px) 0 var(--tl-bottom-m, 120px); }
+  .tl__title { margin-bottom: 40px; padding-inline: 16px; font-size: clamp(2.25rem, 12.3vw, 3rem); }
   .tl__disc { width: 240px; height: 240px; padding-top: 10px; font-size: 1.5rem; line-height: 1.2083; }
   .tl__year { margin-top: -40px; font-size: 150px; }
   .tl__foot { display: grid; grid-template-columns: 1fr 1fr; justify-items: center; gap: 28px; margin-top: 12px; padding-inline: 16px; }
