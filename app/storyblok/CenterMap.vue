@@ -201,8 +201,11 @@ const style = computed(() => ({
               itemscope
               itemtype="https://schema.org/Hospital"
             >
-              <NuxtLink v-if="center.slug" :to="`/${center.slug}`" class="cmap__name" itemprop="name">{{ center.name }}</NuxtLink>
-              <span v-else class="cmap__name" itemprop="name">{{ center.name }}</span>
+              <!-- Not a link. Each centre does have a story, but it holds only the
+                   name, the city and the country code, so every row led to a page
+                   with nothing on it (Waitak: "the links lead to empty pages").
+                   Restore the NuxtLink once a centre page carries content. -->
+              <span class="cmap__name" itemprop="name">{{ center.name }}</span>
               <span v-if="center.city" class="cmap__where" itemprop="address">{{ center.city }}</span>
               <!-- Only a centre with real degrees carries a location. -->
               <span v-if="center.geo" itemprop="geo" itemscope itemtype="https://schema.org/GeoCoordinates">

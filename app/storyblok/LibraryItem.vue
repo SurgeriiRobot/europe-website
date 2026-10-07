@@ -187,7 +187,10 @@ const image = computed(() => props.blok.image)
   flex: none;
   display: block;
   width: 100%;
-  height: 186px;
+  /* The design's 300x186 block, held as a ratio: a card stretched to a 358px
+     phone kept the 186px height and cropped the bottom off every thumbnail. */
+  aspect-ratio: 300 / 186;
+  height: auto;
   padding: 0;
   border: 0;
   background: var(--c-neutral-400);

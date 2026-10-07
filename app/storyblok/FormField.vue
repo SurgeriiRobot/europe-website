@@ -110,4 +110,30 @@ select.field__control:invalid { color: #969ba3; font-weight: 400; }
 textarea.field__control { height: calc(7.5 * var(--sx)); min-height: 108px; padding: 10px 12px; }
 
 .field__checkbox { display: flex; gap: var(--space-3); align-items: flex-start; font-size: var(--t-body-sm); }
+/* The browser default sits at 13px, which Waitak asked to be half again as
+   large. `flex: none` keeps it square when the consent text wraps, and the top
+   offset holds it on the first line rather than the top of the box. */
+.field__checkbox input {
+  flex: none;
+  inline-size: 20px;
+  block-size: 20px;
+  margin: 0;
+  margin-block-start: calc((1em * var(--lh-body, 1.5) - 20px) / 2);
+  accent-color: var(--c-blue);
+}
+
+/* An address the browser cannot parse turns the field red, but only once it has
+   been typed in and left: `:user-invalid` waits for that, where `:invalid`
+   would paint every empty required field red before anyone had touched it. */
+.field__control:user-invalid {
+  border-color: var(--c-red);
+  box-shadow: 0 0 0 1px var(--c-red);
+}
+select.field__control:user-invalid { box-shadow: 0 2px 8px rgb(0 0 0 / 13%), 0 0 0 1px var(--c-red); }
+
+/* Phones: every control clears the 44px minimum touch target. */
+@media (max-width: 720px) {
+  .field__control { min-height: 44px; height: 44px; }
+  textarea.field__control { height: auto; min-height: 120px; }
+}
 </style>

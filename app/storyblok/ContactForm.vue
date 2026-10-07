@@ -121,4 +121,11 @@ async function submit() {
 .form__error { color: var(--c-red); }
 .form__success { text-align: center; font-size: var(--t-h5); }
 @media (max-width: 640px) { .form__grid { grid-template-columns: 1fr; } }
+/* The 848px desktop measure is held in --sx, which on a 390 phone collapses to
+   230px and left the fields barely over half the screen. On phones the form
+   takes the page gutter, the same 16px either side the banner CTA above it
+   stands on. After `.form__inner` in the sheet, so it wins on source order. */
+@media (max-width: 720px) {
+  .form__inner { width: calc(100% - 32px); }
+}
 </style>

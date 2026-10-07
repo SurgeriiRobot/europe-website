@@ -144,7 +144,11 @@ const tags = computed(() =>
 .lcard__media {
   flex: none;
   width: 100%;
-  height: 188px;
+  /* The design's 300x188 picture, kept as a ratio rather than a fixed height.
+     At 188px tall a card stretched to a 358px phone became 1.90:1 against the
+     1.57:1 artwork, so `cover` ate the bottom of every image. */
+  aspect-ratio: 300 / 188;
+  height: auto;
   object-fit: cover;
 }
 .lcard__media--empty { display: block; background: var(--c-neutral-400); }
