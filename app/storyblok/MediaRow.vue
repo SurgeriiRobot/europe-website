@@ -129,6 +129,15 @@ const mediaWidth = computed(() => `calc(${(widthPx.value / 14.4).toFixed(2)} * m
   .mrow { grid-template-columns: minmax(0, 1fr); gap: 24px; padding-inline: 16px; }
   .mrow--media-right .mrow__text, .mrow--media-left .mrow__text { grid-column: 1; grid-row: auto; justify-self: stretch; width: auto; margin: 0; }
   .mrow--media-right .mrow__media, .mrow--media-left .mrow__media { grid-column: 1; grid-row: auto; }
+  /* The compact offsets above are three classes deep, so they outranked the
+     phone rule and kept placing the copy at the desktop x300/x736.5. On a 390px
+     phone that left the alternating rows starting 20px and 97px in. Waitak:
+     "All the blocks are not really well aligned." Every row now sits on the
+     16px gutter whichever side its picture is on. */
+  .rows--compact .mrow--media-right .mrow__text,
+  .rows--compact .mrow--media-left .mrow__text { margin-left: 0; }
+  .rows--compact .mrow--media-left .mrow__media,
+  .rows--compact .mrow--media-right .mrow__media { justify-content: center; padding-inline: 0; }
   .mrow__media img { flex: auto; width: 100%; }
   .mrow__title { font-size: clamp(2.25rem, 12.3vw, 3rem); }
   /* `phone_layout` has been in the schema and in the content since these pages
