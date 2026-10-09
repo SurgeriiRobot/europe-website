@@ -146,6 +146,10 @@ html {
 .brand-mark { font-size: 0.5em; line-height: 0; vertical-align: 0.8em; }
 .brand-nowrap { white-space: nowrap; }
 .brand-strong { font-weight: 600; }
+/* A link written inside a plain-text copy field. It keeps the surrounding
+   weight and size, and is only marked by the brand blue and its underline. */
+.brand-link { color: var(--c-blue); text-decoration: underline; text-underline-offset: 2px; }
+.brand-link:hover { color: var(--c-blue-500); }
 
 /* Section title — the design's recurring block: Inter 600 48/58 heading over an
    Inter 300 18/29 body, 24px apart, centred. With lines, a hairline runs from each
