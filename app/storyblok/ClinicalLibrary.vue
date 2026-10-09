@@ -75,17 +75,26 @@ const filtered = computed(() => {
 const pages = computed(() => Math.max(1, Math.ceil(filtered.value.length / perPage.value)))
 const shown = computed(() => filtered.value.slice((page.value - 1) * perPage.value, page.value * perPage.value))
 
-// The promo panel is drawn once, in the fourth slot of the first page — it is
-// not part of the library, so it does not reappear on every page of it.
-const promoSlot = computed(() => (hasPromo.value && page.value === 1 ? promoAt.value : -1))
-
-// Page numbers: the design shows five. Longer libraries keep the current page in
-// a five-wide window rather than printing every number.
-const numbers = computed(() => {
-  const span = Math.min(5, pages.value)
-  const start = Math.min(Math.max(1, page.value - Math.floor(span / 2)), pages.value - span + 1)
-  return Array.from({ length: span }, (_, i) => start + i)
+// The promo panel, one per page. Waitak: "it would always appear in any tab you
+// would be. So even if you're on tab 5, you would see this card somewhere
+// between the cards (only one). But it should never appear as the first 3
+// cards." It was drawn on the first page only, so every page past it lost it.
+// Its slot is clamped past the first three, and back inside a short last page
+// so it is not stranded in a gap at the end of the grid.
+// Its slot is clamped past the first three; a short last page has no such slot,
+// so there it goes at the end rather than being dropped.
+const cells = computed<({ promo: true } | { promo: false, item: any })[]>(() => {
+  const out = shown.value.map(item => ({ promo: false as const, item }))
+  if (!hasPromo.value || !out.length) return out
+  const at = Math.min(Math.max(promoAt.value, 3), out.length)
+  out.splice(at, 0, { promo: true })
+  return out
 })
+
+// Page numbers: the design shows five. A longer library keeps the current page
+// in a window, with the first and last page always reachable and an ellipsis
+// for what is skipped.
+const numbers = computed(() => pageSequence(page.value, pages.value))
 const to = (n: number) => ({ query: { ...route.query, page: n === 1 ? undefined : n } })
 
 const filtersOpen = ref(false)
@@ -175,15 +184,15 @@ const promoHref = computed(() => {
       </div>
 
       <div class="lib__grid">
-        <template v-for="(item, i) in shown" :key="item._uid">
-          <article v-if="i === promoSlot" class="lib__promo">
+        <template v-for="(cell, i) in cells" :key="cell.promo ? 'promo' : cell.item._uid">
+          <article v-if="cell.promo" class="lib__promo">
             <h3 class="lib__promo-title"><BrandText :text="blok.promo_headline" /></h3>
             <p v-if="blok.promo_body" class="lib__promo-body"><BrandText :text="blok.promo_body" :nowrap="false" /></p>
             <NuxtLink v-if="promoHref" :to="promoHref" class="lib__promo-btn">
               {{ blok.promo_link_label || 'Book a demo' }}
             </NuxtLink>
           </article>
-          <LibraryItem :blok="item" @play="play" />
+          <LibraryItem v-else :blok="cell.item" @play="play" />
         </template>
       </div>
 
@@ -209,17 +218,19 @@ const promoHref = computed(() => {
           <Icon name="chevron-left" :size="20" />
         </span>
 
-        <NuxtLink
-          v-for="n in numbers"
-          :key="n"
-          :to="to(n)"
-          class="lib__pg"
-          :class="{ 'is-current': n === page }"
-          :aria-current="n === page ? 'page' : undefined"
-          :aria-label="`Page ${n}`"
-        >
-          {{ n }}
-        </NuxtLink>
+        <template v-for="(n, i) in numbers" :key="`${n}-${i}`">
+          <span v-if="n === '…'" class="lib__pg lib__pg--gap" aria-hidden="true">…</span>
+          <NuxtLink
+            v-else
+            :to="to(n as number)"
+            class="lib__pg"
+            :class="{ 'is-current': n === page }"
+            :aria-current="n === page ? 'page' : undefined"
+            :aria-label="`Page ${n}`"
+          >
+            {{ n }}
+          </NuxtLink>
+        </template>
 
         <NuxtLink v-if="page < pages" :to="to(page + 1)" class="lib__pg lib__pg--icon" :aria-current="undefined" aria-label="Next page" rel="next">
           <Icon name="chevron-right" :size="20" />
@@ -344,6 +355,7 @@ const promoHref = computed(() => {
   gap: 6px;
   margin-top: calc(2.78 * var(--sx));          /* 40 */
 }
+.lib__pg--gap { color: var(--ink-muted); cursor: default; }
 .lib__pg {
   display: grid;
   place-items: center;

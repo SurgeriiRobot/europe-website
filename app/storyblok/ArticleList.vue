@@ -49,6 +49,7 @@ const { data, status } = await useAsyncData(
 )
 
 const pages = computed(() => Math.max(1, Math.ceil((data.value?.total || 0) / perPage.value)))
+const numbers = computed(() => pageSequence(page.value, pages.value))
 
 function setFilter(key: string, value: string) {
   router.push({ query: { ...route.query, [key]: value || undefined, page: undefined } })
@@ -156,16 +157,19 @@ const promoAt = computed(() => Number(props.blok.promo_position ?? -1))
 
       <p v-if="data && !data.stories.length" class="list__empty">No results for these filters.</p>
 
+      <!-- Grouped rather than one link per page, so a long run stays one row. -->
       <nav v-if="pages > 1" class="list__pagination" aria-label="Pagination">
-        <NuxtLink
-          v-for="n in pages"
-          :key="n"
-          :to="{ query: { ...route.query, page: n === 1 ? undefined : n } }"
-          class="list__page"
-          :class="{ 'is-current': n === page }"
-        >
-          {{ n }}
-        </NuxtLink>
+        <template v-for="(n, i) in numbers" :key="`${n}-${i}`">
+          <span v-if="n === '…'" class="list__page list__page--gap" aria-hidden="true">…</span>
+          <NuxtLink
+            v-else
+            :to="{ query: { ...route.query, page: n === 1 ? undefined : n } }"
+            class="list__page"
+            :class="{ 'is-current': n === page }"
+          >
+            {{ n }}
+          </NuxtLink>
+        </template>
       </nav>
     </div>
   </section>
@@ -179,6 +183,7 @@ const promoAt = computed(() => Number(props.blok.promo_position ?? -1))
 .list__empty, .list__status { color: var(--ink-muted); }
 .list__pagination { display: flex; justify-content: center; gap: var(--space-2); margin-top: var(--space-7); }
 .list__page { padding: var(--space-2) var(--space-3); border-radius: var(--radius); text-decoration: none; }
+.list__page--gap { color: var(--ink-muted); cursor: default; }
 .list__page.is-current { background: var(--accent); color: var(--c-white); }
 
 /* Figma 991:18684-85: 232px lead-in, title, 80px, then the slider and 300px.
