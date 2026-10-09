@@ -21,10 +21,14 @@ const items = computed<any[]>(() => props.blok.items || [])
 // "Thoracic surgery", since the library's own values are the short forms.
 const route = useRoute()
 const slug = (v: unknown) => String(v ?? '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+// The query seeds which row is open; it does not keep owning it. Reading the
+// query directly here meant that arriving from "View all urology cases" froze
+// the whole list: every click set this ref, the query kept winning, and the
+// icons and summaries did nothing until you reloaded without it.
 const open = ref('')
-const wanted = computed(() => slug(route.query.specialty) || open.value)
+watch(() => route.query.specialty, v => { open.value = slug(v) }, { immediate: true })
 const isOpen = (label: string) => {
-  const want = wanted.value
+  const want = open.value
   if (!want) return false
   const have = slug(label)
   return have === want || have.startsWith(`${want}-`) || want.startsWith(`${have}-`)
@@ -32,6 +36,17 @@ const isOpen = (label: string) => {
 // Opening one row closes the rest, which is how a <details> group reads when it
 // is driven from a link rather than from its own summary.
 const show = (label: string) => { open.value = isOpen(label) ? '' : slug(label) }
+
+// A link that names a specialty should land on that row rather than at the top
+// of the page with the row open somewhere below the fold.
+const list = ref<HTMLElement>()
+onMounted(() => {
+  if (!route.query.specialty) return
+  nextTick(() => {
+    const row = list.value?.querySelector('details[open]')
+    row?.scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
+  })
+})
 
 const px = (v: unknown) => (Number(v) > 0 ? `${Number(v)}px` : undefined)
 // A negative `space_top` lifts the section into the one above instead of padding
@@ -84,7 +99,7 @@ const style = computed(() => ({
         </li>
       </ul>
 
-      <div v-if="items.length" class="spec__list">
+      <div v-if="items.length" ref="list" class="spec__list">
         <details
           v-for="item in items"
           :key="item._uid"

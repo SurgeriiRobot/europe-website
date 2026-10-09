@@ -126,6 +126,9 @@ const style = computed(() => ({
   height: calc(22.57 * var(--sx));
   margin: 0 auto;
   padding-top: calc(1.88 * var(--sx));                                        /* Figma sets the copy 13px below the disc's centre */
+  /* A circle is narrower than its box everywhere but the middle, so the longer
+     milestones ran into the curve. 39px either side keeps them inside it. */
+  padding-inline: calc(2.7 * var(--sx));
   border-radius: 50%;
   background: var(--c-blue);
   font-size: calc(2.22 * var(--sx));                                          /* 32 */
@@ -197,7 +200,7 @@ const style = computed(() => ({
 @media (max-width: 720px) {
   .tl { padding: var(--tl-top-m, 96px) 0 var(--tl-bottom-m, 120px); }
   .tl__title { margin-bottom: 40px; padding-inline: 16px; font-size: clamp(2.25rem, 12.3vw, 3rem); }
-  .tl__disc { width: 240px; height: 240px; padding-top: 10px; font-size: 1.5rem; line-height: 1.2083; }
+  .tl__disc { width: 240px; height: 240px; padding-top: 10px; padding-inline: 28px; font-size: 1.5rem; line-height: 1.2083; }
   .tl__year { margin-top: -40px; font-size: 150px; }
   .tl__foot { display: grid; grid-template-columns: 1fr 1fr; justify-items: center; gap: 28px; margin-top: 12px; padding-inline: 16px; }
   .tl__caption { grid-area: 1 / 1 / 2 / 3; max-width: none; font-size: 1.5rem; line-height: 1.2083; }

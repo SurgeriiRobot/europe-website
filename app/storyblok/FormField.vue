@@ -100,7 +100,16 @@ const { data: choices } = await useAsyncData(
   color: var(--ink);
 }
 select.field__control {
-  background: var(--c-white);
+  /* The native arrow sits hard against the edge and cannot be moved, so the
+     control draws the site's own chevron instead, 16px in like every other
+     dropdown. */
+  appearance: none;
+  padding-right: 44px;
+  background-color: var(--c-white);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2303045e'%3E%3Cpath d='M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 20px 20px;
   border-color: #e4e5e7;
   box-shadow: 0 2px 8px rgb(0 0 0 / 13%);
   color: var(--accent);

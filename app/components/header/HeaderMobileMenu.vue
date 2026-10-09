@@ -272,7 +272,9 @@ watch(searchInput, (el, was) => {
   min-height: var(--header-h);
   padding-inline: 27px 28px;   /* logo ink lands at x30, as in Figma */
 }
-.mm__logo img { display: block; }
+/* The same 92px the header draws on a phone. At 90 the mark stepped down by two
+   pixels as the overlay closed, which read as the logo shrinking. */
+.mm__logo img { display: block; width: 92px; height: auto; }
 .mm__controls { display: flex; align-items: center; gap: 22px; }
 .mm__icon { display: inline-flex; padding: 0; border: 0; background: none; color: inherit; cursor: pointer; }
 
