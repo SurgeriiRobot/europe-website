@@ -8,7 +8,24 @@
 //   rules  — full-width hairlines at y 128 and 435, gutter verticals at 75/1365
 const props = defineProps<{ blok: any }>()
 const sbHref = useSbUrl()
-const { locale } = useI18n()
+const { locale, locales } = useI18n()
+const switchLocalePath = useSwitchLocalePath()
+
+// Waitak, global feedback: "Will need the language Button to be able to change.
+// So should or have the dropdown like in the Main Menu." It printed the current
+// locale and nothing else. The list opens upward, since this sits at the very
+// bottom of the page.
+const localeCodes = computed(() => (locales.value as any[]).map(l => (typeof l === 'string' ? l : l.code)))
+const otherLocales = computed(() => localeCodes.value.filter(c => c !== locale.value))
+const langOpen = ref(false)
+const langEl = ref<HTMLElement>()
+onMounted(() => {
+  const away = (e: Event) => { if (!langEl.value?.contains(e.target as Node)) langOpen.value = false }
+  const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') langOpen.value = false }
+  document.addEventListener('click', away)
+  document.addEventListener('keydown', esc)
+  onBeforeUnmount(() => { document.removeEventListener('click', away); document.removeEventListener('keydown', esc) })
+})
 
 const nav = computed(() =>
   (props.blok.columns || [])
@@ -51,7 +68,24 @@ const socialHref = (social: any) => {
       <li v-for="item in legal.slice(half)" :key="item._uid" v-editable="item">
         <NuxtLink :to="sbHref(item.link)">{{ item.label }}</NuxtLink>
       </li>
-      <li><span>{{ locale.toUpperCase() }}</span></li>
+      <li v-if="otherLocales.length" ref="langEl" class="ftr__lang">
+        <button
+          type="button"
+          class="ftr__lang-btn"
+          :aria-expanded="langOpen"
+          aria-label="Change language"
+          @click="langOpen = !langOpen"
+        >
+          {{ locale.toUpperCase() }}
+          <Icon name="expand-more" :size="16" class="ftr__lang-chevron" :class="{ 'is-open': langOpen }" />
+        </button>
+        <ul class="ftr__lang-list" :class="{ 'is-open': langOpen }" :inert="!langOpen">
+          <li v-for="code in otherLocales" :key="code">
+            <NuxtLink :to="switchLocalePath(code)" @click="langOpen = false">{{ code.toUpperCase() }}</NuxtLink>
+          </li>
+        </ul>
+      </li>
+      <li v-else><span>{{ locale.toUpperCase() }}</span></li>
     </ul>
 
     <ul v-if="blok.socials?.length" class="ftr__socials">
@@ -120,6 +154,42 @@ const socialHref = (social: any) => {
   line-height: 1.1875;
 }
 .ftr__legal--left { left: var(--frame-gutter); }
+
+/* The language control. Closed it reads exactly as the old locale mark did, so
+   the footer keeps the design's rhythm; open, the other locales stack above it. */
+.ftr__lang { position: relative; }
+.ftr__lang-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.ftr__lang-chevron { transition: rotate 150ms ease; }
+.ftr__lang-chevron.is-open { rotate: 180deg; }
+.ftr__lang-list {
+  position: absolute;
+  right: 0;
+  bottom: 100%;
+  display: grid;
+  gap: 10px;
+  margin: 0 0 10px;
+  padding: 12px 14px;
+  border: var(--line-w) solid color-mix(in srgb, currentColor 35%, transparent);
+  background: var(--c-darkblue);
+  list-style: none;
+  text-align: right;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 150ms ease, visibility 150ms ease;
+}
+.ftr__lang-list.is-open { opacity: 1; visibility: visible; }
+.ftr__lang-list a { text-decoration: none; }
+.ftr__lang-list a:hover { text-decoration: underline; }
 .ftr__legal--right { right: var(--frame-gutter); text-align: right; }
 
 .ftr__socials {
@@ -182,7 +252,7 @@ const socialHref = (social: any) => {
   .ftr__legal { gap: 40px; font-size: 1.25rem; line-height: 1.2; }
   .ftr__legal--left { order: 3; margin-top: 49px; }
   .ftr__legal--right { order: 4; margin-top: 40px; }
-  .ftr__legal--right li:last-child { display: none; }       /* the locale mark isn't in the phone footer */
+  .ftr__legal--right li:last-child { display: none; }       /* the locale control isn't in the phone footer; the hamburger menu carries it */
   .ftr__socials { order: 5; gap: 42px; margin-top: 260px; }
   .ftr__socials :deep(.icon) { width: 40px; height: 40px; }      /* 82px apart, centre to centre */
   .ftr__rule--h2 { order: 6; margin-top: 57px; }
