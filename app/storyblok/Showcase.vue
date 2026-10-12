@@ -9,6 +9,17 @@ const items = computed<any[]>(() => props.blok.items || [])
 const index = ref(Math.min(Math.max(Number(props.blok.start) || 0, 0), Math.max(items.value.length - 1, 0)))
 const current = computed(() => items.value[index.value])
 
+// The watermark is offset so its LETTERS, not the empty bottom of its line box,
+// sit 29px above the side links (see .showcase__word). That subtraction assumes
+// the word has no descender, which every word in the design has: Console,
+// Instruments, Arms. Our third slide says "Trolley", whose y drops into the
+// slack and crosses the hairline beside the side links at 1440 and wider, which
+// is Waitak's "the line and the images are sometimes overlapping". A word with
+// a descender keeps the slack instead, so the tail has room to fall into.
+const descender = /[gjpqy]/
+const wordOf = (item: any) => String(item?.watermark || item?.name || '')
+const hasDescender = computed(() => descender.test(wordOf(current.value)))
+
 // The two sides are the previous and next slides, wrapping round the ends.
 // They used to be "the other two in list order", which matched the three design
 // states but meant each side only ever toggled between the same pair: from the
@@ -73,6 +84,7 @@ const go = (i: number | undefined, from: 'next' | 'prev') => {
         <div :key="current._uid" v-editable="current" class="showcase__slide">
           <p
             class="showcase__word display-word"
+            :class="{ 'showcase__word--descender': hasDescender }"
             :style="{ '--chars': (current.watermark || current.name || '').length }"
             aria-hidden="true"
           >
@@ -164,6 +176,9 @@ const go = (i: number | undefined, from: 'next' | 'prev') => {
   pointer-events: none;
   user-select: none;
 }
+/* A word that descends keeps the slack, so the tail lands where the other
+   slides' baselines do instead of running on into the side links and the rule. */
+.showcase__word--descender { bottom: calc(var(--nav-top) + 29px); }
 /* Every slide's cut-out is 1089px wide (the design frame) at its natural height,
    standing on a line 44px above the stage bottom, just over the side navigation.
    Where the product sits inside that frame is part of the image itself (console,
