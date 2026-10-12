@@ -25,6 +25,7 @@ const media = computed(() => props.blok.media)
 const video = computed(() => props.blok.video)
 const root = ref<HTMLElement>()
 const player = ref<HTMLVideoElement>()
+const figure = ref<HTMLElement>()
 const scrubbing = ref(false)
 
 onMounted(() => {
@@ -41,11 +42,17 @@ onMounted(() => {
   let frame = 0
   let want = 0
 
-  // The section runs from entering the bottom of the viewport to leaving the top.
+  // One viewport of scrolling, spanning the moment the picture rises into frame:
+  // it starts with the picture's top four fifths of the way down and finishes
+  // just after that top passes the viewport's. The clip is a slow 2.3 second
+  // camera move, so spreading it over the section's whole 2357px enter-to-exit
+  // travel left it imperceptible, and a span tied to the picture's own height
+  // ran it out before the picture had properly arrived.
+  const START = 0.8
   const progress = () => {
-    const r = el.getBoundingClientRect()
-    const travel = window.innerHeight + r.height
-    return Math.min(1, Math.max(0, (window.innerHeight - r.top) / travel))
+    const r = (figure.value || el).getBoundingClientRect()
+    const h = window.innerHeight
+    return Math.min(1, Math.max(0, (START * h - r.top) / h))
   }
   const draw = () => {
     frame = 0
@@ -53,9 +60,11 @@ onMounted(() => {
     if (!d || !Number.isFinite(d)) return
     const t = want * d
     // Below a quarter of a frame the seek is invisible and only costs a decode.
-    if (Math.abs(vid.currentTime - t) < d / 77 / 4) return
-    if (typeof vid.fastSeek === 'function') vid.fastSeek(t)
-    else vid.currentTime = t
+    if (Math.abs(vid.currentTime - t) < 1 / 96) return
+    // Not fastSeek: it is allowed to be approximate and Chrome rounds it coarsely
+    // enough that several scroll steps painted the same frame. Every frame is a
+    // keyframe here, so an exact seek costs no more than an approximate one.
+    vid.currentTime = t
   }
   const onScroll = () => {
     want = progress()
@@ -116,7 +125,7 @@ const accentWord = computed(() => ` ${String(props.blok.accent || '').trim() ===
         {{ ' ' }}<span class="display__text"><BrandText :text="blok.line_2" /></span>
       </span>
     </h2>
-    <div v-if="media?.filename || video?.filename" class="display__figure">
+    <div v-if="media?.filename || video?.filename" ref="figure" class="display__figure">
       <img
         v-if="media?.filename"
         :src="sbCrop(media, 2560)"
