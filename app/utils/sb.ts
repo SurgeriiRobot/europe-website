@@ -40,6 +40,17 @@ export function sbImage(asset?: { filename?: string, focus?: string } | null, tr
   return transform ? `${file}/m/${transform}` : file
 }
 
+/**
+ * The asset's own pixel width. Storyblok puts it in the path
+ * (/f/<space>/<W>x<H>/), and the image service clamps any larger request back
+ * to it. So a srcset candidate written wider than the file silently promises
+ * pixels that never arrive, and the browser picks it over a smaller one that
+ * would have looked the same. Build candidates against this instead.
+ */
+export function sbWidth(asset: { filename?: string } | null | undefined): number {
+  return Number(asset?.filename?.match(/\/f\/\d+\/(\d+)x\d+\//)?.[1]) || 0
+}
+
 export function sbCrop(
   asset: { filename?: string, focus?: string } | null | undefined,
   width: number,

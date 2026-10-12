@@ -5,6 +5,19 @@
 // edge at its x-height, then a product shot bleeding off the right edge.
 const props = defineProps<{ blok: any }>()
 const media = computed(() => props.blok.media)
+
+// The picture is drawn 140 design units wide, which is 2017px at the design
+// width and never more, so a 2x screen wants about 4034. The srcset stopped at
+// 2560 while the file itself holds 4034, which is what Waitak saw as "the image
+// of the machine is bad quality": the pixels were there, we were not asking for
+// them. Candidates are capped at the file's own width so none of them overstates
+// what the image service can return.
+const srcset = computed(() => {
+  const full = sbWidth(media.value)
+  const widths = [1280, 2560].filter(w => !full || w < full)
+  if (full) widths.push(full)
+  return widths.map(w => `${sbCrop(media.value, w)} ${w}w`).join(', ')
+})
 // An ampersand read aloud as "and"; anything else the CMS puts here is already
 // a word, so it goes through unchanged.
 // The spaces are inside the string, not text nodes of their own: the span is
@@ -35,7 +48,7 @@ const accentWord = computed(() => ` ${String(props.blok.accent || '').trim() ===
     <img
       v-if="media?.filename"
       :src="sbCrop(media, 2560)"
-      :srcset="`${sbCrop(media, 1280)} 1280w, ${sbCrop(media, 2560)} 2560w`"
+      :srcset="srcset"
       sizes="(max-width: 720px) 170vw, calc(140 * min(1vw, 14.4px))"
       :alt="media.alt || ''"
       class="display__media"
