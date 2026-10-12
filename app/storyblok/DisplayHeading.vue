@@ -12,6 +12,77 @@ const media = computed(() => props.blok.media)
 // of the machine is bad quality": the pixels were there, we were not asking for
 // them. Candidates are capped at the file's own width so none of them overstates
 // what the image service can return.
+// Waitak, SP Robot 2: "This is actually a video, with a scroll animation."
+// The frame follows how far the section has travelled through the viewport, so
+// scrolling fast runs it fast and scrolling back up runs it backwards, which is
+// what playbackRate alone cannot do. Every frame is a keyframe in the encode, so
+// a seek lands exactly rather than snapping to the nearest one.
+//
+// It only runs where it is wanted: the still stays put for anyone who prefers
+// reduced motion, on touch (his item is tagged desktop), and until the file has
+// decoded enough to seek. The picture underneath is never removed, so there is
+// always something to fall back to and no gap if the video never loads.
+const video = computed(() => props.blok.video)
+const root = ref<HTMLElement>()
+const player = ref<HTMLVideoElement>()
+const scrubbing = ref(false)
+
+onMounted(() => {
+  if (!video.value?.filename || !root.value || !player.value) return
+  // Excluding a coarse pointer rather than demanding a fine one: a device with
+  // no pointer at all reports neither, and requiring "fine" shut those out.
+  const allowed = window.matchMedia('(min-width: 721px)').matches
+    && !window.matchMedia('(pointer: coarse)').matches
+    && !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  if (!allowed) return
+
+  const el = root.value
+  const vid = player.value
+  let frame = 0
+  let want = 0
+
+  // The section runs from entering the bottom of the viewport to leaving the top.
+  const progress = () => {
+    const r = el.getBoundingClientRect()
+    const travel = window.innerHeight + r.height
+    return Math.min(1, Math.max(0, (window.innerHeight - r.top) / travel))
+  }
+  const draw = () => {
+    frame = 0
+    const d = vid.duration
+    if (!d || !Number.isFinite(d)) return
+    const t = want * d
+    // Below a quarter of a frame the seek is invisible and only costs a decode.
+    if (Math.abs(vid.currentTime - t) < d / 77 / 4) return
+    if (typeof vid.fastSeek === 'function') vid.fastSeek(t)
+    else vid.currentTime = t
+  }
+  const onScroll = () => {
+    want = progress()
+    if (!frame) frame = requestAnimationFrame(draw)
+  }
+
+  const start = () => {
+    scrubbing.value = true
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll)
+  }
+  const io = new IntersectionObserver(([e]) => {
+    if (!e) return
+    if (e.isIntersecting) { if (vid.readyState >= 2) start(); else vid.addEventListener('loadeddata', start, { once: true }) }
+    else { window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll) }
+  }, { rootMargin: '200px 0px' })
+  io.observe(el)
+
+  onBeforeUnmount(() => {
+    io.disconnect()
+    if (frame) cancelAnimationFrame(frame)
+    window.removeEventListener('scroll', onScroll)
+    window.removeEventListener('resize', onScroll)
+  })
+})
+
 const srcset = computed(() => {
   const full = sbWidth(media.value)
   const widths = [1280, 2560].filter(w => !full || w < full)
@@ -28,7 +99,7 @@ const accentWord = computed(() => ` ${String(props.blok.accent || '').trim() ===
 </script>
 
 <template>
-  <section v-editable="blok" :id="blok.anchor || undefined" class="section display" :data-theme="blok.theme || 'light'">
+  <section ref="root" v-editable="blok" :id="blok.anchor || undefined" class="section display" :data-theme="blok.theme || 'light'">
     <SectionConnector :connector="blok.connector" />
     <h2 class="display__heading">
       <span class="display__line display__line--1"><span class="display__text"><BrandText :text="blok.line_1" /></span></span>
@@ -45,15 +116,30 @@ const accentWord = computed(() => ` ${String(props.blok.accent || '').trim() ===
         {{ ' ' }}<span class="display__text"><BrandText :text="blok.line_2" /></span>
       </span>
     </h2>
-    <img
-      v-if="media?.filename"
-      :src="sbCrop(media, 2560)"
-      :srcset="srcset"
-      sizes="(max-width: 720px) 170vw, calc(140 * min(1vw, 14.4px))"
-      :alt="media.alt || ''"
-      class="display__media"
-      loading="lazy"
-    >
+    <div v-if="media?.filename || video?.filename" class="display__figure">
+      <img
+        v-if="media?.filename"
+        :src="sbCrop(media, 2560)"
+        :srcset="srcset"
+        sizes="(max-width: 720px) 170vw, calc(140 * min(1vw, 14.4px))"
+        :alt="media.alt || ''"
+        class="display__media"
+        loading="lazy"
+      >
+      <video
+        v-if="video?.filename"
+        ref="player"
+        class="display__video"
+        :class="{ 'is-on': scrubbing }"
+        :src="video.filename"
+        preload="auto"
+        muted
+        playsinline
+        disablepictureinpicture
+        aria-hidden="true"
+        tabindex="-1"
+      />
+    </div>
   </section>
 </template>
 
@@ -95,13 +181,29 @@ const accentWord = computed(() => ` ${String(props.blok.accent || '').trim() ===
 
 /* The product shot: 2017px wide from x48, rising 18px into the heading's last
    line box and running 18px under the next section's top (white on white). */
-.display__media {
-  display: block;
+/* The figure carries the picture's box, so the video can simply fill it. The
+   still used to own those offsets, but it overflows the container, which left
+   an absolutely placed video sized to the container instead of to the picture. */
+.display__figure {
+  position: relative;
   width: calc(140.07 * var(--sx));
-  max-width: none;
-  height: auto;
   margin: calc(-1.49 * var(--sx)) 0 calc(-1.25 * var(--sx)) calc(var(--frame-x) + 3.33 * var(--sx));
 }
+.display__media { display: block; width: 100%; max-width: none; height: auto; margin: 0; }
+/* Laid exactly over the still, and only shown once it can actually seek, so the
+   still is what anyone sees until the scrub is running. The clip is framed a
+   touch differently from the stills, so it covers rather than letterboxes. */
+.display__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 240ms ease;
+  pointer-events: none;
+}
+.display__video.is-on { opacity: 1; }
 
 /* Phone design (390 wide): one word to a line on a 230px measure, 52/52 and
    centred, the accent on its own line in Lora; short edge hairlines at the
@@ -122,6 +224,6 @@ const accentWord = computed(() => ` ${String(props.blok.accent || '').trim() ===
   }
   .display__heading::before { top: 1em; right: calc(100% + 20.5vw - 11.8vw); }   /* x0-46 at 899 */
   .display__heading::after { top: 4.25em; left: calc(100% + 20.5vw - 11.8vw); }  /* x345-390 at 1068 */
-  .display__media { width: 170vw; margin: 23px 0 -15px -11.08vw; }
+  .display__figure { width: 170vw; margin: 23px 0 -15px -11.08vw; }
 }
 </style>
