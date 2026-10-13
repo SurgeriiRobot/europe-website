@@ -187,7 +187,11 @@ const style = computed(() => ({
   left: auto;
   bottom: auto;
   translate: none;
-  margin: 0 0 var(--wm-gap, calc(5.21 * var(--sx))) calc(-4.375 * var(--sx));     /* 75 to the title */
+  /* The left indent scales with the type, not with --sx. Once the font kept
+     growing past 1440 and this did not, the whole word slid right: the left
+     overhang fell from 25% of the type to 19% by 1920 while the right grew to
+     21%. Both edges are meant to be cut, in the design's proportions. */
+  margin: 0 0 var(--wm-gap, calc(5.21 * var(--sx))) -4.375vw;     /* 63 at 1440; 75 to the title */
   /* vw rather than --sx, so it keeps growing past the design width. The
      watermark is a full-bleed device, meant to run off both edges; capped at
      1440 the type stopped growing while the viewport kept widening, and by
