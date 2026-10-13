@@ -9,11 +9,38 @@ const mediaMobile = computed(() => (props.blok.media_mobile?.filename ? props.bl
 // Art in these rows ranges from a 765px photograph to a 311px icon. Pinning it
 // at 765 pushed the smaller ones off both edges of the page.
 const widthPx = computed(() => Number(props.blok.media_width) || 765)
+
+// Waitak, System Principles 10: "Visualization and control interface: both
+// videos don't work." They were never videos: the schema had nowhere to put one,
+// so both blocks were stills. The clip plays muted and looping once the row
+// scrolls into view, and never at all for anyone who prefers reduced motion or
+// is saving data. The still stays underneath as the poster, so a row renders
+// correctly with no JavaScript and there is no gap if the file never arrives.
+const video = computed(() => props.blok.video)
+const row = ref<HTMLElement>()
+const player = ref<HTMLVideoElement>()
+const playing = ref(false)
+
+onMounted(() => {
+  if (!video.value?.filename || !row.value || !player.value) return
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+  if ((navigator as any).connection?.saveData) return
+
+  const vid = player.value
+  const io = new IntersectionObserver(([e]) => {
+    if (!e) return
+    if (e.isIntersecting) vid.play().then(() => { playing.value = true }).catch(() => {})
+    else vid.pause()
+  }, { rootMargin: '150px 0px' })
+  io.observe(row.value)
+  onBeforeUnmount(() => io.disconnect())
+})
 const mediaWidth = computed(() => `calc(${(widthPx.value / 14.4).toFixed(2)} * min(1vw, 14.4px))`)
 </script>
 
 <template>
   <div
+    ref="row"
     v-editable="blok"
     class="mrow"
     :class="[`mrow--media-${side}`, `mrow--${tone}`]"
@@ -38,7 +65,8 @@ const mediaWidth = computed(() => `calc(${(widthPx.value / 14.4).toFixed(2)} * m
         <StoryblokComponent v-for="button in blok.buttons" :key="button._uid" :blok="button" />
       </div>
     </div>
-    <picture v-if="media?.filename" class="mrow__media">
+    <div v-if="media?.filename || video?.filename" class="mrow__media">
+      <picture v-if="media?.filename" class="mrow__picture">
       <source v-if="mediaMobile" media="(max-width: 720px)" :srcset="sbCrop(mediaMobile, 714)">
       <img
         :src="sbCrop(media, 1530)"
@@ -47,7 +75,22 @@ const mediaWidth = computed(() => `calc(${(widthPx.value / 14.4).toFixed(2)} * m
         :alt="media.alt || ''"
         loading="lazy"
       >
-    </picture>
+      </picture>
+      <video
+        v-if="video?.filename"
+        ref="player"
+        class="mrow__video"
+        :class="{ 'is-on': playing }"
+        :src="video.filename"
+        preload="metadata"
+        muted
+        loop
+        playsinline
+        disablepictureinpicture
+        aria-hidden="true"
+        tabindex="-1"
+      />
+    </div>
   </div>
 </template>
 
@@ -61,10 +104,27 @@ const mediaWidth = computed(() => `calc(${(widthPx.value / 14.4).toFixed(2)} * m
 .mrow--media-left .mrow__media { grid-column: 1; grid-row: 1; }
 /* The 765px image is wider than its 720px half: a flex row centres it with the
    overflow split evenly (a grid item that overflows would not stay centred). */
-.mrow__media { display: flex; justify-content: center; min-width: 0; }
+.mrow__media { display: flex; justify-content: center; min-width: 0; position: relative; }
+.mrow__picture { display: block; flex: none; }
 /* The drawn width wins: several rows are designed to run wider than their own
    column and bleed toward the page edge, so this must not be clamped to 100%. */
 .mrow__media img { display: block; flex: none; width: var(--mrow-media-w, calc(53.13 * var(--sx))); max-width: none; height: auto; }
+/* Laid over the still, which stays as the poster and as the fallback. It only
+   fades in once it is actually playing, so a blocked or failed load simply
+   leaves the picture showing. */
+.mrow__video {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  translate: -50% 0;
+  width: var(--mrow-media-w, calc(53.13 * var(--sx)));
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 320ms ease;
+  pointer-events: none;
+}
+.mrow__video.is-on { opacity: 1; }
 
 .mrow__title { margin: 0; font-size: clamp(2rem, 3.33vw, 3rem); font-weight: 600; line-height: 1.2083; color: var(--ink); }
 .mrow--accent .mrow__title { color: var(--c-blue); }
@@ -138,7 +198,9 @@ const mediaWidth = computed(() => `calc(${(widthPx.value / 14.4).toFixed(2)} * m
   .rows--compact .mrow--media-left .mrow__text { margin-left: 0; }
   .rows--compact .mrow--media-left .mrow__media,
   .rows--compact .mrow--media-right .mrow__media { justify-content: center; padding-inline: 0; }
+  .mrow__picture { flex: auto; width: 100%; }
   .mrow__media img { flex: auto; width: 100%; }
+  .mrow__video { width: 100%; }
   .mrow__title { font-size: clamp(2.25rem, 12.3vw, 3rem); }
   /* `phone_layout` has been in the schema and in the content since these pages
      were built but nothing read it. `media-first` puts the picture above the
