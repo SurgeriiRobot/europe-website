@@ -154,11 +154,32 @@ html {
    Stops sampled off the frames rather than reused from the vertical token, and
    --wash-band-h is the band's height: its two paddings plus a word set on one
    line at the band's own type size. */
+/* Both ramps finish at 50%, and the tilt flattens as the screen widens. Tilting
+   means the bottom LEFT corner, not the bottom edge, is the last point on the
+   gradient line: at 160deg over the 1440x1157 brand band it sits at 69%, and
+   the wider the screen the earlier it falls, because the band's height is
+   capped by --sx while the width is not. A final stop past the corner leaves
+   the box ending mid-ramp, which is the flat horizontal line Waitak saw under
+   the desktop wash. 50% clears every width down to 2560; beyond that the angle
+   has to come back as well, which also keeps the tilt from running away: the
+   drop across the screen stays near 600px instead of reaching 1250 on an
+   ultrawide. */
 :root {
-  --wash: linear-gradient(160deg, #2b4dc0 0%, #3a66ee 13%, #6084f1 27%, #8ca4ec 41%, #b6c2e7 55%, #d5d8e3 66%, #e2e2e2 85%);
-  --wash-h: calc(68.75 * var(--sx));        /* 990 at the design width */
+  --wash-angle: 160deg;
+  --wash: linear-gradient(var(--wash-angle), #2b4dc0 0%, #3a66ee 8%, #6084f1 16%, #8ca4ec 24%, #b6c2e7 33%, #d5d8e3 39%, #e2e2e2 50%);
+  --wash-brand: linear-gradient(var(--wash-angle), #ffffff 0%, #d3defe 10%, #aec2fe 18%, #88a5fe 27%, #6288fd 35%, #4875fd 42%, #0745fe 50%);
+  --wash-h: calc(97.2 * var(--sx));         /* 1400 at the design width */
   --wash-band-h: calc(49.73 * var(--sx));   /* 716 at the design width */
 }
+/* Corner of the brand band, the shallower of the two boxes: 64% at 1800 and
+   2600, 66% at 3440, 68% at 5120, 59% at 7680. */
+@media (min-width: 1801px) { :root { --wash-angle: 166deg; } }
+@media (min-width: 2601px) { :root { --wash-angle: 170deg; } }
+@media (min-width: 4601px) { :root { --wash-angle: 174deg; } }
+/* The brand band hands off to a dark section rather than to grey, so it needs
+   no continuation: it paints its own box and simply has to arrive at #0745fe
+   across the whole foot before the box ends. */
+.wmband--fade-to-brand { background-image: var(--wash-brand); }
 .wmband--fade-to-grey,
 .wmband--fade-to-grey + .section {
   background-image: var(--wash);

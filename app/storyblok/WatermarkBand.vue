@@ -40,7 +40,7 @@ const spacing = computed(() => ({
   padding: var(--wm-top, calc(40.65 * var(--sx))) 0 var(--wm-bottom, calc(5.19 * var(--sx)));   /* 585 to the words / 75 */
   overflow: hidden;
 }
-.wmband--fade-to-brand { background: var(--grad-fade-to-brand); }
+/* The tilted brand wash lives in base.css, beside the grey one. */
 /* The tilted wash and its continuation into the next section live in base.css,
    because they have to be painted on a sibling this component cannot reach. */
 /* 252px Lora on a 252px line, white at 50%, each line centred on the page even
