@@ -290,6 +290,19 @@ const srcset = computed(() =>
   .hero-full--overlay-left-narrow::after {
     background: linear-gradient(0deg, rgb(0 0 0 / 82%) 0%, rgb(0 0 0 / 74%) 52%, rgb(0 0 0 / 34%) 78%, rgb(0 0 0 / 10%) 100%);
   }
+  /* Waitak, on the News & events banner: "adjust the gradient to come from the
+     bottom. Same as in the contact page (but not white, keep the black)." So it
+     is the wash's shape in black: hung off the copy, with the same 140px fade
+     over it, rather than drawn across the whole banner. */
+  .hero-full--overlay-bottom::after { background: none; }
+  .hero-full--overlay-bottom .hero-full__content { position: relative; }
+  .hero-full--overlay-bottom .hero-full__content::before {
+    content: '';
+    position: absolute;
+    inset: -140px -16px -48px;
+    z-index: -1;
+    background: linear-gradient(180deg, rgb(0 0 0 / 0%) 0, rgb(0 0 0 / 40%) 84px, rgb(0 0 0 / 66%) 140px, rgb(0 0 0 / 78%) 100%);
+  }
   .hero-full__bg { object-position: 24% center; }
   .hero-full__video { object-position: center; }
 }
