@@ -83,8 +83,9 @@ const shown = computed(() => filtered.value.slice((page.value - 1) * perPage.val
 // so it is not stranded in a gap at the end of the grid.
 // Its slot is clamped past the first three; a short last page has no such slot,
 // so there it goes at the end rather than being dropped.
-const cells = computed<({ promo: true } | { promo: false, item: any })[]>(() => {
-  const out = shown.value.map(item => ({ promo: false as const, item }))
+type Cell = { promo: true } | { promo: false, item: any }
+const cells = computed<Cell[]>(() => {
+  const out: Cell[] = shown.value.map(item => ({ promo: false as const, item }))
   if (!hasPromo.value || !out.length) return out
   const at = Math.min(Math.max(promoAt.value, 3), out.length)
   out.splice(at, 0, { promo: true })
