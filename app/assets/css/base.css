@@ -154,31 +154,39 @@ html {
    Stops sampled off the frames rather than reused from the vertical token, and
    --wash-band-h is the band's height: its two paddings plus a word set on one
    line at the band's own type size. */
-/* Both ramps finish at 50%, and the tilt flattens as the screen widens. Tilting
-   means the bottom LEFT corner, not the bottom edge, is the last point on the
-   gradient line: at 160deg over the 1440x1157 brand band it sits at 69%, and
-   the wider the screen the earlier it falls, because the band's height is
-   capped by --sx while the width is not. A final stop past the corner leaves
-   the box ending mid-ramp, which is the flat horizontal line Waitak saw under
-   the desktop wash. 50% clears every width down to 2560; beyond that the angle
-   has to come back as well, which also keeps the tilt from running away: the
-   drop across the screen stays near 600px instead of reaching 1250 on an
-   ultrawide. */
+/* Both ramps are measured off the Clinical Application frame rather than
+   guessed. Fitting iso-colour lines across its pixels puts the tilt at 165.5deg
+   (0.7/255 spread within a line), and at that angle the frame's grey ramp lands
+   flat exactly on its box's bottom-left corner, which is what confirms both the
+   angle and the 1400px box.
+
+   Tilting means the box's corners, not its edges, are the ends of the gradient
+   line: the top RIGHT corner sits one screen-drop along it, and the bottom LEFT
+   corner the same distance back from the end. The frame holds white until
+   exactly the top-right corner, so the band's top edge is white the whole way
+   across and nothing shows where it meets the white section above; its grey ramp
+   finishes by the bottom-left corner, so the foot is flat grey the whole way
+   across. Both only hold if the drop holds, so above the design width the angle
+   flattens to keep it at 372px instead of letting it grow with the screen: at
+   2560 a fixed 165.5deg drops 662 and carries the top-right corner a third of the
+   way down the ramp, which is the hard line Waitak saw at the top of the
+   Pediatric band. */
 :root {
-  --wash-angle: 160deg;
-  --wash: linear-gradient(var(--wash-angle), #2b4dc0 0%, #3a66ee 8%, #6084f1 16%, #8ca4ec 24%, #b6c2e7 33%, #d5d8e3 39%, #e2e2e2 50%);
-  --wash-brand: linear-gradient(var(--wash-angle), #ffffff 0%, #d3defe 10%, #aec2fe 18%, #88a5fe 27%, #6288fd 35%, #4875fd 42%, #0745fe 50%);
+  --wash-drop: calc(25.86 * var(--sx));     /* 372 at the design width */
+  --wash-angle: 165.5deg;
+  --wash: linear-gradient(var(--wash-angle), #2847b5 0%, #355edf 8%, #4974f4 16%, #d9dbe3 56%, #e2e2e2 76%);
+  --wash-brand: linear-gradient(var(--wash-angle), #ffffff 0%, #f8fafe 25%, #ecf1fe 30%, #4c78fd 75%, #3458d1 87.5%, #1f358f 100%);
   --wash-h: calc(97.2 * var(--sx));         /* 1400 at the design width */
   --wash-band-h: calc(49.73 * var(--sx));   /* 716 at the design width */
 }
-/* Corner of the brand band, the shallower of the two boxes: 64% at 1800 and
-   2600, 66% at 3440, 68% at 5120, 59% at 7680. */
-@media (min-width: 1801px) { :root { --wash-angle: 166deg; } }
-@media (min-width: 2601px) { :root { --wash-angle: 170deg; } }
-@media (min-width: 4601px) { :root { --wash-angle: 174deg; } }
+/* Below the design width the drop scales with it, so this is a flat 165.5deg;
+   above it --sx is capped and the angle gives way instead. */
+@supports (rotate: atan2(1px, 2px)) {
+  :root { --wash-angle: calc(180deg - atan2(var(--wash-drop), 100vw)); }
+}
 /* The brand band hands off to a dark section rather than to grey, so it needs
-   no continuation: it paints its own box and simply has to arrive at #0745fe
-   across the whole foot before the box ends. */
+   no continuation and no flat foot: the frame runs it on to #1f358f in the
+   bottom-right corner, which is nearly the dark section's own colour. */
 .wmband--fade-to-brand { background-image: var(--wash-brand); }
 .wmband--fade-to-grey,
 .wmband--fade-to-grey + .section {
