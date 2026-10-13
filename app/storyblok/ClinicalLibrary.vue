@@ -377,23 +377,29 @@ const promoHref = computed(() => {
               referrerpolicy="strict-origin-when-cross-origin"
             />
           </div>
-          <component
-            :is="playing.video_id ? 'button' : 'div'"
-            v-else
+          <button
+            v-else-if="playing.video_id"
+            type="button"
             class="lib__poster"
-            :type="playing.video_id ? 'button' : undefined"
-            :aria-label="playing.video_id ? `Play video: ${playing.title}` : undefined"
-            @click="playing.video_id && gateState === 'open' ? started = true : null"
+            :aria-label="`Play video: ${playing.title}`"
+            @click="gateState === 'open' ? started = true : null"
           >
             <img
               v-if="playing.image?.filename"
               :src="sbCrop(playing.image, 1700, 956)"
               :alt="playing.image.alt || ''"
             >
-            <span v-if="playing.video_id" class="lib__poster-play" aria-hidden="true">
+            <span class="lib__poster-play" aria-hidden="true">
               <svg viewBox="0 0 24 24" focusable="false"><path d="M8 5.5v13l11-6.5z" /></svg>
             </span>
-          </component>
+          </button>
+          <div v-else class="lib__poster">
+            <img
+              v-if="playing.image?.filename"
+              :src="sbCrop(playing.image, 1700, 956)"
+              :alt="playing.image.alt || ''"
+            >
+          </div>
 
           <!-- The gate. It covers the piece rather than replacing it, which is
                how the frame draws it: the header above stays readable. -->
