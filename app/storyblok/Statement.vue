@@ -33,7 +33,9 @@ const style = computed(() => ({
   '--st-bottom-m': px(props.blok.space_bottom_mobile),
   '--connector-len': px(props.blok.connector_length),
   '--sec-title-measure': sx(props.blok.title_measure),
-  '--wm-size': medium.value ? 'calc(12.5 * var(--sx))' : undefined,
+  // vw, not --sx, for the same reason as the default below it: the watermark
+  // bleeds off both edges and has to keep growing past the design width.
+  '--wm-size': medium.value ? '12.5vw' : undefined,
   '--wm-size-m': mediumMobile.value ? '15.9vw' : undefined,
   '--wm-gap': sx(props.blok.watermark_gap),
   '--wm-gap-m': px(props.blok.watermark_gap_mobile),
@@ -108,7 +110,10 @@ const style = computed(() => ({
   bottom: clamp(60px, calc(13.33 * var(--sx)), 192px);
   margin: 0;
   translate: -50% 0;
-  font-size: calc(17.5 * var(--sx));               /* 252/1440 */
+  /* vw rather than --sx: see the --above variant below. The same bleed, and
+     the same cap, which left Home's "Key features" 215px short of the right
+     edge at 1920 instead of running off it. */
+  font-size: 17.5vw;                               /* 252 at 1440 */
   color: #f4f4f4;
   opacity: 0.375;
   pointer-events: none;
@@ -183,7 +188,15 @@ const style = computed(() => ({
   bottom: auto;
   translate: none;
   margin: 0 0 var(--wm-gap, calc(5.21 * var(--sx))) calc(-4.375 * var(--sx));     /* 75 to the title */
-  font-size: var(--wm-size, calc(17.5 * var(--sx)));   /* 252, or 180 when medium */
+  /* vw rather than --sx, so it keeps growing past the design width. The
+     watermark is a full-bleed device, meant to run off both edges; capped at
+     1440 the type stopped growing while the viewport kept widening, and by
+     1920 the second line stopped 442px short of the right edge instead of
+     being cut by it. Waitak, SP Robot 9: "Can we have the principle part
+     (light blue header) move a bit more right? As it should also be a bit cut
+     off... this should auto adapt when change of screensize." At 1440 and
+     below this renders exactly as before, since --sx is 1vw there. */
+  font-size: var(--wm-size, 17.5vw);                   /* 252 at 1440, or 180 when medium */
   line-height: 1;
   white-space: pre;
   color: rgb(193 209 255 / 50%);
