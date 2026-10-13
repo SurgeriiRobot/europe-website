@@ -61,6 +61,14 @@ const page = computed(() => Math.max(1, Number(route.query.page) || 1))
 function setQuery(key: string, value: string) {
   router.push({ query: { ...route.query, [key]: value || undefined, page: undefined } })
 }
+// Waitak: "we will need a [Clear Filters X] button". It stands between the sort
+// control and the chips and only appears once something is on, and it leaves the
+// sort order alone: the frame shows it beside a sort control that keeps its own
+// value, and resetting the order is not what "clear filters" says.
+const hasFilters = computed(() => Boolean(specialty.value) || activeKinds.value.length > 0)
+function clearFilters() {
+  router.push({ query: { ...route.query, specialty: undefined, type: undefined, page: undefined } })
+}
 function toggleKind(kind: string) {
   const next = activeKinds.value.includes(kind)
     ? activeKinds.value.filter(k => k !== kind)
@@ -225,6 +233,11 @@ const promoHref = computed(() => {
           ]"
           @change="setQuery('sort', $event === 'oldest' ? 'oldest' : '')"
         />
+
+        <button v-if="hasFilters" type="button" class="lib__clear" @click="clearFilters">
+          {{ blok.clear_filters_label || 'Clear filters' }}
+          <Icon name="close" :size="20" />
+        </button>
 
         <ListingControl
           class="lib__disclosure"
@@ -448,6 +461,22 @@ const promoHref = computed(() => {
    out. Written as a child selector so it outranks the control's own `display`
    whichever order the two stylesheets are served in. */
 .lib__controls > .lib__disclosure { display: none; }
+.lib__clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  letter-spacing: 0.46px;
+  color: var(--c-darkblue);
+  cursor: pointer;
+}
+.lib__clear:hover { text-decoration: underline; text-underline-offset: 3px; }
 
 /* The design draws the Video chip 115px wide — the width the dropdown component
    it was copied from takes — where the label alone measures 86. Keeping the
