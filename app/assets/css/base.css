@@ -143,24 +143,34 @@ html {
 
 /* BrandText — superscript registered/trademark marks, unbreakable compounds and
    the odd emphasised phrase. */
-/* The phone wash behind "Key figures". Waitak: "the gradient is horizontal, but
-   it should be tilted". Tilting it inside the band alone leaves the band's foot
-   blue on the left and grey on the right, which steps against the grey section
+/* The wash behind a watermark band. Waitak: "the gradient is horizontal, but it
+   should be tilted". Tilting it inside the band alone leaves the band's foot
+   blue on one side and grey on the other, which steps against the grey section
    under it. The design has no such step because its wash runs past the band and
-   dies out behind the figures. So one gradient is painted across both: the band
-   shows its top, the section below continues it, offset by exactly the band's
-   height (its two fixed paddings plus a word set in vw). */
+   dies out behind the content below, so one gradient is painted across both:
+   the band shows its top and the next section continues it, offset by exactly
+   the band's own height.
+
+   Stops sampled off the frames rather than reused from the vertical token, and
+   --wash-band-h is the band's height: its two paddings plus a word set on one
+   line at the band's own type size. */
+:root {
+  --wash: linear-gradient(160deg, #2b4dc0 0%, #3a66ee 13%, #6084f1 27%, #8ca4ec 41%, #b6c2e7 55%, #d5d8e3 66%, #e2e2e2 85%);
+  --wash-h: calc(68.75 * var(--sx));        /* 990 at the design width */
+  --wash-band-h: calc(49.73 * var(--sx));   /* 716 at the design width */
+}
+.wmband--fade-to-grey,
+.wmband--fade-to-grey + .section {
+  background-image: var(--wash);
+  background-size: 100% var(--wash-h);
+  background-repeat: no-repeat;
+}
+.wmband--fade-to-grey + .section { background-position: 0 calc(-1 * var(--wash-band-h)); }
+
 @media (max-width: 720px) {
-  /* Sampled off the frame: its deepest blue is #6c8ef1, not the band's usual
-     #2b4dc0, and it is grey everywhere by about 85% down. */
-  :root { --wash-phone: linear-gradient(160deg, #6c8ef1 0%, #8fa6ed 25%, #b3c0e7 50%, #d2d6e2 72%, #e2e2e2 88%);
-          --wash-h: 470px; }
-  .wmband--fade-to-grey + .section {
-    background-image: var(--wash-phone);
-    background-size: 100% var(--wash-h);
-    background-position: 0 calc(-230px - 15.9vw);
-    background-repeat: no-repeat;
-  }
+  /* The phone band is shorter and its word is set in vw, so both the wash and
+     the offset are measured differently. */
+  :root { --wash-h: 470px; --wash-band-h: calc(230px + 15.9vw); }
 }
 
 .brand-mark { font-size: 0.5em; line-height: 0; vertical-align: 0.8em; }

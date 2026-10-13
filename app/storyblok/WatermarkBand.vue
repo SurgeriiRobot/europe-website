@@ -41,7 +41,8 @@ const spacing = computed(() => ({
   overflow: hidden;
 }
 .wmband--fade-to-brand { background: var(--grad-fade-to-brand); }
-.wmband--fade-to-grey { background: var(--grad-fade-to-grey); }
+/* The tilted wash and its continuation into the next section live in base.css,
+   because they have to be painted on a sibling this component cannot reach. */
 /* 252px Lora on a 252px line, white at 50%, each line centred on the page even
    where it runs wider than the screen. */
 .wmband__word {
@@ -65,11 +66,7 @@ const spacing = computed(() => ({
      it falls more in the middle of both key figures". The stops hold the brand
      blue behind the word and move the fade under it, still landing on #e2e2e2
      at the foot so it meets the grey section below with no seam. */
-  .wmband--fade-to-grey {
-    background: var(--wash-phone);
-    background-size: 100% var(--wash-h);
-    background-repeat: no-repeat;
-  }
+
   .wmband__word { width: auto; margin: 0; translate: none; font-size: 15.9vw; white-space: normal; }
 }
 </style>
