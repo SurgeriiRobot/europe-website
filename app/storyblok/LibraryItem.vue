@@ -8,9 +8,12 @@
 // A card carrying a `video_id` is a click-to-load facade: the poster and play
 // mark are ours, nothing is requested from YouTube until someone presses it.
 const props = defineProps<{ blok: any }>()
-const emit = defineEmits<{ play: [blok: any] }>()
+// Waitak: "none of the cards are clickable yet. Can we already have that pop-up
+// and form pop-up?" Every card now opens the same pop-up, which is where the
+// document, the link and the video all live; before this only a video card did
+// anything, and a card with neither a link nor a file was dead text.
+const emit = defineEmits<{ open: [blok: any] }>()
 
-const sbHref = useSbUrl()
 const { locale, locales } = useI18n()
 const bcp47 = computed(() => {
   const active = (locales.value as any[]).find(l => (typeof l === 'string' ? l : l.code) === locale.value)
@@ -18,14 +21,6 @@ const bcp47 = computed(() => {
 })
 
 const isVideo = computed(() => Boolean(props.blok.video_id))
-// An uploaded document wins over a link: the library's booklets and publications
-// are files to download rather than pages to visit.
-const doc = computed(() => props.blok.document?.filename || '')
-const href = computed(() => {
-  if (doc.value) return doc.value
-  const l = props.blok.link
-  return l && (l.cached_url || l.url || l.story?.full_slug) ? sbHref(l) : null
-})
 const date = computed(() => {
   const raw = props.blok.date
   if (!raw) return ''
@@ -50,22 +45,19 @@ const image = computed(() => props.blok.image)
         </span>
       </p>
       <h2 class="lcard__title">
-        <button v-if="isVideo" type="button" class="lcard__link lcard__link--btn" @click="emit('play', blok)">
+        <button type="button" class="lcard__link lcard__link--btn" @click="emit('open', blok)">
           <BrandText :text="blok.title" :nowrap="false" />
         </button>
-        <a v-else-if="doc" :href="doc" class="lcard__link" download target="_blank" rel="noopener"><BrandText :text="blok.title" :nowrap="false" /></a>
-        <NuxtLink v-else-if="href" :to="href" class="lcard__link"><BrandText :text="blok.title" :nowrap="false" /></NuxtLink>
-        <BrandText v-else :text="blok.title" :nowrap="false" />
       </h2>
       <p v-if="blok.excerpt" class="lcard__excerpt"><BrandText :text="blok.excerpt" :nowrap="false" /></p>
     </div>
 
     <button
-      v-if="isVideo"
       type="button"
-      class="lcard__media lcard__media--play"
-      :aria-label="`Play video: ${blok.title}`"
-      @click="emit('play', blok)"
+      class="lcard__media"
+      :class="{ 'lcard__media--play': isVideo }"
+      :aria-label="isVideo ? `Play video: ${blok.title}` : `Open: ${blok.title}`"
+      @click="emit('open', blok)"
     >
       <img
         v-if="image?.filename"
@@ -75,27 +67,10 @@ const image = computed(() => props.blok.image)
         :alt="image.alt || ''"
         loading="lazy"
       >
-      <span class="lcard__play" aria-hidden="true">
+      <span v-if="isVideo" class="lcard__play" aria-hidden="true">
         <svg viewBox="0 0 24 24" focusable="false"><path d="M8 5.5v13l11-6.5z" /></svg>
       </span>
     </button>
-    <component
-      :is="href ? 'NuxtLink' : 'div'"
-      v-else
-      :to="href || undefined"
-      class="lcard__media"
-      :tabindex="href ? -1 : undefined"
-      :aria-hidden="href ? 'true' : undefined"
-    >
-      <img
-        v-if="image?.filename"
-        :src="sbCrop(image, 600, 372)"
-        :srcset="`${sbCrop(image, 600, 372)} 600w, ${sbCrop(image, 900, 558)} 900w`"
-        sizes="(max-width: 720px) 358px, 300px"
-        :alt="image.alt || ''"
-        loading="lazy"
-      >
-    </component>
   </article>
 </template>
 

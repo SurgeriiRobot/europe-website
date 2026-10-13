@@ -18,6 +18,12 @@ const props = defineProps<{ blok: any }>()
 const route = useRoute()
 const router = useRouter()
 const sbHref = useSbUrl()
+// The pop-up prints the date the way the card does, in the visitor's language.
+const { locale, locales } = useI18n()
+const bcp47 = computed(() => {
+  const active = (locales.value as any[]).find(l => (typeof l === 'string' ? l : l.code) === locale.value)
+  return (active && typeof active !== 'string' && active.language) || locale.value
+})
 
 const items = computed<any[]>(() => props.blok.items || [])
 const perPage = computed(() => Math.max(1, Number(props.blok.per_page) || 15))
@@ -100,24 +106,96 @@ const to = (n: number) => ({ query: { ...route.query, page: n === 1 ? undefined 
 
 const filtersOpen = ref(false)
 
-// ---- video facade ---------------------------------------------------------
-// Nothing reaches Google until the visitor presses play: the poster is our own
-// asset and the nocookie iframe is only created here, on the click.
+// ---- the card pop-up ------------------------------------------------------
+// Every card opens this (Desktop Shurui Pop-up state & Active): a header strip
+// carrying the title, the line of copy, the tags and the date, then the piece
+// itself. A video is still a facade, so nothing reaches Google until the visitor
+// presses play: the poster is our own asset and the nocookie iframe is only
+// created on that click.
 const playing = ref<any>(null)
 const dialog = ref<HTMLDialogElement>()
+const started = ref(false)
 const embedSrc = computed(() =>
-  playing.value?.video_id
+  started.value && playing.value?.video_id
     ? `https://www.youtube-nocookie.com/embed/${encodeURIComponent(playing.value.video_id)}?autoplay=1&rel=0&modestbranding=1`
     : '',
 )
-function play(item: any) {
+const openDoc = computed(() => playing.value?.document?.filename || '')
+const openHref = computed(() => {
+  const l = playing.value?.link
+  return l && (l.cached_url || l.url || l.story?.full_slug) ? sbHref(l) : null
+})
+const openTags = computed(() => [playing.value?.kind, playing.value?.specialty]
+  .filter(Boolean)
+  .map((v: string) => v.replace(/-/g, ' ').replace(/^./, c => c.toUpperCase())))
+const openDate = computed(() => {
+  const raw = playing.value?.date
+  if (!raw) return ''
+  const d = new Date(String(raw).replace(' ', 'T'))
+  return Number.isNaN(d.valueOf())
+    ? String(raw)
+    : d.toLocaleDateString(bcp47.value, { day: 'numeric', month: 'long', year: 'numeric' })
+})
+function openItem(item: any) {
   playing.value = item
+  started.value = false
+  gateState.value = granted.value ? 'open' : 'form'
   nextTick(() => dialog.value?.showModal())
 }
 function closePlayer() {
   dialog.value?.close()
   playing.value = null
+  started.value = false
 }
+
+// ---- the gate -------------------------------------------------------------
+// "Leave your contact details once and get access to all our content": the form
+// is per visitor, not per file, so a granted visitor goes straight to the piece.
+// Kept in localStorage, which is this browser only; the real record is whatever
+// the endpoint hands the CRM.
+const GRANT = 'shurui.library.access'
+const granted = ref(false)
+const gateState = ref<'form' | 'sending' | 'thanks' | 'open'>('form')
+const gateError = ref('')
+const lead = reactive({ name: '', email: '', country: '' })
+onMounted(() => {
+  try { granted.value = localStorage.getItem(GRANT) === '1' } catch { /* private mode */ }
+})
+const valid = computed(() => lead.name.trim().length > 1
+  && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(lead.email.trim())
+  && Boolean(lead.country))
+async function requestAccess() {
+  if (!valid.value) return
+  gateState.value = 'sending'
+  gateError.value = ''
+  try {
+    await $fetch('/api/library-access', {
+      method: 'POST',
+      body: { ...lead, item: playing.value?.title },
+    })
+    granted.value = true
+    try { localStorage.setItem(GRANT, '1') } catch { /* private mode */ }
+    gateState.value = 'thanks'
+    // The design says the content "will be available in a few seconds", so the
+    // thank-you holds the floor before the piece appears behind it.
+    setTimeout(() => { if (gateState.value === 'thanks') gateState.value = 'open' }, 2200)
+  } catch (e: any) {
+    gateState.value = 'form'
+    gateError.value = e?.data?.statusMessage || e?.data?.message || 'Something went wrong. Please try again.'
+  }
+}
+
+// The country list is the datasource the rest of the site already uses, so the
+// options can never drift from what editors see elsewhere.
+const { data: countries } = await useAsyncData('library-countries', async () => {
+  const api = useStoryblokApi()
+  const { data } = await api.get('cdn/datasource_entries', {
+    datasource: 'countries',
+    per_page: 250,
+    version: useStoryblokVersion(),
+  })
+  return (data.datasource_entries || []) as { name: string, value: string }[]
+}, { default: () => [] })
 
 const promoHref = computed(() => {
   const l = props.blok.promo_link
@@ -193,7 +271,7 @@ const promoHref = computed(() => {
               {{ blok.promo_link_label || 'Book a demo' }}
             </NuxtLink>
           </article>
-          <LibraryItem v-else :blok="cell.item" @play="play" />
+          <LibraryItem v-else :blok="cell.item" @open="openItem" />
         </template>
       </div>
 
@@ -249,28 +327,106 @@ const promoHref = computed(() => {
       </nav>
     </div>
 
+    <!-- The pop-up the cards open. The close mark sits outside the panel, top
+         right, as the frame draws it. -->
     <dialog
       ref="dialog"
       class="lib__dialog"
       :aria-label="playing?.title || undefined"
-      @close="playing = null"
+      @close="closePlayer"
       @click.self="closePlayer"
     >
-      <div v-if="playing" class="lib__player">
-        <button type="button" class="lib__close" aria-label="Close video" @click="closePlayer">
-          <Icon name="close" :size="24" />
+      <div v-if="playing" class="lib__pop">
+        <button type="button" class="lib__close" :aria-label="blok.close_label || 'Close'" @click="closePlayer">
+          <Icon name="close" :size="28" />
         </button>
-        <h3 class="lib__player-title">{{ playing.title }}</h3>
-        <div class="lib__frame">
-          <iframe
-            :src="embedSrc"
-            :title="playing.title"
-            allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen
-            referrerpolicy="strict-origin-when-cross-origin"
-          />
+
+        <div class="lib__pop-head">
+          <div class="lib__pop-headings">
+            <h3 class="lib__pop-title">{{ playing.title }}</h3>
+            <p v-if="playing.excerpt" class="lib__pop-body">{{ playing.excerpt }}</p>
+          </div>
+          <div class="lib__pop-meta">
+            <span class="lib__pop-tags">
+              <span v-for="tag in openTags" :key="tag" class="lcard__tag">{{ tag }}</span>
+            </span>
+            <span v-if="openDate" class="lib__pop-date">{{ openDate }}</span>
+          </div>
         </div>
-        <p v-if="playing.excerpt" class="lib__player-body">{{ playing.excerpt }}</p>
+
+        <div class="lib__pop-media" :class="{ 'lib__pop-media--gated': gateState !== 'open' }">
+          <div v-if="playing.video_id && started" class="lib__frame">
+            <iframe
+              :src="embedSrc"
+              :title="playing.title"
+              allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+              referrerpolicy="strict-origin-when-cross-origin"
+            />
+          </div>
+          <component
+            :is="playing.video_id ? 'button' : 'div'"
+            v-else
+            class="lib__poster"
+            :type="playing.video_id ? 'button' : undefined"
+            :aria-label="playing.video_id ? `Play video: ${playing.title}` : undefined"
+            @click="playing.video_id && gateState === 'open' ? started = true : null"
+          >
+            <img
+              v-if="playing.image?.filename"
+              :src="sbCrop(playing.image, 1700, 956)"
+              :alt="playing.image.alt || ''"
+            >
+            <span v-if="playing.video_id" class="lib__poster-play" aria-hidden="true">
+              <svg viewBox="0 0 24 24" focusable="false"><path d="M8 5.5v13l11-6.5z" /></svg>
+            </span>
+          </component>
+
+          <!-- The gate. It covers the piece rather than replacing it, which is
+               how the frame draws it: the header above stays readable. -->
+          <div v-if="gateState !== 'open'" class="lib__gate">
+            <form v-if="gateState !== 'thanks'" class="lib__gate-form" @submit.prevent="requestAccess">
+              <div class="lib__gate-fields">
+                <label class="lib__field">
+                  <span class="lib__field-label">{{ blok.gate_name_label || 'Full Name' }}*</span>
+                  <input v-model="lead.name" type="text" name="name" autocomplete="name" required>
+                </label>
+                <label class="lib__field">
+                  <span class="lib__field-label">{{ blok.gate_email_label || 'Professional Email' }}*</span>
+                  <input v-model="lead.email" type="email" name="email" autocomplete="email" required>
+                </label>
+                <label class="lib__field">
+                  <span class="lib__field-label">{{ blok.gate_country_label || 'Country' }}*</span>
+                  <select v-model="lead.country" name="country" required>
+                    <option value="" disabled>{{ blok.gate_country_label || 'Country' }}</option>
+                    <option v-for="c in countries" :key="c.value" :value="c.value">{{ c.name }}</option>
+                  </select>
+                </label>
+              </div>
+              <div class="lib__gate-aside">
+                <p class="lib__gate-pitch">{{ blok.gate_headline || 'Almost there!\nLeave your contact details once and get access to all our content.' }}</p>
+                <p class="lib__gate-note">*{{ blok.gate_note || 'Mandatory Field' }}</p>
+                <p v-if="gateError" class="lib__gate-error">{{ gateError }}</p>
+                <button type="submit" class="lib__gate-submit" :disabled="!valid || gateState === 'sending'">
+                  {{ gateState === 'sending' ? '…' : (blok.gate_submit_label || 'Get access') }}
+                </button>
+              </div>
+            </form>
+            <div v-else class="lib__gate-thanks">
+              <p class="lib__gate-thanks-title">{{ blok.gate_thanks_title || 'Thank you!' }}</p>
+              <p class="lib__gate-thanks-body">{{ blok.gate_thanks_body || 'Your content will be available in a few seconds.' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="gateState === 'open' && (openDoc || openHref)" class="lib__pop-actions">
+          <a v-if="openDoc" :href="openDoc" class="lib__pop-cta" download target="_blank" rel="noopener">
+            {{ blok.download_label || 'Download' }}
+          </a>
+          <NuxtLink v-else-if="openHref" :to="openHref" class="lib__pop-cta">
+            {{ blok.read_label || 'Read more' }}
+          </NuxtLink>
+        </div>
       </div>
     </dialog>
   </section>
@@ -379,37 +535,147 @@ const promoHref = computed(() => {
 .lib__pg.is-off { opacity: 0.38; cursor: default; pointer-events: none; }
 .lib__pg svg { width: 20px; height: 20px; fill: currentColor; }
 
-/* ---- video dialog ---- */
+/* ---- the card pop-up (Desktop Shurui Pop-up state & Active, 840 wide) ---- */
 .lib__dialog {
-  width: min(960px, calc(100vw - 32px));
+  width: min(840px, calc(100vw - 32px));
+  max-height: calc(100vh - 64px);
   padding: 0;
   border: 0;
-  border-radius: 8px;
-  background: var(--c-white);
+  background: none;
   color: var(--c-darkblue);
+  overflow: visible;
 }
 .lib__dialog::backdrop { background: rgb(31 39 57 / 72%); }
-.lib__player { position: relative; padding: 24px; }
+.lib__pop { position: relative; }
+/* The frame hangs the close mark outside the panel, above its top right corner. */
 .lib__close {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  bottom: calc(100% + 8px);
+  right: 0;
   display: grid;
   place-items: center;
   width: 40px;
   height: 40px;
   padding: 0;
   border: 0;
-  border-radius: 50%;
   background: none;
-  color: var(--c-darkblue);
+  color: var(--c-white);
   cursor: pointer;
 }
-.lib__close:hover { background: color-mix(in srgb, var(--c-darkblue) 8%, transparent); }
-.lib__player-title { margin: 0 52px 16px 0; font-size: 1.125rem; font-weight: 600; line-height: 1.2083; }
-.lib__frame { position: relative; aspect-ratio: 16 / 9; background: var(--c-black); }
+.lib__close:hover { opacity: 0.8; }
+
+.lib__pop-head {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 20px 24px;
+  background: var(--c-white);
+}
+.lib__pop-headings { min-width: 0; }
+.lib__pop-title { margin: 0; font-size: 1.375rem; font-weight: 600; line-height: 1.2083; }   /* 22 */
+.lib__pop-body { margin: 10px 0 0; font-size: 1.125rem; font-weight: 300; line-height: 1.3; }
+.lib__pop-meta { flex: none; display: grid; justify-items: end; gap: 10px; }
+.lib__pop-tags { display: flex; gap: 7px; }
+.lib__pop-tags span {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 9px;
+  border: 1px solid var(--c-darkblue);
+  border-radius: 4px;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: 0.46px;
+  white-space: nowrap;
+}
+.lib__pop-date { font-size: 0.75rem; font-weight: 400; line-height: 1.2; color: var(--c-black-300); }
+
+.lib__pop-media { position: relative; aspect-ratio: 16 / 9; background: var(--c-black); }
+.lib__poster { display: block; width: 100%; height: 100%; padding: 0; border: 0; background: none; }
+.lib__poster img { width: 100%; height: 100%; object-fit: cover; }
+.lib__poster-play {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  translate: -50% -50%;
+  display: grid;
+  place-items: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 40%);
+}
+.lib__poster-play svg { width: 36px; height: 36px; fill: rgb(255 255 255 / 88%); }
+button.lib__poster { cursor: pointer; }
+.lib__frame { position: absolute; inset: 0; background: var(--c-black); }
 .lib__frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-.lib__player-body { margin: 16px 0 0; font-size: 1rem; font-weight: 300; line-height: 1.625; }
+
+/* ---- the gate ---- */
+.lib__gate {
+  position: absolute;
+  inset: 24px;
+  display: grid;
+  background: var(--c-neutral-300);
+}
+.lib__gate-form { display: grid; grid-template-columns: minmax(0, 1fr) 245px; gap: 32px; padding: 24px; }
+.lib__gate-fields { display: grid; align-content: start; gap: 14px; }
+.lib__field { display: grid; gap: 6px; }
+.lib__field-label { font-size: 0.875rem; font-weight: 600; line-height: 1.2; }
+.lib__field input,
+.lib__field select {
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--c-neutral-500);
+  border-radius: 4px;
+  background: var(--c-white);
+  font: inherit;
+  font-size: 1rem;
+  color: var(--c-darkblue);
+}
+.lib__field input:focus-visible,
+.lib__field select:focus-visible { outline: 2px solid var(--c-blue); outline-offset: 1px; }
+/* The frame marks a filled field with a green rule and a tick. */
+.lib__field input:valid:not(:placeholder-shown),
+.lib__field select:valid { border-color: var(--c-green); }
+.lib__gate-aside { display: grid; align-content: start; gap: 10px; }
+.lib__gate-pitch { margin: 0; white-space: pre-line; font-size: 1.125rem; font-weight: 600; line-height: 1.3; }
+.lib__gate-note { margin: 8px 0 0; font-size: 0.75rem; font-weight: 400; }
+.lib__gate-error { margin: 0; font-size: 0.8125rem; color: var(--c-red); }
+.lib__gate-submit {
+  justify-self: start;
+  height: 44px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 4px;
+  background: var(--c-blue);
+  color: var(--c-white);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+.lib__gate-submit:hover:not(:disabled) { background: var(--c-blue-500); }
+.lib__gate-submit:disabled { opacity: 0.45; cursor: default; }
+.lib__gate-thanks { display: grid; align-content: center; justify-items: center; gap: 12px; padding: 24px; text-align: center; }
+.lib__gate-thanks-title { margin: 0; font-size: 2rem; font-weight: 600; line-height: 1.2083; }
+.lib__gate-thanks-body { margin: 0; font-size: 1.125rem; font-weight: 300; line-height: 1.3; }
+
+.lib__pop-actions { display: flex; gap: 16px; padding: 20px 24px; background: var(--c-white); }
+.lib__pop-cta {
+  display: inline-flex;
+  align-items: center;
+  height: 42px;
+  padding: 0 21px;
+  border-radius: 4px;
+  background: var(--c-blue);
+  color: var(--c-white);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  letter-spacing: 0.46px;
+  text-decoration: none;
+}
+.lib__pop-cta:hover { background: var(--c-blue-500); }
 
 /* Phone modules (extra-modules-mobile): the sort control and the filters
    disclosure each run the full 358px, 32px apart, then one card per row. */
@@ -431,6 +697,21 @@ const promoHref = computed(() => {
   .lib__promo { height: auto; padding: 48px 24px; }
   .lib__pager { gap: 0; margin-top: 32px; }
   .lib__pg { width: 38px; }
-  .lib__player { padding: 16px; }
+  /* The phone frame gives the gate the room it needs instead of fitting it into
+     the 16:9 media: at 390 that box is only 206 tall and the form is 290, so it
+     spilled past the foot of the dialog. Gated, the panel sizes to the form and
+     the media's shape comes back when the content does. */
+  .lib__dialog { width: calc(100vw - 32px); max-height: calc(100dvh - 32px); overflow-y: auto; }
+  .lib__pop-head { flex-direction: column; gap: 12px; padding: 16px; }
+  .lib__pop-meta { justify-items: start; }
+  .lib__pop-media--gated { aspect-ratio: auto; }
+  /* Gated, the panel is the whole of the media box, so the piece behind it is
+     not on show above the form. */
+  .lib__pop-media--gated .lib__poster { display: none; }
+  .lib__gate { position: static; inset: auto; }
+  .lib__gate-form { grid-template-columns: minmax(0, 1fr); gap: 20px; padding: 16px; overflow-y: auto; }
+  .lib__gate-submit { justify-self: stretch; text-align: center; justify-content: center; }
+  .lib__pop-actions { padding: 16px; }
+  .lib__pop-cta { flex: 1 1 auto; justify-content: center; }
 }
 </style>
