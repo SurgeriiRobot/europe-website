@@ -65,9 +65,13 @@ const style = computed(() => ({
   max-width: var(--container);
   margin-inline: auto;
   padding-inline: var(--gutter-design);                                       /* the design's 75px gutter */
-  border-bottom: var(--line-w) solid var(--ink);
 }
+/* Waitak: "the bottom line is longer than the frame/block". A border on the
+   wrapper is drawn on its padding box, so the closing line ran the whole 1440
+   while every line between the rows was inset to the 1290 measure. It belongs
+   to the last row, which has the rows' own width. */
 .ll__row { border-top: var(--line-w) solid var(--ink); }
+.ll__row:last-child { border-bottom: var(--line-w) solid var(--ink); }
 .ll__summary,
 .ll__row--plain {
   display: flex;
@@ -113,8 +117,9 @@ const style = computed(() => ({
 
 @media (max-width: 720px) {
   .ll { padding: var(--ll-top-m, 0px) 0 var(--ll-bottom-m, 56px); }
-  .ll__inner { padding-inline: 16px; border-bottom-color: var(--c-darkblue-200); border-bottom-width: 1px; }
+  .ll__inner { padding-inline: 16px; }
   .ll__row { border-top-color: var(--c-darkblue-200); border-top-width: 1px; }
+  .ll__row:last-child { border-bottom-color: var(--c-darkblue-200); border-bottom-width: 1px; }
   .ll__summary, .ll__row--plain { gap: 16px; padding: 24px 0 24px 0; }
   .ll__text { gap: 4px; max-width: 280px; }
   .ll__title { font-size: 1.25rem; line-height: 1.2; }                        /* 20/24 */
