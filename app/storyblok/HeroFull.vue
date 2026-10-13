@@ -261,8 +261,23 @@ const srcset = computed(() =>
      headline and 2.08:1 on its body, Training 2.56:1 and 2.10:1. Phones get the
      veil under the copy instead of beside it, in the same direction the copy is
      anchored. */
-  .hero-full--overlay-wash::after {
-    background: linear-gradient(0deg, rgb(255 255 255 / 94%) 0%, rgb(255 255 255 / 90%) 52%, rgb(255 255 255 / 38%) 76%, rgb(255 255 255 / 12%) 100%);
+  /* Waitak, on the Clinical Evidence banner: "keep the white gradient that we
+     have now, just shift the gradient lower, so it's not covering the image too
+     much". Drawn across the whole section the veil has to stay strong as high as
+     the tallest copy any page gives it, which is Contact's at 407 of the 780,
+     so it milked the photograph from top to bottom on every page. Hung off the
+     copy instead it is only ever as tall as that page's own copy, with the same
+     140px fade over it: it now clears at 449 on Clinical Evidence, 439 on
+     Instruments and 547 on Contact, and above that the photograph is untouched.
+     The 16 and 48 are the inner's own padding, so it still bleeds to the edges. */
+  .hero-full--overlay-wash::after { background: none; }
+  .hero-full--overlay-wash .hero-full__content { position: relative; }
+  .hero-full--overlay-wash .hero-full__content::before {
+    content: '';
+    position: absolute;
+    inset: -140px -16px -48px;
+    z-index: -1;
+    background: linear-gradient(180deg, rgb(255 255 255 / 0%) 0, rgb(255 255 255 / 62%) 84px, rgb(255 255 255 / 88%) 140px, rgb(255 255 255 / 94%) 100%);
   }
   .hero-full--overlay-left::after,
   .hero-full--overlay-left-narrow::after {
