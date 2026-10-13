@@ -15,6 +15,13 @@ const heightVar = computed(() => {
   const m = Number(props.blok.measure)
   return {
     ...(h > 0 ? { '--hero-h': `calc(${(h / 14.4).toFixed(2)} * var(--sx))` } : {}),
+    // The phone height is real px at 390, not design px at 1440. It is the only
+    // handle on how much of a wide photograph a phone shows: the banner is a
+    // 0.50 box and these photographs are 1.80, so the slice visible is set by
+    // the banner's own shape, and nothing about the image can widen it. Waitak
+    // on the Clinical Evidence banner: "could we try and get the image like
+    // this", pointing at a frame 638 tall where ours is the drawn 780.
+    ...(Number(props.blok.height_mobile) > 0 ? { '--hero-h-m': `${Number(props.blok.height_mobile)}px` } : {}),
     // The column the copy wraps in, in design px. Banners are drawn to very
     // different measures: home fits 339, Contact 520, the library 528.
     ...(m > 0 ? { '--hero-measure': `${m}px` } : {}),
@@ -239,7 +246,7 @@ const srcset = computed(() =>
 /* Phone design (390 wide): a 780px hero under the transparent header, copy at
    the 16px gutter — Inter 600 34/41 title, 300 16/26 body — 48px above the edge. */
 @media (max-width: 720px) {
-  .hero-full { min-height: clamp(560px, 200vw, 780px); }
+  .hero-full { min-height: var(--hero-h-m, clamp(560px, 200vw, 780px)); }
   .hero-full__inner { padding: calc(var(--header-h) + 60px) 16px 48px; }
   /* width, not just max-width: the content is a flex item, so without it the
      box shrink-wraps the longest line and a page with a shorter headline got a
