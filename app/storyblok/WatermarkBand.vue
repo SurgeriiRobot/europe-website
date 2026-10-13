@@ -12,6 +12,24 @@ const props = defineProps<{ blok: any }>()
 const n = (v: unknown) => (v === '' || v === null || v === undefined || !Number.isFinite(Number(v)) ? undefined : Number(v))
 const sx = (v: unknown) => { const x = n(v); return x === undefined ? undefined : `calc(${x} / 14.4 * var(--sx))` }
 const px = (v: unknown) => { const x = n(v); return x === undefined ? undefined : `${x}px` }
+// The wash runs past this band and dies out behind the section below, so that
+// section has to repaint it offset by exactly this band's height. base.css can
+// only assume a height, and it assumes the two lines English wraps to: German
+// takes three, which left its phone band 82px taller than the offset and drew a
+// step across the seam. The band is the only thing that knows its own height,
+// and the sibling is the only place the value is read, so it is written there.
+const band = ref<HTMLElement>()
+onMounted(() => {
+  const el = band.value
+  if (!el || (props.blok.backdrop || 'fade-to-brand') !== 'fade-to-grey') return
+  const next = el.nextElementSibling as HTMLElement | null
+  if (!next) return
+  const sync = () => next.style.setProperty('--wash-band-h', `${el.getBoundingClientRect().height}px`)
+  const ro = new ResizeObserver(sync)
+  ro.observe(el)
+  onBeforeUnmount(() => { ro.disconnect(); next.style.removeProperty('--wash-band-h') })
+})
+
 const spacing = computed(() => ({
   '--wm-top': sx(props.blok.space_top),
   '--wm-bottom': sx(props.blok.space_bottom),
@@ -23,6 +41,7 @@ const spacing = computed(() => ({
 
 <template>
   <section
+    ref="band"
     v-editable="blok"
     :id="blok.anchor || undefined"
     class="section wmband"
@@ -60,13 +79,19 @@ const spacing = computed(() => ({
 /* Phones: 62px words wrapped to the screen, 36px above the band below. */
 @media (max-width: 720px) {
   .wmband { padding: var(--wm-top-m, 194px) 0 var(--wm-bottom-m, 36px); }
-  /* The phone band is only 292px tall, so the shared ramp had the blue already
-     spent by the time it reached the word: the watermark sits at 66 to 88% of
-     the band and the fade was finishing at 92%. Waitak: "adjust the gradient so
-     it falls more in the middle of both key figures". The stops hold the brand
-     blue behind the word and move the fade under it, still landing on #e2e2e2
-     at the foot so it meets the grey section below with no seam. */
+  /* The wash itself is in base.css: one measured ramp serves every width, and
+     --wash-band-h there has to keep matching the height this block sets. */
 
   .wmband__word { width: auto; margin: 0; translate: none; font-size: 15.9vw; white-space: normal; }
+
+  /* Key figures is the only band in the space that fades to grey, and the phone
+     frame sets its word half again as large, so it breaks over two lines of its
+     own accord. Waitak: "could you adjust the font bigger so it stacks under
+     each other". Measured off clinical-application-mobile y6123-y6329: "figures"
+     is 265 ink wide of the 390 frame, the ascender 62 above the baseline and
+     82 between the two baselines, which is 81.7px Lora on a 1 line-height. The
+     167 above its ink is the frame's too, and leaves 159 of padding. */
+  .wmband--fade-to-grey { --wm-top-m: 159px; }
+  .wmband--fade-to-grey .wmband__word { font-size: 20.95vw; }
 }
 </style>

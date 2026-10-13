@@ -199,7 +199,7 @@ html {
 @media (max-width: 720px) {
   /* The phone band is shorter and its word is set in vw, so both the wash and
      the offset are measured differently. */
-  :root { --wash-h: 470px; --wash-band-h: calc(230px + 15.9vw); }
+  :root { --wash-h: 470px; --wash-band-h: calc(195px + 41.9vw); }
 }
 
 .brand-mark { font-size: 0.5em; line-height: 0; vertical-align: 0.8em; }
