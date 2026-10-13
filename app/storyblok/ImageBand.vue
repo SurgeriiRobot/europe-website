@@ -28,6 +28,27 @@ const srcset = computed(() => (image.value?.filename
   : ''))
 const mobileSrc = computed(() => (mobile.value ? sbImage(mobile.value, '780x0/filters:format(webp):quality(85)') : ''))
 
+// Waitak, on the learning curve: "could we add the title of the graphic as a
+// headline on the web instead of part of the graphic, also is it possible to
+// animate the lines of the graphic?" The picture is a raster, so its lines
+// cannot be redrawn stroke by stroke; wiping it in from the left as it arrives
+// draws the curves the way they are read, left to right, and brings each
+// milestone label in as its curve reaches it. Anyone who has asked for less
+// motion gets the finished chart.
+const band = ref<HTMLElement>()
+const drawn = ref(false)
+onMounted(() => {
+  if (!props.blok.draw_in || !band.value) return
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { drawn.value = true; return }
+  const io = new IntersectionObserver(([e]) => {
+    if (!e?.isIntersecting) return
+    drawn.value = true
+    io.disconnect()
+  }, { threshold: 0.25 })
+  io.observe(band.value)
+  onBeforeUnmount(() => io.disconnect())
+})
+
 // undefined, not null: Vue's style binding accepts string | number | undefined.
 const px = (v: unknown) => (v === '' || v === null || v === undefined || !Number.isFinite(Number(v)) ? undefined : `${Number(v)}px`)
 const style = computed(() => ({
@@ -42,6 +63,7 @@ const style = computed(() => ({
 
 <template>
   <section
+    ref="band"
     v-editable="blok"
     :id="blok.anchor || undefined"
     class="section fig"
@@ -50,7 +72,8 @@ const style = computed(() => ({
   >
     <SectionConnector :connector="blok.connector" />
     <figure class="fig__inner">
-      <picture v-if="src">
+      <h3 v-if="blok.headline" class="fig__headline">{{ blok.headline }}</h3>
+      <picture v-if="src" class="fig__picture" :class="{ 'fig__picture--draw': blok.draw_in, 'is-drawn': drawn }">
         <source v-if="mobileSrc" media="(max-width: 720px)" :srcset="mobileSrc">
         <img
           :src="src"
@@ -73,7 +96,26 @@ const style = computed(() => ({
   width: min(100% - 32px, calc(var(--band-w) * var(--sx)));
   margin: 0 auto;
 }
-.fig__inner img { width: 100%; height: auto; }
+.fig__inner img { width: 100%; height: auto; display: block; }
+/* The chart's own title, lifted out of the picture and set as a real heading so
+   it is text on the page: searchable, translatable and read out in order. */
+.fig__headline {
+  margin: 0 0 calc(2.78 * var(--sx));                                        /* 40 */
+  font-size: clamp(1.75rem, 2.8vw, 2.5rem);
+  font-weight: 600;
+  line-height: 1.2083;
+  text-align: center;
+  color: var(--ink);
+}
+.fig__picture { display: block; }
+.fig__picture--draw {
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 1600ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.fig__picture--draw.is-drawn { clip-path: inset(0 0 0 0); }
+@media (prefers-reduced-motion: reduce) {
+  .fig__picture--draw { clip-path: none; transition: none; }
+}
 .fig__caption {
   margin-top: calc(1.67 * var(--sx));                                         /* 24 */
   font-size: 1rem;
@@ -86,6 +128,7 @@ const style = computed(() => ({
 @media (max-width: 720px) {
   .fig { padding: var(--fig-top-m, 64px) 0 var(--fig-bottom-m, 64px); }
   .fig__inner { width: calc(100% - 32px); }
+  .fig__headline { margin-bottom: 24px; font-size: clamp(1.5rem, 6.4vw, 2rem); }
   .fig__caption { margin-top: 16px; }
 }
 </style>
