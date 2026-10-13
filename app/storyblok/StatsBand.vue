@@ -149,10 +149,15 @@ const style = computed(() => ({
      710px measure the desktop gives it scales down to 192 at 390, which broke
      the four lines the frame sets into six narrow ones. At 48px on the
      container's own width it breaks where the frame breaks, "and supporting"
-     on one line at 353 against the frame's 348. Ink to ink the frame leaves 179
-     above it (y7664 to y7843) against the 31 this had, and 36 below it to the
-     button (y8054 to y8090), which the line's own descent already covers. */
-  .stats__outro { margin-top: 169px; max-width: none; font-size: 48px; }
+     on one line at 353 against the frame's 348. Below it the frame leaves 36 to
+     the button (y8054 to y8090), which the line's own descent already covers.
+
+     Above it the frame leaves 179 (y7664 to y7843) against the 31 this had, but
+     that is one stat row's own rhythm to the digit (178.5 on the phone frame,
+     237.5 against 241 on the desktop one), so at the frame's figure the title
+     still reads as another row of the list rather than the block that closes
+     it. Half a row again, 268, is the first spacing that separates it. */
+  .stats__outro { margin-top: 258px; max-width: none; font-size: 48px; }
   .stats__actions { margin-top: 72px; }
   .stats__outro + .stats__actions { margin-top: 0; }
   .stats::after {
