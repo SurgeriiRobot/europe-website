@@ -38,14 +38,28 @@ const isOpen = (label: string) => {
 const show = (label: string) => { open.value = isOpen(label) ? '' : slug(label) }
 
 // A link that names a specialty should land on that row rather than at the top
-// of the page with the row open somewhere below the fold.
+// of the page with the row open somewhere below the fold. Doing it on mount is
+// not enough: Vue Router scrolls a new route to the top of the page, and it does
+// so after this mounts, so arriving from "View all urology cases" on another
+// page the router won and you got the hero. It only ever worked on a direct
+// load, where there is no route change to scroll. Nuxt applies that scroll once
+// the page has rendered (page:transition:finish when the page animates,
+// page:finish otherwise), so the row claims it back after whichever of those
+// runs, and two frames later so the router's scroll has already landed and
+// cannot cut the smooth one short.
 const list = ref<HTMLElement>()
-onMounted(() => {
-  if (!route.query.specialty) return
-  nextTick(() => {
+const jump = () => {
+  requestAnimationFrame(() => requestAnimationFrame(() => {
     const row = list.value?.querySelector('details[open]')
     row?.scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
-  })
+  }))
+}
+onMounted(() => {
+  if (!route.query.specialty) return
+  const nuxt = useNuxtApp()
+  nuxt.hooks.hookOnce('page:finish', jump)
+  nuxt.hooks.hookOnce('page:transition:finish', jump)
+  nextTick(jump)
 })
 
 const px = (v: unknown) => (Number(v) > 0 ? `${Number(v)}px` : undefined)
