@@ -59,6 +59,15 @@ const spacing = computed(() => ({
 /* Phones: 62px words wrapped to the screen, 36px above the band below. */
 @media (max-width: 720px) {
   .wmband { padding: var(--wm-top-m, 194px) 0 var(--wm-bottom-m, 36px); }
+  /* The phone band is only 292px tall, so the shared ramp had the blue already
+     spent by the time it reached the word: the watermark sits at 66 to 88% of
+     the band and the fade was finishing at 92%. Waitak: "adjust the gradient so
+     it falls more in the middle of both key figures". The stops hold the brand
+     blue behind the word and move the fade under it, still landing on #e2e2e2
+     at the foot so it meets the grey section below with no seam. */
+  .wmband--fade-to-grey {
+    background: linear-gradient(180deg, #2b4dc0 0%, #4974f4 55%, #7e9aee 80%, #9bafea 90%, #cdd3dd 97%, #e2e2e2 100%);
+  }
   .wmband__word { width: auto; margin: 0; translate: none; font-size: 15.9vw; white-space: normal; }
 }
 </style>
