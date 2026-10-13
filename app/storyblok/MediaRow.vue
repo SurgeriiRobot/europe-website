@@ -127,6 +127,30 @@ const mediaWidth = computed(() => `calc(${(widthPx.value / 14.4).toFixed(2)} * m
 .mrow__video.is-on { opacity: 1; }
 
 .mrow__title { margin: 0; font-size: clamp(2rem, 3.33vw, 3rem); font-weight: 600; line-height: 1.2083; color: var(--ink); }
+/* The edge tick: a hairline on the outer side of the copy, level with the
+   middle of the headline's first line. Waitak, Instruments Ecosystem: "all of
+   them have blue lines on opposite side of the text headline". `edge_ticks` has
+   been in the schema and set on Clinical Applications since those pages were
+   built, and the class was on the section, but nothing ever drew it.
+   Measured off both designs at 1440: 115px long, running from the page edge and
+   stopping 67px short of the copy. Anchored to the copy rather than to the
+   viewport so that gap holds at any width, since it is a tick, not a bleed. */
+.mrow__title { position: relative; }
+.rows--ticks .mrow__title::before {
+  content: '';
+  position: absolute;
+  top: 0.6em;
+  width: calc(7.99 * var(--sx));                                          /* 115 */
+  border-top: var(--line-w) solid var(--line);
+}
+/* Media right means the copy is on the left, so the tick sits to its left. */
+.rows--ticks .mrow--media-right .mrow__title::before { right: calc(100% + 4.65 * var(--sx)); }   /* 67 */
+.rows--ticks .mrow--media-left .mrow__title::before { left: calc(100% + 4.65 * var(--sx)); }
+/* Compact rows draw their copy about 115px further in than wide ones, so the
+   tick needs that much more reach to land on the page edge as both designs
+   draw it. Clinical Applications is the compact one. */
+.rows--ticks.rows--compact .mrow--media-right .mrow__title::before { right: calc(100% + 12.63 * var(--sx)); }   /* 182 */
+.rows--ticks.rows--compact .mrow--media-left .mrow__title::before { left: calc(100% + 12.63 * var(--sx)); }
 .mrow--accent .mrow__title { color: var(--c-blue); }
 .mrow__body { margin-top: 24px; font-size: 1.125rem; font-weight: 300; line-height: 1.6111; color: var(--ink-muted); }
 .mrow__body :deep(p) { margin: 0; }
@@ -230,6 +254,7 @@ const mediaWidth = computed(() => `calc(${(widthPx.value / 14.4).toFixed(2)} * m
   .mrow__media img { flex: auto; width: 100%; }
   .mrow__video { width: 100%; }
   .mrow__title { font-size: clamp(2.25rem, 12.3vw, 3rem); }
+  .mrow__title::before { display: none; }
   /* `phone_layout` has been in the schema and in the content since these pages
      were built but nothing read it. `media-first` puts the picture above the
      copy, which is the order the phone frames draw (System Principles shows the
