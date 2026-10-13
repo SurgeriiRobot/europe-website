@@ -66,7 +66,9 @@ const spacing = computed(() => ({
      blue behind the word and move the fade under it, still landing on #e2e2e2
      at the foot so it meets the grey section below with no seam. */
   .wmband--fade-to-grey {
-    background: linear-gradient(180deg, #2b4dc0 0%, #4974f4 55%, #7e9aee 80%, #9bafea 90%, #cdd3dd 97%, #e2e2e2 100%);
+    background: var(--wash-phone);
+    background-size: 100% var(--wash-h);
+    background-repeat: no-repeat;
   }
   .wmband__word { width: auto; margin: 0; translate: none; font-size: 15.9vw; white-space: normal; }
 }

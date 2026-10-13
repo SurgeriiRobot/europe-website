@@ -143,6 +143,26 @@ html {
 
 /* BrandText — superscript registered/trademark marks, unbreakable compounds and
    the odd emphasised phrase. */
+/* The phone wash behind "Key figures". Waitak: "the gradient is horizontal, but
+   it should be tilted". Tilting it inside the band alone leaves the band's foot
+   blue on the left and grey on the right, which steps against the grey section
+   under it. The design has no such step because its wash runs past the band and
+   dies out behind the figures. So one gradient is painted across both: the band
+   shows its top, the section below continues it, offset by exactly the band's
+   height (its two fixed paddings plus a word set in vw). */
+@media (max-width: 720px) {
+  /* Sampled off the frame: its deepest blue is #6c8ef1, not the band's usual
+     #2b4dc0, and it is grey everywhere by about 85% down. */
+  :root { --wash-phone: linear-gradient(160deg, #6c8ef1 0%, #8fa6ed 25%, #b3c0e7 50%, #d2d6e2 72%, #e2e2e2 88%);
+          --wash-h: 470px; }
+  .wmband--fade-to-grey + .section {
+    background-image: var(--wash-phone);
+    background-size: 100% var(--wash-h);
+    background-position: 0 calc(-230px - 15.9vw);
+    background-repeat: no-repeat;
+  }
+}
+
 .brand-mark { font-size: 0.5em; line-height: 0; vertical-align: 0.8em; }
 .brand-nowrap { white-space: nowrap; }
 .brand-strong { font-weight: 600; }
