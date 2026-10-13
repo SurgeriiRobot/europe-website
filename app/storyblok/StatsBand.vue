@@ -142,8 +142,19 @@ const style = computed(() => ({
      the same share of the 96px phone figure as 55 is of the 64px desktop one. */
   .stats--large-title :deep(.sec-title__p) { max-width: none; }
   .stats--inline :deep(.stat__icon) { height: 80px; }
-  .stats__outro { margin-top: 48px; }
-  .stats__actions, .stats__outro + .stats__actions { margin-top: 72px; }
+  /* Waitak: "could we have more spacing between the last data set and the
+     header 'clinical outcomes....'. Right now it's quite tight." The phone frame
+     agrees and the gap was not the only thing wrong with it: the closing title
+     is drawn at 48px there, where the shared clamp bottoms out at 32, and the
+     710px measure the desktop gives it scales down to 192 at 390, which broke
+     the four lines the frame sets into six narrow ones. At 48px on the
+     container's own width it breaks where the frame breaks, "and supporting"
+     on one line at 353 against the frame's 348. Ink to ink the frame leaves 179
+     above it (y7664 to y7843) against the 31 this had, and 36 below it to the
+     button (y8054 to y8090), which the line's own descent already covers. */
+  .stats__outro { margin-top: 169px; max-width: none; font-size: 48px; }
+  .stats__actions { margin-top: 72px; }
+  .stats__outro + .stats__actions { margin-top: 0; }
   .stats::after {
     content: '';
     position: absolute;
