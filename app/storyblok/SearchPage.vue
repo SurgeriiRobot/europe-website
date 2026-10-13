@@ -53,12 +53,12 @@ const { data, status } = await useAsyncData(
 )
 
 const pages = computed(() => Math.max(1, Math.ceil((data.value?.total || 0) / perPage.value)))
-// The design draws five page numbers; longer runs window around the current one.
-const numbers = computed(() => {
-  const span = Math.min(5, pages.value)
-  const start = Math.min(Math.max(1, page.value - Math.floor(span / 2)), pages.value - span + 1)
-  return Array.from({ length: span }, (_, i) => start + i)
-})
+// Waitak: "the pagination should eventually have a grouping [...] when the amount
+// becomes too much. This would also need to be checked in News&Events and the
+// Search page." This pager was the one still windowing five numbers with no
+// ellipsis and no way back to the first or last page, so it now shares the rule
+// the library and the listings use.
+const numbers = computed(() => pageSequence(page.value, pages.value))
 const to = (n: number) => ({ query: { ...route.query, page: n === 1 ? undefined : n } })
 
 function setQuery(key: string, value: string) {
@@ -208,17 +208,19 @@ const style = computed(() => ({
           <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M15.41 16.59 10.83 12l4.58-4.59L14 6l-6 6 6 6z" /></svg>
         </span>
 
-        <NuxtLink
-          v-for="n in numbers"
-          :key="n"
-          :to="to(n)"
-          class="pager__page"
-          :class="{ 'is-current': n === page }"
-          :aria-current="n === page ? 'page' : undefined"
-          :aria-label="`Page ${n}`"
-        >
-          {{ n }}
-        </NuxtLink>
+        <template v-for="(n, i) in numbers" :key="`${n}-${i}`">
+          <span v-if="n === '…'" class="pager__page pager__page--gap" aria-hidden="true">…</span>
+          <NuxtLink
+            v-else
+            :to="to(n as number)"
+            class="pager__page"
+            :class="{ 'is-current': n === page }"
+            :aria-current="n === page ? 'page' : undefined"
+            :aria-label="`Page ${n}`"
+          >
+            {{ n }}
+          </NuxtLink>
+        </template>
 
         <NuxtLink v-if="page < pages" :to="to(page + 1)" class="pager__step" :aria-current="undefined" aria-label="Next page" rel="next">
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z" /></svg>
@@ -420,6 +422,7 @@ const style = computed(() => ({
   text-decoration: none;
 }
 .pager__page:hover, .pager__step:hover { background: color-mix(in srgb, var(--c-darkblue) 8%, transparent); }
+.pager__page--gap, .pager__page--gap:hover { background: none; color: var(--ink-muted); cursor: default; }
 .pager__page.is-current, .pager__page.is-current:hover { background: var(--c-blue); color: var(--c-white); }
 .pager__step.is-off { color: rgb(3 4 94 / 38%); pointer-events: none; }
 
