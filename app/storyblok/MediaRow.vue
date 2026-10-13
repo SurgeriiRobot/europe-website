@@ -184,6 +184,28 @@ const mediaWidth = computed(() => `calc(${(widthPx.value / 14.4).toFixed(2)} * m
 .rows--compact .mrow--media-left .mrow__media { justify-content: flex-start; padding-left: calc(20.83 * var(--sx)); }
 .rows--compact .mrow--media-right .mrow__media { justify-content: flex-end; padding-right: calc(20.83 * var(--sx)); }
 
+/* `layout: stacked` (System Principles "Dual Continuum Mechanism"): the picture
+   sits above the copy on a desktop too, with the copy and its button centred
+   under it, rather than the two sitting side by side. Waitak, System Principles
+   11: "The image and the text should not be next to each other." Measured off
+   his frame: the picture runs 780 wide and the copy sits on a 477 measure, both
+   centred on the page axis. */
+.rows--stacked .mrow { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+.rows--stacked .mrow--media-left .mrow__text,
+.rows--stacked .mrow--media-right .mrow__text {
+  grid-column: 1;
+  grid-row: 2;
+  width: calc(33.13 * var(--sx));                                         /* 477 */
+  margin: calc(3.47 * var(--sx)) 0 0;                                     /* 50 under the picture */
+  justify-self: center;
+  text-align: center;
+}
+.rows--stacked .mrow--media-left .mrow__media,
+.rows--stacked .mrow--media-right .mrow__media { grid-column: 1; grid-row: 1; padding: 0; justify-content: center; }
+.rows--stacked .mrow__media img { width: var(--mrow-media-w, calc(54.17 * var(--sx))); }   /* 780 */
+.rows--stacked .mrow__actions { justify-content: center; }
+.rows--stacked .mrow__list { text-align: left; }
+
 /* Phones: copy then image, 16px gutters, 48px titles kept. */
 @media (max-width: 720px) {
   .mrow { grid-template-columns: minmax(0, 1fr); gap: 24px; padding-inline: 16px; }
@@ -198,6 +220,12 @@ const mediaWidth = computed(() => `calc(${(widthPx.value / 14.4).toFixed(2)} * m
   .rows--compact .mrow--media-left .mrow__text { margin-left: 0; }
   .rows--compact .mrow--media-left .mrow__media,
   .rows--compact .mrow--media-right .mrow__media { justify-content: center; padding-inline: 0; }
+  /* The stacked rules above are two classes deep and would otherwise outrank
+     these, which squeezed a phone down to a 211px picture and a 129px measure.
+     Same trap as the compact offsets below. */
+  .rows--stacked .mrow--media-left .mrow__text,
+  .rows--stacked .mrow--media-right .mrow__text { width: auto; margin-top: 24px; }
+  .rows--stacked .mrow__media img { width: 100%; }
   .mrow__picture { flex: auto; width: 100%; }
   .mrow__media img { flex: auto; width: 100%; }
   .mrow__video { width: 100%; }

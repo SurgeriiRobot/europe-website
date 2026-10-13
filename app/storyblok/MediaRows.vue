@@ -44,7 +44,7 @@ const headSize = computed(() => (props.blok.headline_size === 'large'
     class="section rows"
     :class="[
       `rows--align-${blok.media_align === 'edge' ? 'edge' : 'center'}`,
-      `rows--${blok.layout === 'compact' ? 'compact' : 'wide'}`,
+      `rows--${['compact', 'stacked'].includes(blok.layout) ? blok.layout : 'wide'}`,
       `rows--phone-${blok.phone_layout || 'copy-first'}`,
       { 'rows--ticks': blok.edge_ticks, 'rows--ticks-foot': blok.edge_ticks && blok.tick_align === 'foot' },
     ]"
