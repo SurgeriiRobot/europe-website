@@ -78,6 +78,34 @@ const { data: vocab } = await useAsyncData(
   },
 )
 
+// Waitak: "when you click on any news or event it links to a dedicated page for
+// each, it should open the mandatory contact pop up and then link to the event or
+// news outside website." The gate is the library's, so a visitor who has already
+// given their details is sent straight on.
+const { state: gateState, error: gateError, lead, valid, begin, submit } = useContentGate()
+const { data: countries } = useGateCountries()
+const gatedStory = ref<any>(null)
+const gateDialog = ref<HTMLDialogElement>()
+const sbLink = useSbUrl()
+const gatedHref = computed(() => {
+  const l = gatedStory.value?.content?.external_url
+  return l && (l.cached_url || l.url) ? sbLink(l) : ''
+})
+function leave() {
+  if (!gatedHref.value) return
+  window.open(gatedHref.value, '_blank', 'noopener')
+  closeGate()
+}
+function openGated(story: any) {
+  gatedStory.value = story
+  if (begin() === 'open') return leave()
+  nextTick(() => gateDialog.value?.showModal())
+}
+function closeGate() {
+  gateDialog.value?.close()
+  gatedStory.value = null
+}
+
 // One value -> name map for the card chips, across every vocabulary.
 const labels = computed(() => {
   const out: Record<string, string> = {}
@@ -239,7 +267,7 @@ const entryName = (slug: string, value: string) =>
               {{ promoButton.label }}
             </NuxtLink>
           </article>
-          <ListingCard v-else :story="tile.story" :labels="labels" />
+          <ListingCard v-else :story="tile.story" :labels="labels" @gated="openGated" />
         </template>
       </div>
 
@@ -290,10 +318,52 @@ const entryName = (slug: string, value: string) =>
         </span>
       </nav>
     </div>
+    <!-- The contact gate a card opens when its article lives on another site. -->
+    <dialog ref="gateDialog" class="listing__gate-dialog" @close="gatedStory = null" @click.self="closeGate">
+      <div v-if="gatedStory" class="listing__gate-wrap">
+        <button type="button" class="listing__gate-close" aria-label="Close" @click="closeGate">
+          <Icon name="close" :size="28" />
+        </button>
+        <ContentGate
+          v-model="lead"
+          :state="gateState"
+          :error="gateError"
+          :valid="valid"
+          :countries="countries || []"
+          @submit="submit(gatedStory?.content?.title || gatedStory?.name, leave)"
+        />
+      </div>
+    </dialog>
   </section>
 </template>
 
 <style scoped>
+/* The gate sits in the middle of the page, the width the pop-up frame draws. */
+.listing__gate-dialog {
+  width: min(840px, calc(100vw - 32px));
+  padding: 0;
+  border: 0;
+  background: none;
+  overflow: visible;
+}
+.listing__gate-dialog::backdrop { background: rgb(31 39 57 / 72%); }
+.listing__gate-wrap { position: relative; }
+.listing__gate-close {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--c-white);
+  cursor: pointer;
+}
+.listing__gate-close:hover { opacity: 0.8; }
+
 /* Design band 800-2909: 78px above the toolbar, 187px below the pager. */
 .listing { padding-block: 78px 187px; }
 .listing__inner {

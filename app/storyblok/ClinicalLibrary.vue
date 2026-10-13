@@ -147,7 +147,7 @@ const openDate = computed(() => {
 function openItem(item: any) {
   playing.value = item
   started.value = false
-  gateState.value = granted.value ? 'open' : 'form'
+  begin()
   nextTick(() => dialog.value?.showModal())
 }
 function closePlayer() {
@@ -157,53 +157,9 @@ function closePlayer() {
 }
 
 // ---- the gate -------------------------------------------------------------
-// "Leave your contact details once and get access to all our content": the form
-// is per visitor, not per file, so a granted visitor goes straight to the piece.
-// Kept in localStorage, which is this browser only; the real record is whatever
-// the endpoint hands the CRM.
-const GRANT = 'shurui.library.access'
-const granted = ref(false)
-const gateState = ref<'form' | 'sending' | 'thanks' | 'open'>('form')
-const gateError = ref('')
-const lead = reactive({ name: '', email: '', country: '' })
-onMounted(() => {
-  try { granted.value = localStorage.getItem(GRANT) === '1' } catch { /* private mode */ }
-})
-const valid = computed(() => lead.name.trim().length > 1
-  && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(lead.email.trim())
-  && Boolean(lead.country))
-async function requestAccess() {
-  if (!valid.value) return
-  gateState.value = 'sending'
-  gateError.value = ''
-  try {
-    await $fetch('/api/library-access', {
-      method: 'POST',
-      body: { ...lead, item: playing.value?.title },
-    })
-    granted.value = true
-    try { localStorage.setItem(GRANT, '1') } catch { /* private mode */ }
-    gateState.value = 'thanks'
-    // The design says the content "will be available in a few seconds", so the
-    // thank-you holds the floor before the piece appears behind it.
-    setTimeout(() => { if (gateState.value === 'thanks') gateState.value = 'open' }, 2200)
-  } catch (e: any) {
-    gateState.value = 'form'
-    gateError.value = e?.data?.statusMessage || e?.data?.message || 'Something went wrong. Please try again.'
-  }
-}
-
-// The country list is the datasource the rest of the site already uses, so the
-// options can never drift from what editors see elsewhere.
-const { data: countries } = await useAsyncData('library-countries', async () => {
-  const api = useStoryblokApi()
-  const { data } = await api.get('cdn/datasource_entries', {
-    datasource: 'countries',
-    per_page: 250,
-    version: useStoryblokVersion(),
-  })
-  return (data.datasource_entries || []) as { name: string, value: string }[]
-}, { default: () => [] })
+// Shared with News & events, which puts the same form in front of its cards.
+const { granted, state: gateState, error: gateError, lead, valid, begin, submit: requestAccess } = useContentGate()
+const { data: countries } = useGateCountries()
 
 const promoHref = computed(() => {
   const l = props.blok.promo_link
@@ -403,39 +359,21 @@ const promoHref = computed(() => {
 
           <!-- The gate. It covers the piece rather than replacing it, which is
                how the frame draws it: the header above stays readable. -->
-          <div v-if="gateState !== 'open'" class="lib__gate">
-            <form v-if="gateState !== 'thanks'" class="lib__gate-form" @submit.prevent="requestAccess">
-              <div class="lib__gate-fields">
-                <label class="lib__field">
-                  <span class="lib__field-label">{{ blok.gate_name_label || 'Full Name' }}*</span>
-                  <input v-model="lead.name" type="text" name="name" autocomplete="name" required>
-                </label>
-                <label class="lib__field">
-                  <span class="lib__field-label">{{ blok.gate_email_label || 'Professional Email' }}*</span>
-                  <input v-model="lead.email" type="email" name="email" autocomplete="email" required>
-                </label>
-                <label class="lib__field">
-                  <span class="lib__field-label">{{ blok.gate_country_label || 'Country' }}*</span>
-                  <select v-model="lead.country" name="country" required>
-                    <option value="" disabled>{{ blok.gate_country_label || 'Country' }}</option>
-                    <option v-for="c in countries" :key="c.value" :value="c.value">{{ c.name }}</option>
-                  </select>
-                </label>
-              </div>
-              <div class="lib__gate-aside">
-                <p class="lib__gate-pitch">{{ blok.gate_headline || 'Almost there!\nLeave your contact details once and get access to all our content.' }}</p>
-                <p class="lib__gate-note">*{{ blok.gate_note || 'Mandatory Field' }}</p>
-                <p v-if="gateError" class="lib__gate-error">{{ gateError }}</p>
-                <button type="submit" class="lib__gate-submit" :disabled="!valid || gateState === 'sending'">
-                  {{ gateState === 'sending' ? '…' : (blok.gate_submit_label || 'Get access') }}
-                </button>
-              </div>
-            </form>
-            <div v-else class="lib__gate-thanks">
-              <p class="lib__gate-thanks-title">{{ blok.gate_thanks_title || 'Thank you!' }}</p>
-              <p class="lib__gate-thanks-body">{{ blok.gate_thanks_body || 'Your content will be available in a few seconds.' }}</p>
-            </div>
-          </div>
+          <ContentGate
+            v-if="gateState !== 'open'"
+            v-model="lead"
+            class="lib__gate"
+            :state="gateState"
+            :error="gateError"
+            :valid="valid"
+            :countries="countries || []"
+            :labels="{
+              name: blok.gate_name_label, email: blok.gate_email_label, country: blok.gate_country_label,
+              headline: blok.gate_headline, note: blok.gate_note, submit: blok.gate_submit_label,
+              thanksTitle: blok.gate_thanks_title, thanksBody: blok.gate_thanks_body,
+            }"
+            @submit="requestAccess(playing?.title)"
+          />
         </div>
 
         <div v-if="gateState === 'open' && (openDoc || openHref)" class="lib__pop-actions">
@@ -653,48 +591,9 @@ button.lib__poster { cursor: pointer; }
   display: grid;
   background: var(--c-neutral-300);
 }
-.lib__gate-form { display: grid; grid-template-columns: minmax(0, 1fr) 245px; gap: 32px; padding: 24px; }
-.lib__gate-fields { display: grid; align-content: start; gap: 14px; }
-.lib__field { display: grid; gap: 6px; }
-.lib__field-label { font-size: 0.875rem; font-weight: 600; line-height: 1.2; }
 .lib__field input,
-.lib__field select {
-  height: 42px;
-  padding: 0 12px;
-  border: 1px solid var(--c-neutral-500);
-  border-radius: 4px;
-  background: var(--c-white);
-  font: inherit;
-  font-size: 1rem;
-  color: var(--c-darkblue);
-}
 .lib__field input:focus-visible,
-.lib__field select:focus-visible { outline: 2px solid var(--c-blue); outline-offset: 1px; }
 /* The frame marks a filled field with a green rule and a tick. */
-.lib__field input:valid:not(:placeholder-shown),
-.lib__field select:valid { border-color: var(--c-green); }
-.lib__gate-aside { display: grid; align-content: start; gap: 10px; }
-.lib__gate-pitch { margin: 0; white-space: pre-line; font-size: 1.125rem; font-weight: 600; line-height: 1.3; }
-.lib__gate-note { margin: 8px 0 0; font-size: 0.75rem; font-weight: 400; }
-.lib__gate-error { margin: 0; font-size: 0.8125rem; color: var(--c-red); }
-.lib__gate-submit {
-  justify-self: start;
-  height: 44px;
-  padding: 0 24px;
-  border: 0;
-  border-radius: 4px;
-  background: var(--c-blue);
-  color: var(--c-white);
-  font: inherit;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-}
-.lib__gate-submit:hover:not(:disabled) { background: var(--c-blue-500); }
-.lib__gate-submit:disabled { opacity: 0.45; cursor: default; }
-.lib__gate-thanks { display: grid; align-content: center; justify-items: center; gap: 12px; padding: 24px; text-align: center; }
-.lib__gate-thanks-title { margin: 0; font-size: 2rem; font-weight: 600; line-height: 1.2083; }
-.lib__gate-thanks-body { margin: 0; font-size: 1.125rem; font-weight: 300; line-height: 1.3; }
 
 .lib__pop-actions { display: flex; gap: 16px; padding: 20px 24px; background: var(--c-white); }
 .lib__pop-cta {
@@ -744,8 +643,6 @@ button.lib__poster { cursor: pointer; }
      not on show above the form. */
   .lib__pop-media--gated .lib__poster { display: none; }
   .lib__gate { position: static; inset: auto; }
-  .lib__gate-form { grid-template-columns: minmax(0, 1fr); gap: 20px; padding: 16px; overflow-y: auto; }
-  .lib__gate-submit { justify-self: stretch; text-align: center; justify-content: center; }
   .lib__pop-actions { padding: 16px; }
   .lib__pop-cta { flex: 1 1 auto; justify-content: center; }
 }

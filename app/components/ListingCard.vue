@@ -13,11 +13,19 @@ const props = defineProps<{
   labels?: Record<string, string>
 }>()
 
+const emit = defineEmits<{ gated: [story: any] }>()
+const sbHref = useSbUrl()
 const localePath = useLocalePath()
 const { locale, locales } = useI18n()
 
 const content = computed(() => props.story.content || {})
-const href = computed(() => localePath(`/${props.story.full_slug}`))
+// An article that lives somewhere else goes through the contact gate first, so
+// the card stops being a plain link and asks the listing to open it.
+const external = computed(() => {
+  const l = props.story.content?.external_url
+  return l && (l.cached_url || l.url) ? sbHref(l) : ''
+})
+const href = computed(() => (external.value ? external.value : localePath(`/${props.story.full_slug}`)))
 
 // The design writes the date out in full ("9 june 2026"). Month names follow the
 // reader's language, so the format comes from the locale's BCP-47 tag rather
@@ -49,7 +57,13 @@ const tags = computed(() =>
 </script>
 
 <template>
-  <NuxtLink :to="href" class="lcard">
+  <component
+    :is="external ? 'a' : 'NuxtLink'"
+    :to="external ? undefined : href"
+    :href="external ? href : undefined"
+    class="lcard"
+    @click="external ? ($event.preventDefault(), emit('gated', story)) : null"
+  >
     <div class="lcard__text">
       <p class="lcard__meta">
         <span class="lcard__date">{{ date }}</span>
@@ -70,7 +84,7 @@ const tags = computed(() =>
       loading="lazy"
     >
     <span v-else class="lcard__media lcard__media--empty" aria-hidden="true" />
-  </NuxtLink>
+  </component>
 </template>
 
 <style scoped>
