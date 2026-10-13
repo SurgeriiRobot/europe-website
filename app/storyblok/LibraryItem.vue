@@ -52,13 +52,7 @@ const image = computed(() => props.blok.image)
       <p v-if="blok.excerpt" class="lcard__excerpt"><BrandText :text="blok.excerpt" :nowrap="false" /></p>
     </div>
 
-    <button
-      type="button"
-      class="lcard__media"
-      :class="{ 'lcard__media--play': isVideo }"
-      :aria-label="isVideo ? `Play video: ${blok.title}` : `Open: ${blok.title}`"
-      @click="emit('open', blok)"
-    >
+    <div class="lcard__media" :class="{ 'lcard__media--play': isVideo }">
       <img
         v-if="image?.filename"
         :src="sbCrop(image, 600, 372)"
@@ -70,12 +64,17 @@ const image = computed(() => props.blok.image)
       <span v-if="isVideo" class="lcard__play" aria-hidden="true">
         <svg viewBox="0 0 24 24" focusable="false"><path d="M8 5.5v13l11-6.5z" /></svg>
       </span>
-    </button>
+    </div>
   </article>
 </template>
 
 <style scoped>
-.lcard { display: flex; flex-direction: column; }
+.lcard { position: relative; display: flex; flex-direction: column; cursor: pointer; }
+/* The whole card opens the pop-up, not just the title. The title stays the one
+   real control, so it keeps the keyboard focus and the accessible name, and its
+   hit area is stretched over the card rather than a click handler being hung on
+   the article, which the keyboard could not reach. */
+.lcard__link--btn::after { content: ''; position: absolute; inset: 0; z-index: 1; }
 
 .lcard__text {
   flex: 1 1 auto;
@@ -172,7 +171,6 @@ const image = computed(() => props.blok.image)
   overflow: hidden;
 }
 .lcard__media img { width: 100%; height: 100%; object-fit: cover; }
-.lcard__media--play { cursor: pointer; }
 
 /* 56px translucent disc with a white play mark, centred — the design's overlay.
    The design only draws it over a dark still; the shadow and the solid mark keep
@@ -196,9 +194,12 @@ const image = computed(() => props.blok.image)
   fill: rgb(255 255 255 / 88%);
   filter: drop-shadow(0 1px 2px rgb(16 20 30 / 45%));
 }
-.lcard__media--play:hover .lcard__play { background: rgb(255 255 255 / 60%); }
-.lcard__media--play:hover .lcard__play svg { fill: #fff; }
-.lcard__media--play:focus-visible { outline: 2px solid var(--c-blue); outline-offset: -2px; }
+.lcard:hover .lcard__play { background: rgb(255 255 255 / 60%); }
+.lcard:hover .lcard__play svg { fill: #fff; }
+/* The focus ring belongs to the card, since the title's stretched hit area is
+   what takes the focus. */
+.lcard:has(.lcard__link--btn:focus-visible) { outline: 2px solid var(--c-blue); outline-offset: 2px; }
+.lcard__link--btn:focus-visible { outline: none; }
 
 /* Figma wraps the 300px card's text at 259px where the browser measures 260, and
    its text sets about 1% narrower than ours; 257px is the measure that
