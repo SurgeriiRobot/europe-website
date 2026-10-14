@@ -66,6 +66,10 @@ const mediaWidth = computed(() => `calc(${(widthPx.value / 14.4).toFixed(2)} * m
       </div>
     </div>
     <div v-if="media?.filename || video?.filename" class="mrow__media">
+      <!-- Picture and video share one box, so the video covers the still exactly
+           however the row aligns its media. Positioning the video against
+           `.mrow__media` instead let the two drift apart. -->
+      <div class="mrow__frame">
       <picture v-if="media?.filename" class="mrow__picture">
       <source v-if="mediaMobile" media="(max-width: 720px)" :srcset="sbCrop(mediaMobile, 714)">
       <img
@@ -90,6 +94,7 @@ const mediaWidth = computed(() => `calc(${(widthPx.value / 14.4).toFixed(2)} * m
         aria-hidden="true"
         tabindex="-1"
       />
+      </div>
     </div>
   </div>
 </template>
@@ -112,12 +117,17 @@ const mediaWidth = computed(() => `calc(${(widthPx.value / 14.4).toFixed(2)} * m
 /* Laid over the still, which stays as the poster and as the fallback. It only
    fades in once it is actually playing, so a blocked or failed load simply
    leaves the picture showing. */
+.mrow__frame { position: relative; flex: none; min-width: 0; }
 .mrow__video {
   position: absolute;
-  top: 0;
-  left: 50%;
-  translate: -50% 0;
-  width: var(--mrow-media-w, calc(53.13 * var(--sx)));
+  inset: 0;
+  width: 100%;
+  /* The picture carries `max-width: none` so it can run wider than its column,
+     the way the frame draws it, and the base rule clamps every video to 100%.
+     That left the video narrower than the still behind it, and off-centre
+     against it, so a strip of the poster showed past its right edge (Waitak:
+     "the videos have a double image on the right side"). */
+  max-width: none;
   height: 100%;
   object-fit: cover;
   opacity: 0;
