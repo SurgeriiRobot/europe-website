@@ -159,7 +159,10 @@ const style = computed(() => ({
      it. Half a row again, 268, is the first spacing that separates it. */
   .stats__outro { margin-top: 258px; max-width: none; font-size: 48px; }
   .stats__actions { margin-top: 72px; }
-  .stats__outro + .stats__actions { margin-top: 0; }
+  /* Waitak: "the button is too close to the header". The frame's 36 was drawn
+     under a 32px title; under the 48px one it reads tight, so the button takes
+     the space the bigger title asks for. */
+  .stats__outro + .stats__actions { margin-top: 32px; }
   .stats::after {
     content: '';
     position: absolute;
