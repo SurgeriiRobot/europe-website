@@ -110,14 +110,14 @@ const mediaWidth = computed(() => `calc(${(widthPx.value / 14.4).toFixed(2)} * m
 /* The 765px image is wider than its 720px half: a flex row centres it with the
    overflow split evenly (a grid item that overflows would not stay centred). */
 .mrow__media { display: flex; justify-content: center; min-width: 0; position: relative; }
-.mrow__picture { display: block; flex: none; }
+.mrow__picture { display: block; width: 100%; }
 /* The drawn width wins: several rows are designed to run wider than their own
    column and bleed toward the page edge, so this must not be clamped to 100%. */
-.mrow__media img { display: block; flex: none; width: var(--mrow-media-w, calc(53.13 * var(--sx))); max-width: none; height: auto; }
+.mrow__media img { display: block; width: 100%; max-width: none; height: auto; }
 /* Laid over the still, which stays as the poster and as the fallback. It only
    fades in once it is actually playing, so a blocked or failed load simply
    leaves the picture showing. */
-.mrow__frame { position: relative; flex: none; min-width: 0; }
+.mrow__frame { position: relative; flex: none; width: var(--mrow-media-w, calc(53.13 * var(--sx))); max-width: none; }
 .mrow__video {
   position: absolute;
   inset: 0;
@@ -236,7 +236,7 @@ const mediaWidth = computed(() => `calc(${(widthPx.value / 14.4).toFixed(2)} * m
 }
 .rows--stacked .mrow--media-left .mrow__media,
 .rows--stacked .mrow--media-right .mrow__media { grid-column: 1; grid-row: 1; padding: 0; justify-content: center; }
-.rows--stacked .mrow__media img { width: var(--mrow-media-w, calc(54.17 * var(--sx))); }   /* 780 */
+.rows--stacked .mrow__frame { width: var(--mrow-media-w, calc(54.17 * var(--sx))); }   /* 780 */
 .rows--stacked .mrow__actions { justify-content: center; }
 .rows--stacked .mrow__list { text-align: left; }
 
@@ -259,9 +259,8 @@ const mediaWidth = computed(() => `calc(${(widthPx.value / 14.4).toFixed(2)} * m
      Same trap as the compact offsets below. */
   .rows--stacked .mrow--media-left .mrow__text,
   .rows--stacked .mrow--media-right .mrow__text { width: auto; margin-top: 24px; }
-  .rows--stacked .mrow__media img { width: 100%; }
-  .mrow__picture { flex: auto; width: 100%; }
-  .mrow__media img { flex: auto; width: 100%; }
+  .rows--stacked .mrow__frame { width: 100%; }
+  .mrow__frame { flex: auto; width: 100%; max-width: 100%; }
   .mrow__video { width: 100%; }
   .mrow__title { font-size: clamp(2.25rem, 12.3vw, 3rem); }
   .mrow__title::before { display: none; }
