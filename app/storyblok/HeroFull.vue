@@ -302,7 +302,12 @@ const srcset = computed(() =>
      the top of the image". So it holds the foot where the copy sits and is
      gone by the time it reaches the faces. */
   .hero-full--overlay-left-narrow::after {
-    background: linear-gradient(0deg, rgb(0 0 0 / 82%) 0%, rgb(0 0 0 / 70%) 38%, rgb(0 0 0 / 28%) 64%, rgb(0 0 0 / 0%) 86%);
+    background: linear-gradient(0deg,
+      rgb(0 0 0 / 84%) 0%,
+      rgb(0 0 0 / 80%) 32%,
+      rgb(0 0 0 / 62%) 46%,
+      rgb(0 0 0 / 18%) 62%,
+      rgb(0 0 0 / 0%) 74%);
   }
   /* Waitak, on the News & events banner: "adjust the gradient to come from the
      bottom. Same as in the contact page (but not white, keep the black)." So it
