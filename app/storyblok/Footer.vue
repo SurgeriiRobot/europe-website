@@ -33,6 +33,10 @@ const nav = computed(() =>
     .filter((c: any) => c.label),
 )
 const legal = computed<any[]>(() => props.blok.legal_links || [])
+// Merel, 15 October: "Visitors should also be able to change their consent
+// preferences afterwards." The footer is where a cookie banner is reopened
+// from, so the legal row carries it beside the policies it belongs with.
+const { reopen } = useConsent()
 const half = computed(() => Math.ceil(legal.value.length / 2))
 const ICONS: Record<string, 'linkedin' | 'phone' | 'mail'> = { linkedin: 'linkedin', phone: 'phone', email: 'mail' }
 const LABELS: Record<string, string> = { linkedin: 'LinkedIn', phone: 'Phone', email: 'Email', youtube: 'YouTube', x: 'X' }
@@ -62,6 +66,9 @@ const socialHref = (social: any) => {
     <ul class="ftr__legal ftr__legal--left">
       <li v-for="item in legal.slice(0, half)" :key="item._uid" v-editable="item">
         <NuxtLink :to="sbHref(item.link)">{{ item.label }}</NuxtLink>
+      </li>
+      <li v-if="blok.cookie_settings_label">
+        <button type="button" class="ftr__consent" @click="reopen()">{{ blok.cookie_settings_label }}</button>
       </li>
     </ul>
     <ul class="ftr__legal ftr__legal--right">
@@ -141,6 +148,16 @@ const socialHref = (social: any) => {
 }
 .ftr__nav-link { padding: 4px 5px; font-size: clamp(1rem, 1.39vw, 1.25rem); font-weight: 600; line-height: 1.2; }
 
+/* The same line as its neighbours: it only differs in being a control. */
+.ftr__consent {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.ftr__consent:hover { text-decoration: underline; }
 .ftr__legal {
   position: absolute;
   top: 26.8%;                               /* 230 of 859 */

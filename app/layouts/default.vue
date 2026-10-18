@@ -26,6 +26,7 @@ const config = await useSiteConfig()
 
     <StoryblokComponent v-for="footer in config?.footer || []" :key="footer._uid" :blok="footer" />
     <StoryblokComponent v-for="notice in config?.cookie_notice || []" :key="notice._uid" :blok="notice" />
+    <ConsentScripts />
   </div>
 </template>
 

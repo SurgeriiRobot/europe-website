@@ -83,6 +83,13 @@ export default defineNuxtConfig({
         const links = Object.values((await res.json()).links) as { slug: string, is_folder: boolean }[]
         for (const link of links) {
           if (link.is_folder || link.slug.startsWith('global/')) continue
+          // A clinical centre story holds a name, a city and a country code and
+          // nothing else, so its page renders a heading over an empty column.
+          // Waitak, 15 October: the list "should not be clickable, as client
+          // told me it will only be names". Nothing links to them any more, so
+          // they are not built either, rather than left as empty URLs a search
+          // engine can still find.
+          if (link.slug.startsWith('clinical-centers/')) continue
           const path = link.slug === 'home' ? '' : `/${link.slug}`
           // Every locale, not just the default. The crawler cannot find the
           // others on its own: the language switcher only renders its links
@@ -141,6 +148,10 @@ export default defineNuxtConfig({
     public: {
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://localhost:3010',
       storyblokVersion: process.env.NUXT_PUBLIC_STORYBLOK_VERSION || 'published',
+      // Both are only ever loaded once a visitor accepts, see ConsentScripts.
+      // Blank either one and that script is never requested at all.
+      hubspotPortalId: process.env.NUXT_PUBLIC_HUBSPOT_PORTAL_ID || '148560510',
+      linkedinPartnerId: process.env.NUXT_PUBLIC_LINKEDIN_PARTNER_ID || '9786642',
     },
   },
 })
