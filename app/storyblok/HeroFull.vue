@@ -306,8 +306,9 @@ const srcset = computed(() =>
       rgb(0 0 0 / 84%) 0%,
       rgb(0 0 0 / 80%) 32%,
       rgb(0 0 0 / 62%) 46%,
-      rgb(0 0 0 / 18%) 62%,
-      rgb(0 0 0 / 0%) 74%);
+      rgb(0 0 0 / 24%) 62%,
+      rgb(0 0 0 / 10%) 80%,
+      rgb(0 0 0 / 7%) 100%);
   }
   /* Waitak, on the News & events banner: "adjust the gradient to come from the
      bottom. Same as in the contact page (but not white, keep the black)." So it
