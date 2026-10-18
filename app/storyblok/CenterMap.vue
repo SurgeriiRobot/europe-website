@@ -40,6 +40,11 @@ const { data: source } = await useAsyncData(
         ...(props.blok.source === 'by-region' && props.blok.region
           ? { search_term: props.blok.region }
           : {}),
+        // "installed" is the commercial installation list Surgerii send
+        // separately: the same stories, filtered, never a second set of names.
+        ...(props.blok.source === 'installed'
+          ? { filter_query: { installed: { is: true } } }
+          : {}),
       }),
       api.getAll('cdn/datasource_entries', { datasource: 'countries', per_page: 100 }),
     ])

@@ -38,7 +38,10 @@ export default defineEventHandler(async (event) => {
   }
 
   const paths = links
-    .filter(l => !l.is_folder && !/(^|\/)global(\/|$)/.test(l.slug))
+    // Centre stories carry a name and a country code, nothing a page can be
+    // made of, and the client asked for the list not to be clickable. They are
+    // not built, so they must not be advertised either.
+    .filter(l => !l.is_folder && !/(^|\/)global(\/|$)/.test(l.slug) && !l.slug.startsWith('clinical-centers/'))
     .map(l => ({ path: l.slug === 'home' ? '' : `/${l.slug.replace(/\/+$/, '')}`, lastmod: l.published_at }))
     .sort((a, b) => a.path.localeCompare(b.path))
 
