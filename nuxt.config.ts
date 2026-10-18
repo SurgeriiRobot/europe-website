@@ -45,6 +45,13 @@ export default defineNuxtConfig({
   storyblok: {
     accessToken: process.env.NUXT_STORYBLOK_ACCESS_TOKEN,
     apiOptions: { region },
+    // The editing bridge rewrites the DOM after hydration, adding
+    // storyblok__outline and a data-blok-c attribute to every block, which Vue
+    // reports as a hydration mismatch on every page. It is only useful where
+    // draft content is being previewed, so a published build does without it:
+    // no third-party script for visitors, and a clean console. Dev and the
+    // draft test build keep it, which is where the Visual Editor runs.
+    bridge: process.env.NODE_ENV !== 'production' || process.env.NUXT_PUBLIC_STORYBLOK_VERSION === 'draft',
   },
 
   i18n: {
