@@ -96,12 +96,16 @@ const style = computed(() => ({
 
 <style scoped>
 .tl { padding: var(--tl-top, calc(13.61 * var(--sx))) 0 var(--tl-bottom, calc(26.53 * var(--sx))); }   /* 196 / 382 */
+/* The updated About frame (18 October) draws this at 96, twice the usual
+   section title, and leaves 89px of air between its foot and the disc. That
+   size is the whole of Waitak's "make sure the milestones and achievements are
+   prominent enough": the section announces itself before the years do. */
 .tl__title {
-  margin: 0 auto calc(4.17 * var(--sx));          /* 60 */
+  margin: 0 auto calc(6.18 * var(--sx));          /* 89 */
   text-align: center;
-  font-size: var(--sec-title-size, clamp(2rem, 3.33vw, 3rem));
+  font-size: var(--sec-title-size, calc(6.67 * var(--sx)));   /* 96 */
   font-weight: 600;
-  line-height: 1.2083;
+  line-height: 1.2708;                            /* 122/96 */
   color: var(--ink);
 }
 
@@ -198,11 +202,17 @@ const style = computed(() => ({
 /* Phones: the disc at 240, the year at 150, and the controls under the caption
    rather than beside it, since there is no room for them at the gutters. */
 @media (max-width: 720px) {
-  .tl { padding: var(--tl-top-m, 96px) 0 var(--tl-bottom-m, 120px); }
-  .tl__title { margin-bottom: 40px; padding-inline: 16px; font-size: clamp(2.25rem, 12.3vw, 3rem); }
+  .tl { padding: var(--tl-top-m, 128px) 0 var(--tl-bottom-m, 120px); }
+  /* Waitak, About 6: "the line is going over the header when in mobile" and it
+     is "a bit tight everywhere". The connector is authored at the desktop
+     length, 100px on this page, which on a phone runs into the title. Capping
+     it and opening the gaps gives the section room without touching the
+     desktop drawing. */
+  .tl__lead { height: min(var(--connector-len, 40px), 56px); }
+  .tl__title { margin-bottom: 56px; padding-inline: 16px; font-size: clamp(2.25rem, 12.3vw, 3rem); }
   .tl__disc { width: 240px; height: 240px; padding-top: 10px; padding-inline: 28px; font-size: 1.5rem; line-height: 1.2083; }
   .tl__year { margin-top: -40px; font-size: 150px; }
-  .tl__foot { display: grid; grid-template-columns: 1fr 1fr; justify-items: center; gap: 28px; margin-top: 12px; padding-inline: 16px; }
+  .tl__foot { display: grid; grid-template-columns: 1fr 1fr; justify-items: center; gap: 28px; margin-top: 28px; padding-inline: 16px; }
   .tl__caption { grid-area: 1 / 1 / 2 / 3; max-width: none; font-size: 1.5rem; line-height: 1.2083; }
   .tl__nav { position: static; translate: none; gap: 12px; font-size: 1.25rem; }
   .tl__nav--prev { grid-area: 2 / 1; justify-self: start; }
