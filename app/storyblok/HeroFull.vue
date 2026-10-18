@@ -22,6 +22,10 @@ const heightVar = computed(() => {
     // on the Clinical Evidence banner: "could we try and get the image like
     // this", pointing at a frame 638 tall where ours is the drawn 780.
     ...(Number(props.blok.height_mobile) > 0 ? { '--hero-h-m': `${Number(props.blok.height_mobile)}px` } : {}),
+    // How far the phone veil reaches above the copy. Waitak on Training &
+    // Proctoring: keep the gradient, "just adjust it so the topside of the
+    // image is less covered". Lowering this starts the wash further down.
+    ...(Number(props.blok.overlay_reach_mobile) > 0 ? { '--hero-veil': `${Number(props.blok.overlay_reach_mobile)}px` } : {}),
     // The column the copy wraps in, in design px. Banners are drawn to very
     // different measures: home fits 339, Contact 520, the library 528.
     ...(m > 0 ? { '--hero-measure': `${m}px` } : {}),
@@ -282,13 +286,23 @@ const srcset = computed(() =>
   .hero-full--overlay-wash .hero-full__content::before {
     content: '';
     position: absolute;
-    inset: -140px -16px -48px;
+    inset: calc(var(--hero-veil, 140px) * -1) -16px -48px;
     z-index: -1;
-    background: linear-gradient(180deg, rgb(255 255 255 / 0%) 0, rgb(255 255 255 / 62%) 84px, rgb(255 255 255 / 88%) 140px, rgb(255 255 255 / 94%) 100%);
+    background: linear-gradient(180deg,
+      rgb(255 255 255 / 0%) 0,
+      rgb(255 255 255 / 62%) calc(var(--hero-veil, 140px) * 0.6),
+      rgb(255 255 255 / 88%) var(--hero-veil, 140px),
+      rgb(255 255 255 / 94%) 100%);
   }
-  .hero-full--overlay-left::after,
-  .hero-full--overlay-left-narrow::after {
+  .hero-full--overlay-left::after {
     background: linear-gradient(0deg, rgb(0 0 0 / 82%) 0%, rgb(0 0 0 / 74%) 52%, rgb(0 0 0 / 34%) 78%, rgb(0 0 0 / 10%) 100%);
+  }
+  /* The narrow variant keeps more of the picture on phones too. Waitak, on
+     Training & Proctoring: keep the gradient, "but reduce how much it covers
+     the top of the image". So it holds the foot where the copy sits and is
+     gone by the time it reaches the faces. */
+  .hero-full--overlay-left-narrow::after {
+    background: linear-gradient(0deg, rgb(0 0 0 / 82%) 0%, rgb(0 0 0 / 70%) 38%, rgb(0 0 0 / 28%) 64%, rgb(0 0 0 / 0%) 86%);
   }
   /* Waitak, on the News & events banner: "adjust the gradient to come from the
      bottom. Same as in the contact page (but not white, keep the black)." So it
@@ -299,9 +313,13 @@ const srcset = computed(() =>
   .hero-full--overlay-bottom .hero-full__content::before {
     content: '';
     position: absolute;
-    inset: -140px -16px -48px;
+    inset: calc(var(--hero-veil, 140px) * -1) -16px -48px;
     z-index: -1;
-    background: linear-gradient(180deg, rgb(0 0 0 / 0%) 0, rgb(0 0 0 / 40%) 84px, rgb(0 0 0 / 66%) 140px, rgb(0 0 0 / 78%) 100%);
+    background: linear-gradient(180deg,
+      rgb(0 0 0 / 0%) 0,
+      rgb(0 0 0 / 40%) calc(var(--hero-veil, 140px) * 0.6),
+      rgb(0 0 0 / 66%) var(--hero-veil, 140px),
+      rgb(0 0 0 / 78%) 100%);
   }
   .hero-full__bg { object-position: 24% center; }
   .hero-full__video { object-position: center; }
