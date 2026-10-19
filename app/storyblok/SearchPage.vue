@@ -18,15 +18,26 @@ const router = useRouter()
 const localePath = useLocalePath()
 const language = useStoryblokLanguage()
 
-const term = computed(() => String(route.query.q || '').trim())
-const page = computed(() => Math.max(1, Number(route.query.page) || 1))
-const newest = computed(() => route.query.sort !== 'oldest')
+// A static build serves every /search?q=... request from the one prerendered
+// page, which was rendered with no query at all. The router hydrates from that
+// page rather than from the address bar, so the term never arrived and a shared
+// or reloaded result link came up empty, while searching from the box worked
+// because that is a navigation the router performs itself. So the address bar
+// is read once on arrival and stands in wherever the router has nothing.
+const fromUrl = ref<Record<string, string>>({})
+onMounted(() => { fromUrl.value = Object.fromEntries(new URLSearchParams(window.location.search)) })
+const param = (key: string) => String(route.query[key] ?? fromUrl.value[key] ?? '')
+
+const term = computed(() => param('q').trim())
+const page = computed(() => Math.max(1, Number(param('page')) || 1))
+const newest = computed(() => param('sort') !== 'oldest')
 const perPage = computed(() => Math.max(1, Number(props.blok.per_page) || 10))
 
 // What the visitor is typing, which is only committed to the URL on submit —
 // so a half-typed word never refetches and never enters the history.
 const draft = ref(term.value)
 watch(term, t => { draft.value = t })
+
 
 const { data, status } = await useAsyncData(
   () => `search-${language.value}-${term.value}-${newest.value}-${page.value}-${perPage.value}`,
