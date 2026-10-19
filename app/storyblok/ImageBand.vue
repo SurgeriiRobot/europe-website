@@ -6,6 +6,28 @@
 // full measure between the 16px gutters.
 const props = defineProps<{ blok: any }>()
 const image = computed(() => props.blok.image)
+
+// A chart can be an animation rather than a still. The client's instruction for
+// the learning curve: "please single play and do not loop it, the final frame
+// it should freeze on". So it waits until it is on screen, plays once, and
+// stops where it ends. The still is the poster, which is also what anyone with
+// reduced motion turned on, or no video support, keeps looking at.
+const clip = computed(() => (props.blok.video?.filename ? props.blok.video : null))
+const figure = ref<HTMLElement>()
+const video = ref<HTMLVideoElement>()
+onMounted(() => {
+  if (!clip.value || !figure.value) return
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (!e.isIntersecting) continue
+      video.value?.play().catch(() => { /* a browser that refuses is left on the poster */ })
+      io.disconnect()
+    }
+  }, { threshold: 0.4 })
+  io.observe(figure.value)
+  onBeforeUnmount(() => io.disconnect())
+})
 const mobile = computed(() => (props.blok.image_mobile?.filename ? props.blok.image_mobile : null))
 const width = computed(() => {
   const w = Number(props.blok.width)
@@ -52,9 +74,22 @@ const style = computed(() => ({
     :style="style"
   >
     <SectionConnector :connector="blok.connector" />
-    <figure class="fig__inner">
+    <figure ref="figure" class="fig__inner">
       <h3 v-if="blok.headline" class="fig__headline">{{ blok.headline }}</h3>
-      <picture v-if="src">
+      <video
+        v-if="clip"
+        ref="video"
+        class="fig__video"
+        :poster="src || undefined"
+        :width="dims?.w"
+        :height="dims?.h"
+        muted
+        playsinline
+        preload="metadata"
+      >
+        <source :src="clip.filename" type="video/mp4">
+      </video>
+      <picture v-else-if="src">
         <source v-if="mobileSrc" media="(max-width: 720px)" :srcset="mobileSrc">
         <img
           :src="src"
@@ -80,6 +115,7 @@ const style = computed(() => ({
 .fig__inner img { width: 100%; height: auto; display: block; }
 /* The chart's own title, lifted out of the picture and set as a real heading so
    it is text on the page: searchable, translatable and read out in order. */
+.fig__video { display: block; width: 100%; height: auto; }
 .fig__headline {
   margin: 0 0 calc(2.78 * var(--sx));                                        /* 40 */
   font-size: clamp(1.75rem, 2.8vw, 2.5rem);
