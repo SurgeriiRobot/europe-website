@@ -29,8 +29,9 @@ const date = computed(() => {
   return d.toLocaleDateString(bcp47.value, { day: 'numeric', month: 'long', year: 'numeric' })
 })
 // Datasource values are slugs; the chip shows the reading form ("general-surgery"
-// -> "General surgery"), which is how the design writes them.
-const label = (v: string) => (v ? v.replace(/-/g, ' ').replace(/^./, c => c.toUpperCase()) : '')
+// -> "General surgery"), which is how the design writes them, and in the
+// language being read rather than always in English.
+const label = useVocabulary(['library-kinds', 'medical-specialties'])
 const tags = computed(() => [props.blok.kind, props.blok.specialty].filter(Boolean).map(label))
 const image = computed(() => props.blok.image)
 </script>

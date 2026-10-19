@@ -12,17 +12,12 @@ defineEmits<{ 'update:modelValue': [value: any] }>()
 // A select lists a datasource by slug. Without this the control held only its
 // placeholder, so a required select could never be satisfied and the form it
 // sat in could not be submitted at all.
+const dimension = useDatasourceDimension()
 const { data: choices } = await useAsyncData(
-  () => `ds-${props.blok.options || 'none'}`,
+  () => `ds-${props.blok.options || 'none'}-${dimension.value || 'default'}`,
   async () => {
     if (props.blok.type !== 'select' || !props.blok.options) return []
-    const api = useStoryblokApi()
-    const { data } = await api.get('cdn/datasource_entries', {
-      datasource: props.blok.options,
-      version: useStoryblokVersion(),
-      per_page: 100,
-    })
-    return (data.datasource_entries || []) as { name: string, value: string }[]
+    return await fetchDatasource(props.blok.options, dimension.value)
   },
 )
 </script>

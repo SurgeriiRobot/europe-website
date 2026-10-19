@@ -61,19 +61,12 @@ const { data, status } = await useAsyncData(
 
 // The filter vocabularies are the datasources the article fields already use, so
 // the dropdowns can never drift from what editors can actually tag.
+const dimension = useDatasourceDimension()
 const { data: vocab } = await useAsyncData(
   () => `listing-vocab-${language.value}`,
   async () => {
-    const api = useStoryblokApi()
     const slugs = ['article-types', 'medical-specialties', 'event-types', 'regions']
-    const sets = await Promise.all(slugs.map(async (datasource) => {
-      const { data } = await api.get('cdn/datasource_entries', {
-        datasource,
-        per_page: 100,
-        version: useStoryblokVersion(),
-      })
-      return (data.datasource_entries || []) as { name: string, value: string }[]
-    }))
+    const sets = await Promise.all(slugs.map(slug => fetchDatasource(slug, dimension.value)))
     return Object.fromEntries(slugs.map((slug, i) => [slug, sets[i]])) as Record<string, { name: string, value: string }[]>
   },
 )
@@ -170,15 +163,15 @@ const entryName = (slug: string, value: string) =>
 
       <div class="listing__bar">
         <label class="ctrl ctrl--select ctrl--sort">
-          <span class="ctrl__label" aria-hidden="true">{{ newest ? 'Most recent' : 'Oldest first' }}</span>
+          <span class="ctrl__label" aria-hidden="true">{{ newest ? (blok.sort_recent_label || 'Most recent') : (blok.sort_oldest_label || 'Oldest first') }}</span>
           <select
             class="ctrl__input"
             aria-label="Sort by"
             :value="newest ? 'recent' : 'oldest'"
             @change="setQuery('sort', ($event.target as HTMLSelectElement).value === 'oldest' ? 'oldest' : '')"
           >
-            <option value="recent">Most recent</option>
-            <option value="oldest">Oldest first</option>
+            <option value="recent">{{ blok.sort_recent_label || 'Most recent' }}</option>
+            <option value="oldest">{{ blok.sort_oldest_label || 'Oldest first' }}</option>
           </select>
         </label>
 
@@ -215,40 +208,40 @@ const entryName = (slug: string, value: string) =>
           </button>
 
           <label v-if="enabled.includes('specialties')" class="ctrl ctrl--select">
-            <span class="ctrl__label" aria-hidden="true">{{ entryName('medical-specialties', activeFilters.specialties) || 'Medical specialties' }}</span>
+            <span class="ctrl__label" aria-hidden="true">{{ entryName('medical-specialties', activeFilters.specialties) || blok.specialties_label || 'Medical specialties' }}</span>
             <select
               class="ctrl__input"
-              aria-label="Medical specialties"
+              :aria-label="blok.specialties_label || 'Medical specialties'"
               :value="activeFilters.specialties"
               @change="setQuery('specialty', ($event.target as HTMLSelectElement).value)"
             >
-              <option value="">Medical specialties</option>
+              <option value="">{{ blok.specialties_label || 'Medical specialties' }}</option>
               <option v-for="entry in vocab?.['medical-specialties'] || []" :key="entry.value" :value="entry.value">{{ entry.name }}</option>
             </select>
           </label>
 
           <label v-if="enabled.includes('event_type')" class="ctrl ctrl--select">
-            <span class="ctrl__label" aria-hidden="true">{{ entryName('event-types', activeFilters.event_type) || 'Event type' }}</span>
+            <span class="ctrl__label" aria-hidden="true">{{ entryName('event-types', activeFilters.event_type) || blok.event_type_label || 'Event type' }}</span>
             <select
               class="ctrl__input"
-              aria-label="Event type"
+              :aria-label="blok.event_type_label || 'Event type'"
               :value="activeFilters.event_type"
               @change="setQuery('event', ($event.target as HTMLSelectElement).value)"
             >
-              <option value="">Event type</option>
+              <option value="">{{ blok.event_type_label || 'Event type' }}</option>
               <option v-for="entry in vocab?.['event-types'] || []" :key="entry.value" :value="entry.value">{{ entry.name }}</option>
             </select>
           </label>
 
           <label v-if="enabled.includes('region')" class="ctrl ctrl--select">
-            <span class="ctrl__label" aria-hidden="true">{{ entryName('regions', activeFilters.region) || 'Region' }}</span>
+            <span class="ctrl__label" aria-hidden="true">{{ entryName('regions', activeFilters.region) || blok.region_label || 'Region' }}</span>
             <select
               class="ctrl__input"
-              aria-label="Region"
+              :aria-label="blok.region_label || 'Region'"
               :value="activeFilters.region"
               @change="setQuery('region', ($event.target as HTMLSelectElement).value)"
             >
-              <option value="">Region</option>
+              <option value="">{{ blok.region_label || 'Region' }}</option>
               <option v-for="entry in vocab?.['regions'] || []" :key="entry.value" :value="entry.value">{{ entry.name }}</option>
             </select>
           </label>

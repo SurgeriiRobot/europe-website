@@ -103,13 +103,8 @@ export function useContentGate() {
 
 /** The country list the rest of the site already uses, so the options cannot drift. */
 export function useGateCountries() {
-  return useAsyncData('gate-countries', async () => {
-    const api = useStoryblokApi()
-    const { data } = await api.get('cdn/datasource_entries', {
-      datasource: 'countries',
-      per_page: 250,
-      version: useStoryblokVersion(),
-    })
-    return (data.datasource_entries || []) as { name: string, value: string }[]
+  const dimension = useDatasourceDimension()
+  return useAsyncData(() => `gate-countries-${dimension.value || 'default'}`, async () => {
+    return await fetchDatasource('countries', dimension.value)
   }, { default: () => [] })
 }

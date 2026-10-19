@@ -33,7 +33,21 @@ const promoAt = computed(() => {
 })
 const hasPromo = computed(() => Boolean(props.blok.promo_headline || props.blok.promo_body))
 
-const label = (v: string) => (v ? v.replace(/-/g, ' ').replace(/^./, c => c.toUpperCase()) : '')
+// The chips used to spell their own text out of the key, which left
+// "Publication", "Booklet" and "Video" in English on all four translated sites.
+// They come from a vocabulary now, so the words travel with the language.
+const dimension = useDatasourceDimension()
+const tagWord = useVocabulary(['library-kinds', 'medical-specialties'])
+const { data: kindWords } = await useAsyncData(
+  () => `library-kinds-${dimension.value || 'default'}`,
+  () => fetchDatasource('library-kinds', dimension.value),
+  { default: () => [] },
+)
+const label = (v: string) => {
+  if (!v) return ''
+  const found = kindWords.value?.find(e => e.value === v)
+  return found?.name || v.replace(/-/g, ' ').replace(/^./, c => c.toUpperCase())
+}
 
 // The chips and the specialty list are whatever the library actually holds, so
 // an editor never has to keep a second list of filters in step with the cards.
@@ -135,7 +149,7 @@ const openHref = computed(() => {
 })
 const openTags = computed(() => [playing.value?.kind, playing.value?.specialty]
   .filter(Boolean)
-  .map((v: string) => v.replace(/-/g, ' ').replace(/^./, c => c.toUpperCase())))
+  .map((v: string) => tagWord(v)))
 const openDate = computed(() => {
   const raw = playing.value?.date
   if (!raw) return ''
@@ -536,6 +550,12 @@ const promoHref = computed(() => {
   cursor: pointer;
 }
 .lib__close:hover { opacity: 0.8; }
+
+/* Waitak: "the item below the form should be shaded, so the card below the
+   form". The frame sits the gate on the dimmed page, not on the card's own
+   cover, so while the form is up the picture behind it is held back and only
+   comes forward once the content is unlocked. */
+.lib__pop-media--gated .lib__poster { opacity: 0.22; }
 
 .lib__pop-head {
   display: flex;
