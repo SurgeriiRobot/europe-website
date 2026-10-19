@@ -63,6 +63,11 @@ const go = (i: number | undefined, from: 'next' | 'prev') => {
   direction.value = from
   index.value = i
 }
+
+// Waitak: "could you add a swipe behavior?" on phones. The arrows stay; this
+// just lets a finger do the same thing.
+const root = ref<HTMLElement>()
+useSwipe(root, { prev: () => go(leftIndex.value, 'prev'), next: () => go(rightIndex.value, 'next') })
 </script>
 
 <template>
@@ -73,6 +78,7 @@ const go = (i: number | undefined, from: 'next' | 'prev') => {
     :data-theme="blok.theme || 'light'"
     aria-roledescription="carousel"
     :aria-label="current?.name"
+    ref="root"
     @keydown.left="go(leftIndex, 'prev')"
     @keydown.right="go(rightIndex, 'next')"
   >

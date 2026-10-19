@@ -26,6 +26,11 @@ const style = computed(() => ({
   '--tl-bottom-m': px(props.blok.space_bottom_mobile),
   '--connector-len': px(props.blok.connector_length),
 }))
+
+// Waitak asked for a swipe on the phone carousels. The arrows stay where they
+// are; this lets a finger move between the years as well.
+const stage = ref<HTMLElement>()
+useSwipe(stage, { prev: () => go(-1), next: () => go(1) })
 </script>
 
 <template>
@@ -46,7 +51,7 @@ const style = computed(() => ({
          it back. -->
     <h2 v-if="blok.headline" class="tl__title"><BrandText :text="blok.headline" /></h2>
 
-    <div v-if="current" class="tl__stage">
+    <div v-if="current" ref="stage" class="tl__stage">
       <!-- The year is drawn as a 220px watermark in #f4f4f4, which measures
            1.95:1 at its head and 1.55:1 at its foot against the band behind it
            (the ramp is at rgb(128,179,254) by design y2573 and rgb(160,202,254)
