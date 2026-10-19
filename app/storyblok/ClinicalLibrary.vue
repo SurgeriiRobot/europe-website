@@ -36,18 +36,11 @@ const hasPromo = computed(() => Boolean(props.blok.promo_headline || props.blok.
 // The chips used to spell their own text out of the key, which left
 // "Publication", "Booklet" and "Video" in English on all four translated sites.
 // They come from a vocabulary now, so the words travel with the language.
-const dimension = useDatasourceDimension()
-const tagWord = useVocabulary(['library-kinds', 'medical-specialties'])
-const { data: kindWords } = await useAsyncData(
-  () => `library-kinds-${dimension.value || 'default'}`,
-  () => fetchDatasource('library-kinds', dimension.value),
-  { default: () => [] },
-)
-const label = (v: string) => {
-  if (!v) return ''
-  const found = kindWords.value?.find(e => e.value === v)
-  return found?.name || v.replace(/-/g, ' ').replace(/^./, c => c.toUpperCase())
-}
+// The chips and the specialty list used to spell their own text out of the key,
+// which left them English on all four translated sites. Both read the
+// vocabularies now, so the words travel with the language.
+const label = useVocabulary(['library-kinds', 'medical-specialties'])
+
 
 // The chips and the specialty list are whatever the library actually holds, so
 // an editor never has to keep a second list of filters in step with the cards.
@@ -149,7 +142,7 @@ const openHref = computed(() => {
 })
 const openTags = computed(() => [playing.value?.kind, playing.value?.specialty]
   .filter(Boolean)
-  .map((v: string) => tagWord(v)))
+  .map((v: string) => label(v)))
 const openDate = computed(() => {
   const raw = playing.value?.date
   if (!raw) return ''
