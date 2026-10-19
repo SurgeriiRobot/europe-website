@@ -159,6 +159,14 @@ export default defineNuxtConfig({
       // Blank either one and that script is never requested at all.
       hubspotPortalId: process.env.NUXT_PUBLIC_HUBSPOT_PORTAL_ID || '148560510',
       linkedinPartnerId: process.env.NUXT_PUBLIC_LINKEDIN_PARTNER_ID || '9786642',
+      // The two HubSpot forms the client published on 19 October, both on the
+      // EU instance. Empty either one and that form falls back to the site's
+      // own endpoint instead.
+      hubspotContactFormId: process.env.NUXT_PUBLIC_HUBSPOT_CONTACT_FORM_ID || '207e1886-de9e-479c-8940-11958ab6f472',
+      hubspotGateFormId: process.env.NUXT_PUBLIC_HUBSPOT_GATE_FORM_ID || '',
+      // From the HubSpot form settings, for the optional marketing opt-in.
+      // Without it the processing consent is sent on its own.
+      hubspotMarketingSubscriptionId: process.env.NUXT_PUBLIC_HUBSPOT_MARKETING_SUBSCRIPTION_ID || '',
     },
   },
 })

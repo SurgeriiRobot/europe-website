@@ -20,9 +20,62 @@ const values = reactive<Record<string, any>>({})
 const state = ref<'idle' | 'sending' | 'sent' | 'error'>('idle')
 const error = ref('')
 
+const hubspot = useHubspotForm()
+const formId = (useRuntimeConfig().public as Record<string, string>).hubspotContactFormId
+
+// The site's own names on the left, HubSpot's on the right. Only fields the
+// HubSpot form actually has may be sent: one it does not know rejects the whole
+// submission.
+const MAP: Record<string, string> = {
+  first_name: 'firstname',
+  last_name: 'lastname',
+  email: 'email',
+  country: 'country',
+  message: 'message',
+  interest: 'interest',
+}
+
+// `consent` is the data processing consent and is required; `marketing` is the
+// optional communications opt-in, which the client wants recorded separately so
+// they can tell who agreed to be marketed to.
+function label(name: string) {
+  return fields.value.find((f: any) => f.name === name)?.label || ''
+}
+
+// A select submits its datasource key, "DE" rather than "Germany". That is the
+// right thing to carry around the site and the wrong thing to put in a CRM, so
+// the readable name goes to HubSpot. FormField has already fetched each list
+// under `ds-<datasource>`, so this reads that result rather than fetching again.
+const nuxtApp = useNuxtApp()
+function readable(fieldName: string, value: string) {
+  const field = fields.value.find((f: any) => f.name === fieldName)
+  if (!field?.options) return value
+  const list = (nuxtApp.payload.data as Record<string, any>)?.[`ds-${field.options}`] as { name: string, value: string }[] | undefined
+  return list?.find(e => e.value === value)?.name || value
+}
+
 async function submit() {
   state.value = 'sending'
   error.value = ''
+
+  if (hubspot.configured && formId) {
+    const payload: Record<string, string | undefined> = {}
+    for (const [ours, theirs] of Object.entries(MAP)) {
+      const v = values[ours]
+      if (v !== undefined && v !== '' && typeof v !== 'boolean') payload[theirs] = readable(ours, String(v))
+    }
+    const res = await hubspot.submit(formId, payload, {
+      consent: Boolean(values.consent),
+      marketing: 'marketing' in values ? Boolean(values.marketing) : undefined,
+      consentText: label('consent'),
+      marketingText: label('marketing'),
+    })
+    if (res.ok) { state.value = 'sent'; return }
+    state.value = 'error'
+    error.value = props.blok.error_message || 'Something went wrong. Please try again.'
+    return
+  }
+
   try {
     await $fetch('/api/contact', { method: 'POST', body: { ...values } })
     state.value = 'sent'
