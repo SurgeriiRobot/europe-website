@@ -627,7 +627,8 @@ button.lib__poster { cursor: pointer; }
     margin-top: -16px;                         /* 16px under the disclosure, not 32 */
   }
   .lib__filters:not(.is-open) { display: none; }
-  .lib__grid { grid-template-columns: 1fr; gap: 30px; margin-top: 32px; }
+  /* Matching News & events: 30 reads as cramped once the cards are full width. */
+  .lib__grid { grid-template-columns: 1fr; gap: 48px; margin-top: 32px; }
   .lib__promo { height: auto; padding: 48px 24px; }
   .lib__pager { gap: 0; margin-top: 32px; }
   .lib__pg { width: 38px; }

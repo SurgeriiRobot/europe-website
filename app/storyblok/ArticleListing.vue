@@ -568,7 +568,10 @@ const entryName = (slug: string, value: string) =>
     background-size: 24px 24px;
   }
   .ctrl--toggle { justify-content: flex-start; padding-inline: 13px; }
-  .listing__grid { grid-template-columns: 1fr; gap: 30px; }
+  /* Waitak: "the cards on mobile are stacked very close to each other". The
+     30px the desktop grid uses reads as cramped once the cards are full width
+     and tall. There is no mobile frame for this page, so 48 is a judgement. */
+  .listing__grid { grid-template-columns: 1fr; gap: 48px; }
   .pager { gap: 2px; }
 }
 </style>

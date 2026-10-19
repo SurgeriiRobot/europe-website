@@ -9,7 +9,7 @@
 // the LinkedIn Insight Tag. Plausible is cookieless and is never gated.
 const props = defineProps<{ blok: any }>()
 const sbHref = useSbUrl()
-const { ready, open, consent, accept, reject, save: store, close } = useConsent()
+const { ready, open, consent, accept, reject, save: store, close, wantPreferences } = useConsent()
 
 // "Manage your preferences" opens the second face of the same card rather than
 // a separate dialog: there are only two switches, and one of them is fixed.
@@ -17,7 +17,8 @@ const view = ref<'notice' | 'prefs' | 'saved'>('notice')
 const marketing = ref(false)
 watch(open, (isOpen) => {
   if (!isOpen) return
-  view.value = 'notice'
+  view.value = wantPreferences.value ? 'prefs' : 'notice'
+  wantPreferences.value = false
   marketing.value = consent.value === 'accepted'
 })
 

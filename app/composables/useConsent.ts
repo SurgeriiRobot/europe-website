@@ -20,6 +20,9 @@ export function useConsent() {
   // flashes up on every page for someone who decided months ago.
   const ready = useState('consent-ready', () => false)
   const open = useState('consent-open', () => false)
+  // Someone who presses "Cookie settings" has asked to change their choice, so
+  // the card opens on the preferences rather than on the first-visit notice.
+  const wantPreferences = useState('consent-prefs', () => false)
 
   onMounted(() => {
     if (!ready.value) {
@@ -56,6 +59,7 @@ export function useConsent() {
     // accepted the cookie policies."
     save: (marketing: boolean) => decide(marketing ? 'accepted' : 'rejected', false),
     close: () => { open.value = false },
-    reopen: () => { open.value = true },
+    wantPreferences,
+    reopen: () => { wantPreferences.value = true; open.value = true },
   }
 }
