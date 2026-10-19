@@ -28,20 +28,24 @@ onMounted(revalidate)
 const state = ref<'idle' | 'sending' | 'sent' | 'error'>('idle')
 const error = ref('')
 
+const language = useStoryblokLanguage()
 const hubspot = useHubspotForm()
 const formId = (useRuntimeConfig().public as Record<string, string>).hubspotContactFormId
 
-// The site's own names on the left, HubSpot's on the right. Only fields the
-// HubSpot form actually has may be sent: one it does not know rejects the whole
-// submission.
+// The site's own names on the left, HubSpot's on the right, taken from the
+// published form definition rather than guessed. A field the form does not know
+// makes it reject the whole submission.
 const MAP: Record<string, string> = {
   first_name: 'firstname',
   last_name: 'lastname',
   email: 'email',
-  country: 'country',
+  country: 'contact_country',
   message: 'message',
-  interest: 'interest',
+  interest: 'website_interest',
 }
+// The country dropdown stores country names; the interest dropdown stores the
+// same keys we use. So one is translated on the way out and the other is not.
+const AS_NAME = new Set(['country'])
 
 // `consent` is the data processing consent and is required; `marketing` is the
 // optional communications opt-in, which the client wants recorded separately so
@@ -70,8 +74,15 @@ async function submit() {
     const payload: Record<string, string | undefined> = {}
     for (const [ours, theirs] of Object.entries(MAP)) {
       const v = values[ours]
-      if (v !== undefined && v !== '' && typeof v !== 'boolean') payload[theirs] = readable(ours, String(v))
+      if (v === undefined || v === '' || typeof v === 'boolean') continue
+      payload[theirs] = AS_NAME.has(ours)
+        ? hubspotCountry(String(v), readable(ours, String(v)))
+        : String(v)
     }
+    // The three hidden properties the client added to both forms.
+    payload.website_page_url = import.meta.client ? window.location.href : undefined
+    payload.website_language = siteLanguage(language.value)
+    payload.website_form_source = 'contact'
     const res = await hubspot.submit(formId, payload, {
       consent: Boolean(values.consent),
       marketing: 'marketing' in values ? Boolean(values.marketing) : undefined,

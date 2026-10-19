@@ -13,11 +13,27 @@
  */
 const GRANT = 'shurui.library.access'
 
+// The wording on the client's HubSpot form, so what is recorded against the
+// contact is what the visitor actually agreed to.
+export const GATE_CONSENT_TEXT = 'I agree that Surgerii Robotics may store and process the personal data I have submitted.'
+export const GATE_MARKETING_TEXT = 'I agree to receive other communications from Surgerii Robotics.'
+
 export function useContentGate() {
   const granted = useState('content-gate-granted', () => false)
   const state = ref<'form' | 'sending' | 'thanks' | 'open'>('form')
   const error = ref('')
-  const lead = reactive({ name: '', email: '', country: '' })
+  const lead = reactive({ name: '', email: '', country: '', consent: false, marketing: false })
+
+  // Resolved here rather than inside submit(): these read the Nuxt instance,
+  // which an async event handler no longer has.
+  const hubspot = useHubspotForm()
+  const formId = (useRuntimeConfig().public as Record<string, string>).hubspotGateFormId
+  const language = useStoryblokLanguage()
+  const nuxtApp = useNuxtApp()
+  const countryName = (code: string) => {
+    const list = (nuxtApp.payload.data as Record<string, any>)?.['gate-countries'] as { name: string, value: string }[] | undefined
+    return list?.find(e => e.value === code)?.name || code
+  }
 
   onMounted(() => {
     try { granted.value = localStorage.getItem(GRANT) === '1' } catch { /* private mode */ }
@@ -27,7 +43,8 @@ export function useContentGate() {
   // the looser test, which Waitak found while testing the pop-up.
   const valid = computed(() => lead.name.trim().length > 1
     && /^[^@\s]+@[^@\s.]+(\.[^@\s.]+)*\.[A-Za-z]{2,}$/.test(lead.email.trim())
-    && Boolean(lead.country))
+    && Boolean(lead.country)
+    && lead.consent)
 
   /** Open the gate for an item, skipping it if this visitor is already through. */
   function begin() {
@@ -45,7 +62,26 @@ export function useContentGate() {
     state.value = 'sending'
     error.value = ''
     try {
-      await $fetch('/api/library-access', { method: 'POST', body: { ...lead, item } })
+      // The client's form keeps the single "Full Name" the design draws and
+      // maps it to firstname, so nothing is split on the space.
+      if (hubspot.configured && formId) {
+        const res = await hubspot.submit(formId, {
+          firstname: lead.name.trim(),
+          email: lead.email.trim(),
+          contact_country: hubspotCountry(lead.country, countryName(lead.country)),
+          website_page_url: import.meta.client ? window.location.href : undefined,
+          website_language: siteLanguage(language.value),
+          website_form_source: 'content_download',
+        }, {
+          consent: true,
+          marketing: lead.marketing,
+          consentText: GATE_CONSENT_TEXT,
+          marketingText: GATE_MARKETING_TEXT,
+        })
+        if (!res.ok) throw new Error(res.message)
+      } else {
+        await $fetch('/api/library-access', { method: 'POST', body: { ...lead, item } })
+      }
       granted.value = true
       try { localStorage.setItem(GRANT, '1') } catch { /* private mode */ }
       state.value = 'thanks'

@@ -163,10 +163,11 @@ export default defineNuxtConfig({
       // EU instance. Empty either one and that form falls back to the site's
       // own endpoint instead.
       hubspotContactFormId: process.env.NUXT_PUBLIC_HUBSPOT_CONTACT_FORM_ID || '207e1886-de9e-479c-8940-11958ab6f472',
-      hubspotGateFormId: process.env.NUXT_PUBLIC_HUBSPOT_GATE_FORM_ID || '',
+      hubspotGateFormId: process.env.NUXT_PUBLIC_HUBSPOT_GATE_FORM_ID || 'e53d45f5-4d9c-4130-ba38-476c9a481e2b',
       // From the HubSpot form settings, for the optional marketing opt-in.
       // Without it the processing consent is sent on its own.
-      hubspotMarketingSubscriptionId: process.env.NUXT_PUBLIC_HUBSPOT_MARKETING_SUBSCRIPTION_ID || '',
+      // "Marketing Information", read off the published form definition.
+      hubspotMarketingSubscriptionId: process.env.NUXT_PUBLIC_HUBSPOT_MARKETING_SUBSCRIPTION_ID || '2783111645',
     },
   },
 })

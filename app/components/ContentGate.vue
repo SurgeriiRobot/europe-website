@@ -11,7 +11,7 @@ defineProps<{
   countries: { name: string, value: string }[]
   labels?: Record<string, string>
 }>()
-const lead = defineModel<{ name: string, email: string, country: string }>({ required: true })
+const lead = defineModel<{ name: string, email: string, country: string, consent: boolean, marketing: boolean }>({ required: true })
 const emit = defineEmits<{ submit: [] }>()
 </script>
 
@@ -34,6 +34,14 @@ const emit = defineEmits<{ submit: [] }>()
             <option v-for="c in countries" :key="c.value" :value="c.value">{{ c.name }}</option>
           </select>
         </label>
+        <label class="gate__check">
+          <input v-model="lead.consent" type="checkbox" required>
+          <span>{{ labels?.consent || GATE_CONSENT_TEXT }}*</span>
+        </label>
+        <label class="gate__check">
+          <input v-model="lead.marketing" type="checkbox">
+          <span>{{ labels?.marketing || GATE_MARKETING_TEXT }}</span>
+        </label>
       </div>
       <div class="gate__aside">
         <p class="gate__pitch">{{ labels?.headline || 'Almost there!\nLeave your contact details once and get access to all our content.' }}</p>
@@ -52,6 +60,18 @@ const emit = defineEmits<{ submit: [] }>()
 </template>
 
 <style scoped>
+/* The client's HubSpot form carries a required processing consent and an
+   optional marketing opt-in, and asked for both to be preserved, so the pop-up
+   collects them rather than consenting on the visitor's behalf. */
+.gate__check {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+.gate__check input { margin-top: 0.15em; accent-color: var(--c-blue); }
+
 .gate { display: grid; background: var(--c-neutral-300); color: var(--c-darkblue); }
 .gate__form { display: grid; grid-template-columns: minmax(0, 1fr) 245px; gap: 32px; padding: 24px; }
 .gate__fields { display: grid; align-content: start; gap: 14px; }
