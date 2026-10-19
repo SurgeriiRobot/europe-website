@@ -15,8 +15,16 @@ const { ready, open, consent, accept, reject, save: store, close, wantPreference
 // a separate dialog: there are only two switches, and one of them is fixed.
 const view = ref<'notice' | 'prefs' | 'saved'>('notice')
 const marketing = ref(false)
+// Waitak: pressing Cookie settings in the footer "will always push up the
+// cookie window rightside low", which is a fair complaint: a control at the
+// bottom of the page answering in the opposite corner is easy to miss. On a
+// first visit the card sits where the frame draws it; when someone asks for it
+// from the footer it comes up in the middle of the screen instead, over a
+// dimmed page, so the answer is where the question was.
+const recalled = ref(false)
 watch(open, (isOpen) => {
   if (!isOpen) return
+  recalled.value = wantPreferences.value
   view.value = wantPreferences.value ? 'prefs' : 'notice'
   wantPreferences.value = false
   marketing.value = consent.value === 'accepted'
@@ -35,10 +43,12 @@ function save() {
 </script>
 
 <template>
+  <div v-if="ready && open && recalled" class="cookies__scrim" aria-hidden="true" @click="close()" />
   <div
     v-if="ready && open"
     v-editable="blok"
     class="cookies"
+    :class="{ 'cookies--recalled': recalled }"
     role="dialog"
     aria-modal="false"
     aria-labelledby="cookie-title"
@@ -120,6 +130,25 @@ function save() {
   color: var(--c-ink, #03045e);
   box-shadow: 0 16px 48px rgb(3 4 94 / 16%);
 }
+/* Recalled from the footer: centred over a dimmed page, so it reads as the
+   answer to the click rather than something that appeared in a corner. */
+.cookies--recalled {
+  top: 50%;
+  right: auto;
+  bottom: auto;
+  left: 50%;
+  translate: -50% -50%;
+  box-shadow: 0 24px 64px rgb(3 4 94 / 28%);
+}
+/* The dim is its own element: inside the card it would sit above the card's
+   own background and tint the panel rather than the page. */
+.cookies__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 59;
+  background: rgb(31 39 57 / 55%);
+}
+
 .cookies__title {
   margin: 0 0 calc(27 / 14.4 * var(--sx));
   font-size: calc(16 / 14.4 * var(--sx));
