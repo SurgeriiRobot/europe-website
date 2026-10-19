@@ -23,8 +23,10 @@ export function useContentGate() {
     try { granted.value = localStorage.getItem(GRANT) === '1' } catch { /* private mode */ }
   })
 
+  // The address needs a real top level domain: wai@hot and wai@h.c both passed
+  // the looser test, which Waitak found while testing the pop-up.
   const valid = computed(() => lead.name.trim().length > 1
-    && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(lead.email.trim())
+    && /^[^@\s]+@[^@\s.]+(\.[^@\s.]+)*\.[A-Za-z]{2,}$/.test(lead.email.trim())
     && Boolean(lead.country))
 
   /** Open the gate for an item, skipping it if this visitor is already through. */

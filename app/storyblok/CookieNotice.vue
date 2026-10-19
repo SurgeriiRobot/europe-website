@@ -9,11 +9,11 @@
 // the LinkedIn Insight Tag. Plausible is cookieless and is never gated.
 const props = defineProps<{ blok: any }>()
 const sbHref = useSbUrl()
-const { ready, open, consent, accept, reject } = useConsent()
+const { ready, open, consent, accept, reject, save: store, close } = useConsent()
 
 // "Manage your preferences" opens the second face of the same card rather than
 // a separate dialog: there are only two switches, and one of them is fixed.
-const view = ref<'notice' | 'prefs'>('notice')
+const view = ref<'notice' | 'prefs' | 'saved'>('notice')
 const marketing = ref(false)
 watch(open, (isOpen) => {
   if (!isOpen) return
@@ -22,7 +22,15 @@ watch(open, (isOpen) => {
 })
 
 const policyHref = computed(() => sbHref(props.blok.policy_link))
-const save = () => (marketing.value ? accept() : reject())
+
+// The choice takes effect at once, but the card stays up long enough to say so
+// before it goes: losing the window the instant you press Save reads as though
+// nothing was saved.
+function save() {
+  store(marketing.value)
+  view.value = 'saved'
+  setTimeout(() => { if (view.value === 'saved') close() }, 2000)
+}
 </script>
 
 <template>
@@ -55,6 +63,12 @@ const save = () => (marketing.value ? accept() : reject())
           {{ blok.manage_label || 'Manage your preferences' }}
         </button>
       </div>
+    </template>
+
+    <template v-else-if="view === 'saved'">
+      <p class="cookies__saved">
+        {{ blok.saved_message || 'Your preferences have been saved.' }}
+      </p>
     </template>
 
     <template v-else>
@@ -141,6 +155,7 @@ const save = () => (marketing.value ? accept() : reject())
   text-decoration: underline;
   cursor: pointer;
 }
+.cookies__saved { margin: 0; font-size: calc(14 / 14.4 * var(--sx)); line-height: 1.2143; }
 .cookies__prefs { margin: 0; padding: 0; list-style: none; font-size: calc(14 / 14.4 * var(--sx)); }
 .cookies__pref + .cookies__pref { margin-top: calc(16 / 14.4 * var(--sx)); }
 .cookies__pref label { display: flex; gap: calc(12 / 14.4 * var(--sx)); align-items: flex-start; }

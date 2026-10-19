@@ -34,14 +34,14 @@ export function useConsent() {
     }
   })
 
-  function decide(value: Exclude<Consent, null>) {
+  function decide(value: Exclude<Consent, null>, close = true) {
     consent.value = value
     try {
       localStorage.setItem(KEY, value)
     } catch {
       // Private mode or blocked storage: the banner simply asks again.
     }
-    open.value = false
+    if (close) open.value = false
   }
 
   return {
@@ -50,6 +50,12 @@ export function useConsent() {
     open,
     accept: () => decide('accepted'),
     reject: () => decide('rejected'),
+    // Saving from the preferences panel keeps the card up for a moment so the
+    // choice is visibly confirmed. Waitak: "when pressing Save preferences you
+    // lose the cookies window. It feels like you lose the window and not
+    // accepted the cookie policies."
+    save: (marketing: boolean) => decide(marketing ? 'accepted' : 'rejected', false),
+    close: () => { open.value = false },
     reopen: () => { open.value = true },
   }
 }

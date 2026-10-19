@@ -1,5 +1,12 @@
 <script setup lang="ts">
 const props = defineProps<{ blok: any, modelValue?: any }>()
+
+// Waitak, testing the forms: "as long as it has an @ sign you can get it
+// approved", and wai@h.c passed. A browser's own email validation accepts an
+// address with no dot at all, so the field carries a pattern as well: something
+// before the @, something after it, a dot, and a top level domain of at least
+// two letters.
+const EMAIL_PATTERN = '[^@\\s]+@[^@\\s.]+(\\.[^@\\s.]+)*\\.[A-Za-z]{2,}'
 defineEmits<{ 'update:modelValue': [value: any] }>()
 
 // A select lists a datasource by slug. Without this the control held only its
@@ -68,6 +75,7 @@ const { data: choices } = await useAsyncData(
       v-else
       :id="blok.name"
       :type="blok.type || 'text'"
+      v-bind="blok.type === 'email' ? { pattern: EMAIL_PATTERN } : {}"
       :name="blok.name"
       :required="blok.required"
       :placeholder="blok.placeholder"

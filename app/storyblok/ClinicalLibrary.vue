@@ -636,6 +636,19 @@ button.lib__poster { cursor: pointer; }
      spilled past the foot of the dialog. Gated, the panel sizes to the form and
      the media's shape comes back when the content does. */
   .lib__dialog { width: calc(100vw - 32px); max-height: calc(100dvh - 32px); overflow-y: auto; }
+  /* Waitak: "no exit button for the pop-up in the mobile version". The frame
+     hangs the close mark above the panel, which on a phone puts it off the top
+     of the screen, since the dialog fills the viewport. Here it sits inside the
+     panel instead, over its own corner. */
+  .lib__close {
+    position: sticky;
+    z-index: 2;
+    top: 8px;
+    bottom: auto;
+    float: right;
+    margin: 8px 8px -40px 0;
+    color: var(--ink);
+  }
   .lib__pop-head { flex-direction: column; gap: 12px; padding: 16px; }
   .lib__pop-meta { justify-items: start; }
   .lib__pop-media--gated { aspect-ratio: auto; }

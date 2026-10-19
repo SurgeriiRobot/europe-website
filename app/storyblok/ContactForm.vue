@@ -17,6 +17,14 @@ const spacing = computed(() => ({
   '--connector-len': px(props.blok.connector_length),
 }))
 const values = reactive<Record<string, any>>({})
+// Waitak: "we might also need the send your message button to gray out until
+// all the contact input is correct". The browser already knows whether the form
+// is satisfiable, so the button follows its answer rather than a second set of
+// rules written here.
+const formEl = ref<HTMLFormElement>()
+const formValid = ref(false)
+const revalidate = () => { formValid.value = Boolean(formEl.value?.checkValidity()) }
+onMounted(revalidate)
 const state = ref<'idle' | 'sending' | 'sent' | 'error'>('idle')
 const error = ref('')
 
@@ -101,7 +109,7 @@ async function submit() {
         {{ blok.success_message || 'Thank you, we will be in touch shortly.' }}
       </p>
 
-      <form v-else class="form__grid" @submit.prevent="submit">
+      <form v-else ref="formEl" class="form__grid" @input="revalidate" @change="revalidate" @submit.prevent="submit">
         <StoryblokComponent
           v-for="field in fields"
           :key="field._uid"
@@ -116,7 +124,7 @@ async function submit() {
 
         <p v-if="error" class="form__error" role="alert">{{ error }}</p>
 
-        <button type="submit" class="form__submit" :disabled="state === 'sending'">
+        <button type="submit" class="form__submit" :disabled="state === 'sending' || !formValid">
           {{ state === 'sending' ? 'Sending…' : (blok.submit_label || 'Send your message') }}
         </button>
 
@@ -172,6 +180,9 @@ async function submit() {
 }
 .form__submit:disabled { opacity: 0.6; cursor: default; }
 .form__error { color: var(--c-red); }
+/* Greyed until every required field is satisfied, so the button says whether
+   the form is ready rather than only failing on press. */
+.form__submit:disabled { background: var(--c-neutral-400, #d7d9e0); color: #6b7080; cursor: not-allowed; }
 .form__success { text-align: center; font-size: var(--t-h5); }
 @media (max-width: 640px) { .form__grid { grid-template-columns: 1fr; } }
 /* The 848px desktop measure is held in --sx, which on a 390 phone collapses to
