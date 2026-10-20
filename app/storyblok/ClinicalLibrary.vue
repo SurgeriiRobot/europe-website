@@ -559,7 +559,9 @@ const promoHref = computed(() => {
   background: var(--c-white);
 }
 .lib__pop-headings { min-width: 0; }
-.lib__pop-title { margin: 0; font-size: 1.375rem; font-weight: 600; line-height: 1.2083; }   /* 22 */
+/* "Lobectomy/Segmentectomy" is one unbreakable word on a phone, and it pushed
+   the heading past its box and under the close mark. */
+.lib__pop-title { margin: 0; overflow-wrap: anywhere; font-size: 1.375rem; font-weight: 600; line-height: 1.2083; }   /* 22 */
 .lib__pop-body { margin: 10px 0 0; font-size: 1.125rem; font-weight: 300; line-height: 1.3; }
 .lib__pop-meta { flex: none; display: grid; justify-items: end; gap: 10px; }
 .lib__pop-tags { display: flex; gap: 7px; }
@@ -654,16 +656,22 @@ button.lib__poster { cursor: pointer; }
      hangs the close mark above the panel, which on a phone puts it off the top
      of the screen, since the dialog fills the viewport. Here it sits inside the
      panel instead, over its own corner. */
+  /* Waitak, 20 October: "exit button breaks the layout, should we place it
+     inside of the card?" The floated version escaped the header box and sat
+     over the title. It is pinned to the panel's own corner now, and the header
+     keeps its right side clear so nothing runs under it. */
   .lib__close {
-    position: sticky;
+    position: absolute;
     z-index: 2;
-    top: 8px;
+    top: 6px;
+    right: 6px;
     bottom: auto;
-    float: right;
-    margin: 8px 8px -40px 0;
+    float: none;
+    margin: 0;
     color: var(--ink);
   }
-  .lib__pop-head { flex-direction: column; gap: 12px; padding: 16px; }
+
+  .lib__pop-head { flex-direction: column; gap: 12px; padding: 16px 56px 16px 16px; }
   .lib__pop-meta { justify-items: start; }
   .lib__pop-media--gated { aspect-ratio: auto; }
   /* Gated, the panel is the whole of the media box, so the piece behind it is
