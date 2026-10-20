@@ -544,11 +544,13 @@ const promoHref = computed(() => {
 }
 .lib__close:hover { opacity: 0.8; }
 
-/* Waitak: "the item below the form should be shaded, so the card below the
-   form". The frame sits the gate on the dimmed page, not on the card's own
-   cover, so while the form is up the picture behind it is held back and only
-   comes forward once the content is unlocked. */
-.lib__pop-media--gated .lib__poster { opacity: 0.22; }
+/* Waitak, 20 October: "the idea is that the video or content is a layer below
+   the Form pop-up, and that it's blacked-out". The piece stays where it is and
+   a black wash goes over it, so the panel floats on the darkened picture
+   instead of standing in its place. The play control goes quiet with it: there
+   is nothing to play until the form is answered. */
+.lib__pop-media--gated .lib__poster { opacity: 0.55; }
+.lib__pop-media--gated .lib__poster-play { display: none; }
 
 .lib__pop-head {
   display: flex;
@@ -600,11 +602,14 @@ button.lib__poster { cursor: pointer; }
 .lib__frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 
 /* ---- the gate ---- */
+/* Gated, the form decides how tall the box is and the piece fills whatever
+   that comes to: a 16/9 box is shorter than the form at every width we draw,
+   so pinning the gate over a fixed box pushed it out of the bottom. */
+.lib__pop-media--gated { aspect-ratio: auto; }
+.lib__pop-media--gated .lib__poster { position: absolute; inset: 0; }
 .lib__gate {
-  position: absolute;
-  inset: 24px;
-  display: grid;
-  background: var(--c-neutral-300);
+  position: relative;
+  background: rgb(0 0 0 / 66%);
 }
 .lib__field input,
 .lib__field input:focus-visible,
@@ -673,11 +678,6 @@ button.lib__poster { cursor: pointer; }
 
   .lib__pop-head { flex-direction: column; gap: 12px; padding: 16px 56px 16px 16px; }
   .lib__pop-meta { justify-items: start; }
-  .lib__pop-media--gated { aspect-ratio: auto; }
-  /* Gated, the panel is the whole of the media box, so the piece behind it is
-     not on show above the form. */
-  .lib__pop-media--gated .lib__poster { display: none; }
-  .lib__gate { position: static; inset: auto; }
   .lib__pop-actions { padding: 16px; }
   .lib__pop-cta { flex: 1 1 auto; justify-content: center; }
 }

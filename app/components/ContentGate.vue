@@ -18,6 +18,7 @@ const emit = defineEmits<{ submit: [] }>()
 <template>
   <div class="gate">
     <form v-if="state !== 'thanks'" class="gate__form" @submit.prevent="emit('submit')">
+      <p class="gate__pitch">{{ labels?.headline || 'Almost there!\nLeave your contact details once and get access to all our content.' }}</p>
       <div class="gate__fields">
         <label class="gate__field">
           <span class="gate__label">{{ labels?.name || 'Full Name' }}*</span>
@@ -44,7 +45,6 @@ const emit = defineEmits<{ submit: [] }>()
         </label>
       </div>
       <div class="gate__aside">
-        <p class="gate__pitch">{{ labels?.headline || 'Almost there!\nLeave your contact details once and get access to all our content.' }}</p>
         <p class="gate__note">*{{ labels?.note || 'Mandatory Field' }}</p>
         <p v-if="error" class="gate__error">{{ error }}</p>
         <button type="submit" class="gate__submit" :disabled="!valid || state === 'sending'">
@@ -72,8 +72,22 @@ const emit = defineEmits<{ submit: [] }>()
 }
 .gate__check input { margin-top: 0.15em; accent-color: var(--c-blue); }
 
-.gate { display: grid; background: var(--c-neutral-300); color: var(--c-darkblue); }
-.gate__form { display: grid; grid-template-columns: minmax(0, 1fr) 245px; gap: 32px; padding: 24px; }
+/* Waitak, 20 October: the piece stays visible behind the form, blacked out,
+   and the panel floats on top of it rather than filling the box. So the gate
+   itself is only a centring layer now and the panel carries the background.
+   Where there is nothing behind it, as on the news listing, the layer is
+   invisible and the panel reads the same. */
+.gate { display: grid; place-items: center; padding: 24px; color: var(--c-darkblue); }
+/* "Almost there ..." sits above the first field rather than beside the
+   fields, which is the change he confirmed in the same message. */
+.gate__form {
+  display: grid;
+  gap: 20px;
+  width: min(100%, 520px);
+  padding: 24px;
+  border-radius: 4px;
+  background: var(--c-neutral-300);
+}
 .gate__fields { display: grid; align-content: start; gap: 14px; }
 .gate__field { display: grid; gap: 6px; }
 .gate__label { font-size: 0.875rem; font-weight: 600; line-height: 1.2; }
@@ -95,7 +109,7 @@ const emit = defineEmits<{ submit: [] }>()
 .gate__field select:valid { border-color: var(--c-green); }
 .gate__aside { display: grid; align-content: start; gap: 10px; }
 .gate__pitch { margin: 0; white-space: pre-line; font-size: 1.125rem; font-weight: 600; line-height: 1.3; }
-.gate__note { margin: 8px 0 0; font-size: 0.75rem; }
+.gate__note { margin: 0; font-size: 0.75rem; }
 .gate__error { margin: 0; font-size: 0.8125rem; color: var(--c-red); }
 .gate__submit {
   justify-self: start;
@@ -112,12 +126,24 @@ const emit = defineEmits<{ submit: [] }>()
 }
 .gate__submit:hover:not(:disabled) { background: var(--c-blue-500); }
 .gate__submit:disabled { opacity: 0.45; cursor: default; }
-.gate__thanks { display: grid; align-content: center; justify-items: center; gap: 12px; padding: 24px; text-align: center; }
+.gate__thanks {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 12px;
+  width: min(100%, 520px);
+  padding: 32px 24px;
+  border-radius: 4px;
+  background: var(--c-neutral-300);
+  text-align: center;
+}
 .gate__thanks-title { margin: 0; font-size: 2rem; font-weight: 600; line-height: 1.2083; }
 .gate__thanks-body { margin: 0; font-size: 1.125rem; font-weight: 300; line-height: 1.3; }
 
 @media (max-width: 720px) {
-  .gate__form { grid-template-columns: minmax(0, 1fr); gap: 20px; padding: 16px; }
+  .gate { padding: 0; }
+  .gate__form { gap: 16px; padding: 16px; border-radius: 0; }
+  .gate__thanks { border-radius: 0; }
   .gate__submit { justify-self: stretch; justify-content: center; text-align: center; }
 }
 </style>
