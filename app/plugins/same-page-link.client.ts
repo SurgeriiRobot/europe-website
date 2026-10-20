@@ -28,7 +28,10 @@ export default defineNuxtPlugin({
       if (link.origin !== location.origin) return
       // A link carrying a fragment or a query is asking for somewhere specific;
       // only a bare link to this same page is the one that looks broken.
-      if (link.hash || link.search) return
+      // Dropping a query is a real move too: the pager's "page 1" is a bare
+      // link to this same path from ?page=2, and the router handles it
+      // properly. Swallowing it left every listing stuck off page one.
+      if (link.hash || link.search || location.search) return
       const here = location.pathname.replace(/\/$/, '')
       const there = link.pathname.replace(/\/$/, '')
       if (here !== there) return
