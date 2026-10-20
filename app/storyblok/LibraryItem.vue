@@ -57,7 +57,7 @@ const ctaLabel = computed(() => (props.blok.cta ? ctaWord(props.blok.cta) : ''))
         </button>
       </h2>
       <p v-if="blok.excerpt" class="lcard__excerpt"><BrandText :text="blok.excerpt" :nowrap="false" /></p>
-      <span v-if="ctaLabel" class="lcard__more">{{ ctaLabel }}<span aria-hidden="true"> →</span></span>
+      <span v-if="ctaLabel" class="lcard__more">{{ ctaLabel }}<span aria-hidden="true"> →</span></span>
     </div>
 
     <div class="lcard__media" :class="{ 'lcard__media--play': isVideo }">

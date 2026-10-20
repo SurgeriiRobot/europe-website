@@ -438,7 +438,7 @@ const promoHref = computed(() => {
 
 .lib__grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: calc(2.08 * var(--sx));                 /* 30 */
   margin-top: calc(2.78 * var(--sx));          /* 40 */
 }
@@ -447,7 +447,7 @@ const promoHref = computed(() => {
    everything between them runs two columns. */
 .lib__grid > * { min-width: 0; }
 @media (max-width: 1180px) {
-  .lib__grid { grid-template-columns: repeat(2, 1fr); }
+  .lib__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 /* Promo panel: solid brand blue, everything centred, the same 398px as a card. */

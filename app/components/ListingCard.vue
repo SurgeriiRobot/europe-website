@@ -80,7 +80,7 @@ const ctaLabel = computed(() => (content.value?.cta ? ctaWord(content.value.cta)
       </p>
       <h2 class="lcard__title">{{ content.title || story.name }}</h2>
       <p class="lcard__excerpt">{{ content.excerpt }}</p>
-      <span v-if="ctaLabel" class="lcard__more">{{ ctaLabel }}<span aria-hidden="true"> →</span></span>
+      <span v-if="ctaLabel" class="lcard__more">{{ ctaLabel }}<span aria-hidden="true"> →</span></span>
     </div>
     <img
       v-if="content.image?.filename"
@@ -115,18 +115,23 @@ const ctaLabel = computed(() => (content.value?.cta ? ctaWord(content.value.cta)
   padding: 21px 20px 20px;
 }
 
-/* Date and chips share one 28px row: the chip height sets it, and centring both
-   puts the 12px date's baseline within a pixel of the 13px chip label's. */
+/* The chip height sets the row, and centring both puts the 12px date's
+   baseline within a pixel of the 13px chip label's.
+   The date opposite its chips, as the design draws it, but the translated
+   words are longer than the English: "14. Oktober 2026" beside "Veranstaltung"
+   and a specialty will not sit on one 256px line. It wraps rather than running
+   out of the card. */
 .lcard__meta {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  height: 28px;
+  gap: 8px 12px;
+  min-height: 28px;
   margin: 0;
 }
 .lcard__date { font-size: 0.75rem; font-weight: 400; line-height: 1.2; white-space: nowrap; }
-.lcard__tags { display: flex; gap: 6px; }
+.lcard__tags { display: flex; flex-wrap: wrap; gap: 6px; }
 .lcard__tag {
   display: inline-flex;
   align-items: center;

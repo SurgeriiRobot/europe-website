@@ -439,7 +439,12 @@ const entryName = (slug: string, value: string) =>
 /* ---- grid ------------------------------------------------------------- */
 .listing__grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  /* `1fr` keeps an `auto` minimum, so one long word in a card widened its
+     column and took the width off the others: in German the four came out
+     388, 329, 354 and 225 instead of equal. `minmax(0, 1fr)` holds the
+     columns level and lets the copy wrap, which is what keeps the pictures of
+     a row on one line. */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 30px;
   margin-top: 40px;
 }
@@ -525,7 +530,7 @@ const entryName = (slug: string, value: string) =>
 
 /* Two columns once four no longer fit the design's 300px cards. */
 @media (max-width: 1180px) {
-  .listing__grid { grid-template-columns: repeat(2, 1fr); }
+  .listing__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 /* Phone modules: both controls run the full width between the 16px gutters,
