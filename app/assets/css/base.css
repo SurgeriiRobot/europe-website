@@ -7,6 +7,13 @@ html { -webkit-text-size-adjust: 100%; }
 /* Watermarks and edge-to-edge hairlines deliberately overhang the viewport. */
 html, body { overflow-x: clip; }
 
+/* A modal holds the page still. Chrome lets the page behind a dialog keep
+   scrolling, which on a phone drags the page out from under the panel and
+   leaves the filter bar and carousel arrows sitting beside it. The gutter is
+   reserved either way so locking it does not shift the layout sideways. */
+html { scrollbar-gutter: stable; }
+html:has(dialog[open]) { overflow-y: hidden; }
+
 body {
   margin: 0;
   background: var(--c-white);
