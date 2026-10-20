@@ -72,6 +72,10 @@ export function useContentGate() {
           website_page_url: import.meta.client ? window.location.href : undefined,
           website_language: siteLanguage(language.value),
           website_form_source: 'content_download',
+          // The client added this property on 20 October so a download is not
+          // anonymous: the page address cannot say which item was asked for,
+          // because every library item is requested from the same page.
+          requested_content: item,
         }, {
           consent: true,
           marketing: lead.marketing,

@@ -34,6 +34,12 @@ const date = computed(() => {
 const label = useVocabulary(['library-kinds', 'medical-specialties'])
 const tags = computed(() => [props.blok.kind, props.blok.specialty].filter(Boolean).map(label))
 const image = computed(() => props.blok.image)
+
+// Clinical Library item 5, the mini CTA. It sits at the end of the copy block
+// and is never typed into the text; the whole card is already the click target,
+// so this is a cue rather than a second link.
+const ctaWord = useVocabulary(['card-ctas'])
+const ctaLabel = computed(() => (props.blok.cta ? ctaWord(props.blok.cta) : ''))
 </script>
 
 <template>
@@ -51,6 +57,7 @@ const image = computed(() => props.blok.image)
         </button>
       </h2>
       <p v-if="blok.excerpt" class="lcard__excerpt"><BrandText :text="blok.excerpt" :nowrap="false" /></p>
+      <span v-if="ctaLabel" class="lcard__more">{{ ctaLabel }}<span aria-hidden="true"> →</span></span>
     </div>
 
     <div class="lcard__media" :class="{ 'lcard__media--play': isVideo }">
@@ -156,6 +163,9 @@ const image = computed(() => props.blok.image)
   -webkit-line-clamp: 2;
   line-clamp: 2;
 }
+/* The card's own link, picked from the vocabulary. Part of the card rather than
+   part of the copy, so it lines up whatever the excerpt does. */
+.lcard__more { margin-top: auto; padding-top: 12px; font-weight: 600; color: var(--c-blue); }
 
 .lcard__media {
   position: relative;

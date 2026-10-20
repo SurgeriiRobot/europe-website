@@ -54,6 +54,13 @@ const tags = computed(() =>
     .slice(0, 2)
     .map(label),
 )
+
+// Waitak, on the card link: "client will need to be able to checkmark which CTA
+// they will need for what content". The wording is picked from a vocabulary, so
+// it arrives already translated and the card itself stays the click target: the
+// label is a cue rather than a second link.
+const ctaWord = useVocabulary(['card-ctas'])
+const ctaLabel = computed(() => (content.value?.cta ? ctaWord(content.value.cta) : ''))
 </script>
 
 <template>
@@ -73,6 +80,7 @@ const tags = computed(() =>
       </p>
       <h2 class="lcard__title">{{ content.title || story.name }}</h2>
       <p class="lcard__excerpt">{{ content.excerpt }}</p>
+      <span v-if="ctaLabel" class="lcard__more">{{ ctaLabel }}<span aria-hidden="true"> →</span></span>
     </div>
     <img
       v-if="content.image?.filename"
@@ -154,6 +162,9 @@ const tags = computed(() =>
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
+/* The card's own link, picked from the vocabulary. Part of the card rather than
+   part of the copy, so it lines up whatever the excerpt does. */
+.lcard__more { margin-top: auto; padding-top: 12px; font-weight: 600; color: var(--c-blue); }
 
 .lcard__media {
   flex: none;
