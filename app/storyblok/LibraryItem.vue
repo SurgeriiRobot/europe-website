@@ -212,6 +212,12 @@ const ctaLabel = computed(() => (props.blok.cta ? ctaWord(props.blok.cta) : ''))
 .lcard:has(.lcard__link--btn:focus-visible) { outline: 2px solid var(--c-blue); outline-offset: 2px; }
 .lcard__link--btn:focus-visible { outline: none; }
 
+/* The whole card is the click target, so the whole card answers the pointer,
+   the way the News & events cards already do and the way the keyboard outline
+   above already does. Underlining the title alone made the card look as though
+   only its heading could be clicked. */
+.lcard:hover .lcard__text { background: #ededf1; }
+
 /* Figma wraps the 300px card's text at 259px where the browser measures 260, and
    its text sets about 1% narrower than ours; 257px is the measure that
    reproduces every line break the design draws. It only applies where the grid
