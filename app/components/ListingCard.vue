@@ -99,16 +99,19 @@ const ctaLabel = computed(() => (content.value?.cta ? ctaWord(content.value.cta)
 .lcard {
   display: flex;
   flex-direction: column;
-  height: 398px;
+  min-height: 398px;
   background: #f4f4f4;                 /* the design's card grey */
   color: var(--c-darkblue);
   text-decoration: none;
 }
 /* 210px of text: 21 above the meta row, 23 to the title, 22 to the excerpt and
-   20 left under it before the photograph. */
+   20 left under it before the photograph. A card that carries a link needs one
+   more line than the frame drew, so the block is a minimum rather than a fixed
+   height and the picture is pushed to the foot. Waitak: "the CTA is too big, we
+   will need to adjust the CTA or the card to make everything fit." */
 .lcard__text {
   flex: none;
-  height: 210px;
+  min-height: 210px;
   padding: 21px 20px 20px;
 }
 
@@ -164,11 +167,12 @@ const ctaLabel = computed(() => (content.value?.cta ? ctaWord(content.value.cta)
 }
 /* The card's own link, picked from the vocabulary. Part of the card rather than
    part of the copy, so it lines up whatever the excerpt does. */
-.lcard__more { margin-top: auto; padding-top: 12px; font-weight: 600; color: var(--c-blue); }
+.lcard__more { display: block; margin-top: 10px; font-weight: 600; color: var(--c-blue); }
 
 .lcard__media {
   flex: none;
   width: 100%;
+  margin-top: auto;              /* sits at the foot however tall the copy runs */
   /* The design's 300x188 picture, kept as a ratio rather than a fixed height.
      At 188px tall a card stretched to a 358px phone became 1.90:1 against the
      1.57:1 artwork, so `cover` ate the bottom of every image. */

@@ -165,7 +165,7 @@ const ctaLabel = computed(() => (props.blok.cta ? ctaWord(props.blok.cta) : ''))
 }
 /* The card's own link, picked from the vocabulary. Part of the card rather than
    part of the copy, so it lines up whatever the excerpt does. */
-.lcard__more { margin-top: auto; padding-top: 12px; font-weight: 600; color: var(--c-blue); }
+.lcard__more { display: block; margin-top: 10px; font-weight: 600; color: var(--c-blue); }
 
 .lcard__media {
   position: relative;

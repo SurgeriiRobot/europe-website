@@ -133,6 +133,8 @@ async function submit() {
           <StoryblokRichText :document="blok.consent_text" />
         </div>
 
+        <p class="form__mandatory caption">{{ props.blok.mandatory_note || '*Mandatory field' }}</p>
+
         <p v-if="error" class="form__error" role="alert">{{ error }}</p>
 
         <button type="submit" class="form__submit" :disabled="state === 'sending' || !formValid">
@@ -191,6 +193,10 @@ async function submit() {
 }
 .form__submit:disabled { opacity: 0.6; cursor: default; }
 .form__error { color: var(--c-red); }
+/* Waitak: "we will need a *mandatory indicator, also at the I agree". The
+   asterisk is on every required field now, including the consent box, and this
+   says what it means. */
+.form__mandatory { grid-column: 1 / -1; margin: 0; }
 /* Greyed until every required field is satisfied, so the button says whether
    the form is ready rather than only failing on press. */
 .form__submit:disabled { background: var(--c-neutral-400, #d7d9e0); color: #6b7080; cursor: not-allowed; }

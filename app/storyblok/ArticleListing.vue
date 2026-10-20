@@ -452,7 +452,10 @@ const entryName = (slug: string, value: string) =>
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 398px;
+  /* The cards grew when they gained a link, and a fixed height left this panel
+     short of its row, which reads as a double gap underneath it. It matches the
+     row now. Waitak: "after the Book Now banner the spacing now doubles". */
+  min-height: 398px;
   /* The design's block is not quite centred: 61px of air above it, 53 below. */
   padding: 28px 20px 20px;
   background: var(--c-blue);

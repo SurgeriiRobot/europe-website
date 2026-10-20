@@ -63,7 +63,7 @@ const { data: choices } = await useAsyncData(
         :checked="Boolean(modelValue)"
         @change="$emit('update:modelValue', ($event.target as HTMLInputElement).checked)"
       >
-      <span>{{ blok.label }}</span>
+      <span>{{ blok.label }}<span v-if="blok.required" aria-hidden="true">*</span></span>
     </label>
 
     <input
