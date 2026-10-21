@@ -331,14 +331,19 @@ const entryName = (slug: string, value: string) =>
 </template>
 
 <style scoped>
-/* The gate sits in the middle of the page, the width the pop-up frame draws. */
+/* The gate sits in the middle of the page, the width of the panel itself.
+   On the library the gate is a layer over the blacked-out piece, so it is
+   wider than its panel and insets it. Here there is nothing behind it, so the
+   dialog is the panel: anything wider and the close mark, which hangs off this
+   box, floats away from the corner it belongs to. */
 .listing__gate-dialog {
-  width: min(840px, calc(100vw - 32px));
+  width: min(520px, calc(100vw - 32px));
   padding: 0;
   border: 0;
   background: none;
   overflow: visible;
 }
+.listing__gate-dialog :deep(.gate) { padding: 0; }
 .listing__gate-dialog::backdrop { background: rgb(31 39 57 / 72%); }
 .listing__gate-wrap { position: relative; }
 .listing__gate-close {
