@@ -140,6 +140,7 @@ const openHref = computed(() => {
   const l = playing.value?.link
   return l && (l.cached_url || l.url || l.story?.full_slug) ? sbHref(l) : null
 })
+const openExternal = computed(() => /^https?:\/\//.test(openHref.value || ''))
 const openTags = computed(() => [playing.value?.kind, playing.value?.specialty]
   .filter(Boolean)
   .map((v: string) => label(v)))
@@ -386,6 +387,12 @@ const promoHref = computed(() => {
         <div v-if="gateState === 'open' && (openDoc || openHref)" class="lib__pop-actions">
           <a v-if="openDoc" :href="openDoc" class="lib__pop-cta" download target="_blank" rel="noopener">
             {{ blok.download_label || 'Download' }}
+          </a>
+          <!-- An article on someone else's site opens in its own tab, as the
+               News & events cards already do. Replacing this page with it read
+               as the link being broken. -->
+          <a v-else-if="openExternal" :href="openHref!" class="lib__pop-cta" target="_blank" rel="noopener">
+            {{ blok.read_label || 'Read more' }}
           </a>
           <NuxtLink v-else-if="openHref" :to="openHref" class="lib__pop-cta">
             {{ blok.read_label || 'Read more' }}

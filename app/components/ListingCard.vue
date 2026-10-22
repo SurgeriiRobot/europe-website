@@ -148,14 +148,17 @@ const ctaLabel = computed(() => (content.value?.cta ? ctaWord(content.value.cta)
 
 /* Fixed two-line blocks: a one-line title still leaves the excerpt and the photo
    where the design puts them. */
+/* The client, on the news headlines: "the line spacing is larger than in the
+   Clinical Library articles, let's keep it consistent". The library sets 19 on
+   16; the same ratio on this card's 18px gives the two lines a tighter set. */
 .lcard__title {
   display: -webkit-box;
-  height: 58px;
+  height: 2.375em;                  /* two lines at 1.1875 */
   margin: 23px 0 0;
   overflow: hidden;
   font-size: 1.125rem;
   font-weight: 600;
-  line-height: 29px;
+  line-height: 1.1875;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
