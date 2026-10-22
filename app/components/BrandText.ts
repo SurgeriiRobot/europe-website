@@ -42,7 +42,7 @@ export default defineComponent({
     const words = (chunk: string): (string | VNode)[] =>
       props.nowrap
         ? chunk.split(/(\s+)/).flatMap(word =>
-            /\p{L}-\p{L}/u.test(word) ? [h('span', { class: 'brand-nowrap' }, marks(word))] : marks(word))
+            /\p{L}-\p{L}/u.test(word) && word.length <= 14 ? [h('span', { class: 'brand-nowrap' }, marks(word))] : marks(word))
         : marks(chunk)
 
     // An absolute URL leaves the site, so it opens in a new tab and carries the

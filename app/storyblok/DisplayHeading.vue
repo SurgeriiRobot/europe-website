@@ -219,8 +219,31 @@ const accentWord = computed(() => ` ${String(props.blok.accent || '').trim() ===
    second and fifth lines; the shot 663px wide from x-43. */
 @media (max-width: 720px) {
   .display { padding-top: 73px; }
-  .display__heading { width: 59vw; font-size: clamp(2.5rem, 13.33vw, 3.25rem); line-height: 1; text-align: center; }
-  .display__line--1, .display__line--2 { justify-self: center; }
+  /* The 230px measure is tuned to the English words and stays. German
+     compounds are far longer and ran 318px past it, because a grid item keeps
+     an `auto` minimum and so refuses to shrink below its longest word.
+     `min-width: 0` lets the line shrink, and the page is marked with its
+     language, so `hyphens: auto` breaks the compound where German would. */
+  .display__heading {
+    width: 59vw;
+    font-size: clamp(2.5rem, 13.33vw, 3.25rem);
+    line-height: 1;
+    text-align: center;
+    hyphens: auto;
+    overflow-wrap: break-word;
+  }
+  .display__line { min-width: 0; }
+  /* `center` sizes a grid item to its content, so the line had no width
+     to wrap against and simply hung over both edges. Stretching it to the
+     column and centring the text instead reads the same in English. */
+  .display__line--1, .display__line--2 { justify-self: stretch; }
+  /* German compounds do not fit a 230px measure at this size, and break
+     mid-word when forced. The language gets the full gutter and a smaller
+     setting so the words stay whole; every other language keeps the design. */
+  .display__heading:lang(de) {
+    width: calc(100vw - 32px);
+    font-size: clamp(1.625rem, 8.2vw, 2.25rem);
+  }
   .display__line--2 { margin-top: 0; line-height: 1; }
   .display__accent { display: block; font-family: var(--font-display); font-size: 1em; line-height: 1; }
   .display__line--1 .display__text::after, .display__accent::before { display: none; }
