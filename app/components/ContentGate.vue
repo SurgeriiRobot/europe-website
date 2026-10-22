@@ -13,48 +13,59 @@ defineProps<{
 }>()
 const lead = defineModel<{ name: string, email: string, country: string, consent: boolean, marketing: boolean }>({ required: true })
 const emit = defineEmits<{ submit: [] }>()
+
+// The pop-up read English on all four translated sites, the consent sentence
+// included. The client's approved wording (Merel, 21 October) lives in the
+// `form-copy` vocabulary, which carries a value per language, so a passed-in
+// label still wins and nothing here is guessed.
+const word = useVocabulary(['form-copy'])
+const say = (key: string, given: string | undefined, fallback: string) => {
+  if (given) return given
+  const v = word(key)
+  return v && v !== key ? v : fallback
+}
 </script>
 
 <template>
   <div class="gate">
     <form v-if="state !== 'thanks'" class="gate__form" @submit.prevent="emit('submit')">
-      <p class="gate__pitch">{{ labels?.headline || 'Almost there!\nLeave your contact details once and get access to all our content.' }}</p>
+      <p class="gate__pitch">{{ say('gate-headline', labels?.headline, 'Almost there!\nLeave your contact details once and get access to all our content.') }}</p>
       <div class="gate__fields">
         <label class="gate__field">
-          <span class="gate__label">{{ labels?.name || 'Full Name' }}*</span>
+          <span class="gate__label">{{ say('gate-name', labels?.name, 'Full Name') }}*</span>
           <input v-model="lead.name" type="text" name="name" autocomplete="name" required>
         </label>
         <label class="gate__field">
-          <span class="gate__label">{{ labels?.email || 'Professional Email' }}*</span>
+          <span class="gate__label">{{ say('gate-email', labels?.email, 'Professional Email') }}*</span>
           <input v-model="lead.email" type="email" name="email" autocomplete="email" required>
         </label>
         <label class="gate__field">
           <span class="gate__label">{{ labels?.country || 'Country' }}*</span>
           <select v-model="lead.country" name="country" required>
-            <option value="" disabled>{{ labels?.country || 'Country' }}</option>
+            <option value="" disabled>{{ say('gate-country', labels?.country, 'Country') }}</option>
             <option v-for="c in countries" :key="c.value" :value="c.value">{{ c.name }}</option>
           </select>
         </label>
         <label class="gate__check">
           <input v-model="lead.consent" type="checkbox" required>
-          <span>{{ labels?.consent || GATE_CONSENT_TEXT }}*</span>
+          <span>{{ say('gate-consent', labels?.consent, GATE_CONSENT_TEXT) }}*</span>
         </label>
         <label class="gate__check">
           <input v-model="lead.marketing" type="checkbox">
-          <span>{{ labels?.marketing || GATE_MARKETING_TEXT }}</span>
+          <span>{{ say('gate-marketing', labels?.marketing, GATE_MARKETING_TEXT) }}</span>
         </label>
       </div>
       <div class="gate__aside">
-        <p class="gate__note">*{{ labels?.note || 'Mandatory Field' }}</p>
+        <p class="gate__note">*{{ say('gate-note', labels?.note, 'Mandatory Field') }}</p>
         <p v-if="error" class="gate__error">{{ error }}</p>
         <button type="submit" class="gate__submit" :disabled="!valid || state === 'sending'">
-          {{ state === 'sending' ? '…' : (labels?.submit || 'Get access') }}
+          {{ state === 'sending' ? '…' : say('gate-submit', labels?.submit, 'Get access') }}
         </button>
       </div>
     </form>
     <div v-else class="gate__thanks">
-      <p class="gate__thanks-title">{{ labels?.thanksTitle || 'Thank you!' }}</p>
-      <p class="gate__thanks-body">{{ labels?.thanksBody || 'Your content will be available in a few seconds.' }}</p>
+      <p class="gate__thanks-title">{{ say('gate-thanks-title', labels?.thanksTitle, 'Thank you!') }}</p>
+      <p class="gate__thanks-body">{{ say('gate-thanks-body', labels?.thanksBody, 'Your content will be available in a few seconds.') }}</p>
     </div>
   </div>
 </template>

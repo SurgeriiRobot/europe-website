@@ -3,6 +3,13 @@ const props = defineProps<{ blok: any }>()
 
 const fields = computed(() => props.blok.fields || [])
 
+// The note under the form read English on every translated site.
+const formWord = useVocabulary(['form-copy'])
+const mandatoryWord = computed(() => {
+  const v = formWord('form-mandatory-note')
+  return v && v !== 'form-mandatory-note' ? v : 'Mandatory field'
+})
+
 // The schema offers the usual section spacing, but nothing read it, so the band
 // kept base.css's 96px block padding whatever the story said. Desktop values
 // are authored as px at 1440 and scale with --sx; the phone ones are real px.
@@ -133,7 +140,7 @@ async function submit() {
           <StoryblokRichText :document="blok.consent_text" />
         </div>
 
-        <p class="form__mandatory caption">{{ props.blok.mandatory_note || '*Mandatory field' }}</p>
+        <p class="form__mandatory caption">{{ props.blok.mandatory_note || `*${mandatoryWord}` }}</p>
 
         <p v-if="error" class="form__error" role="alert">{{ error }}</p>
 
