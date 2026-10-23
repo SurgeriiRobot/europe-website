@@ -263,6 +263,10 @@ const mediaWidth = computed(() => `calc(${(widthPx.value / 14.4).toFixed(2)} * m
   .mrow__frame { flex: auto; width: 100%; max-width: 100%; }
   .mrow__video { width: 100%; }
   .mrow__title { font-size: clamp(2.25rem, 12.3vw, 3rem); }
+  /* 48px holds the English words on a 358px phone measure but not the
+     longer compounds: "Allgemeinchirurgie" needed 432px. These languages
+     set smaller so the words stay whole rather than breaking. */
+  .mrow__title:lang(de), .mrow__title:lang(it), .mrow__title:lang(es) { font-size: clamp(1.625rem, 8.8vw, 3rem); }
   .mrow__title::before { display: none; }
   /* `phone_layout` has been in the schema and in the content since these pages
      were built but nothing read it. `media-first` puts the picture above the

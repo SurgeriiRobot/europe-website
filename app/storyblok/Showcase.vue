@@ -292,7 +292,10 @@ useSwipe(root, { prev: () => go(leftIndex.value, 'prev'), next: () => go(rightIn
   .showcase__nav { bottom: 0; font-size: 1.125rem; gap: 8px; }
   .showcase__nav--prev { left: 12px; }
   .showcase__nav--next { right: 12px; }
-  .showcase__nav span { max-width: 36vw; }
+  .showcase__nav span { max-width: 39vw; }
+  /* "Instrumentenwagen" is one word and cannot wrap, so it sets smaller
+     rather than running past the link's share of the row. */
+  .showcase__nav:lang(de) span { font-size: 0.9375rem; }
   /* Waitak: "for the landing page carousel there is no choice, we need to
      lessen the font size". German product names are one long compound and
      broke mid-word at the drawn size. */
