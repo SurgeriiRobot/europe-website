@@ -50,7 +50,7 @@ const spacing = computed(() => ({
     :style="spacing"
   >
     <SectionConnector :connector="blok.connector" />
-    <p class="wmband__word display-word" aria-hidden="true">{{ blok.word }}</p>
+    <p class="wmband__word display-word" :style="{ '--wm-chars': String((blok.word || '').length) }" aria-hidden="true">{{ blok.word }}</p>
   </section>
 </template>
 
@@ -68,7 +68,9 @@ const spacing = computed(() => ({
   width: max-content;
   margin: 0 0 0 50%;
   translate: -50% 0;
-  font-size: calc(17.5 * var(--sx));
+  /* Sized to the word as well as the viewport, so a longer translation is
+     cut in the same proportion the English is rather than vanishing. */
+  font-size: min(calc(17.5 * var(--sx)), calc(252vw / var(--wm-chars, 12) * 0.0694 * 12));
   line-height: 1;
   text-align: center;
   white-space: pre-line;
@@ -82,7 +84,7 @@ const spacing = computed(() => ({
   /* The wash itself is in base.css: one measured ramp serves every width, and
      --wash-band-h there has to keep matching the height this block sets. */
 
-  .wmband__word { width: auto; margin: 0; translate: none; font-size: 15.9vw; white-space: normal; }
+  .wmband__word { width: auto; margin: 0; translate: none; font-size: min(15.9vw, calc(191vw / var(--wm-chars, 12))); white-space: normal; }
 
   /* Key figures is the only band in the space that fades to grey, and the phone
      frame sets its word half again as large, so it breaks over two lines of its
@@ -92,6 +94,6 @@ const spacing = computed(() => ({
      82 between the two baselines, which is 81.7px Lora on a 1 line-height. The
      167 above its ink is the frame's too, and leaves 159 of padding. */
   .wmband--fade-to-grey { --wm-top-m: 159px; }
-  .wmband--fade-to-grey .wmband__word { font-size: 20.95vw; }
+  .wmband--fade-to-grey .wmband__word { font-size: min(20.95vw, calc(251vw / var(--wm-chars, 12))); }
 }
 </style>

@@ -60,7 +60,7 @@ const style = computed(() => ({
     :style="style"
   >
     <SectionConnector :connector="blok.connector" />
-    <p v-if="watermarkAbove" class="statement__watermark statement__watermark--above display-word" aria-hidden="true">{{ blok.watermark }}</p>
+    <p v-if="watermarkAbove" class="statement__watermark statement__watermark--above display-word" :style="{ '--wm-chars': String((blok.watermark || '').length) }" aria-hidden="true">{{ blok.watermark }}</p>
     <div class="container statement__inner">
       <SectionTitle :headline="blok.headline" :body="blok.body" :lines="blok.title_lines" />
       <span v-if="bracket" class="statement__bracket" aria-hidden="true" />
@@ -68,7 +68,7 @@ const style = computed(() => ({
         <StoryblokComponent v-for="button in blok.buttons" :key="button._uid" :blok="button" />
       </div>
     </div>
-    <p v-if="blok.watermark && !watermarkAbove" class="statement__watermark display-word" aria-hidden="true">{{ blok.watermark }}</p>
+    <p v-if="blok.watermark && !watermarkAbove" class="statement__watermark display-word" :style="{ '--wm-chars': String((blok.watermark || '').length) }" aria-hidden="true">{{ blok.watermark }}</p>
     <template v-if="dark">
       <span class="statement__gutter statement__gutter--top" aria-hidden="true" />
       <span class="statement__gutter statement__gutter--bottom" aria-hidden="true" />
@@ -113,7 +113,11 @@ const style = computed(() => ({
   /* vw rather than --sx: see the --above variant below. The same bleed, and
      the same cap, which left Home's "Key features" 215px short of the right
      edge at 1920 instead of running off it. */
-  font-size: 17.5vw;                               /* 252 at 1440 */
+  /* The word is meant to be cut by both edges, but the size was fixed while
+     the word was not: English "Key features" showed 97% of itself and the
+     German, 26 characters of it, showed 43%. 210/chars lands on exactly
+     17.5vw at the English length and eases off for anything longer. */
+  font-size: min(17.5vw, calc(210vw / var(--wm-chars, 12)));
   color: #f4f4f4;
   opacity: 0.375;
   pointer-events: none;
@@ -219,7 +223,7 @@ const style = computed(() => ({
   .statement__watermark {
     bottom: 20vw;                                                     /* 78 */
     width: 100%;
-    font-size: 25.64vw;                                               /* 100px */
+    font-size: min(25.64vw, calc(308vw / var(--wm-chars, 12)));        /* 100px at the English length */
     line-height: 1;
     white-space: normal;
     text-align: center;

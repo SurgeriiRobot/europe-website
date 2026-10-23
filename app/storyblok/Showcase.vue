@@ -231,7 +231,10 @@ useSwipe(root, { prev: () => go(leftIndex.value, 'prev'), next: () => go(rightIn
 /* The two links are pinned to opposite edges and grew toward each other, so a
    pair of long translated names met in the middle. The label wraps instead and
    the button grows upward from its pinned foot. */
-.showcase__nav span { max-width: calc(13.9 * var(--sx)); text-align: start; }
+/* The hairline starts at a fixed x that assumed the English label ended
+   before it. "Instrumentenwagen" reached past it, so the rule ran through
+   the words. The label stops short of where the rule begins. */
+.showcase__nav span { max-width: calc(11.4 * var(--sx)); text-align: start; }
 .showcase__nav--next span { text-align: end; }
 /* A hairline on each side, running from the label toward the product. */
 .showcase__rule {
