@@ -244,15 +244,24 @@ useSwipe(root, { prev: () => go(leftIndex.value, 'prev'), next: () => go(rightIn
 .showcase__rule--next { left: calc(var(--frame-x) + 70.42 * var(--sx)); width: calc(12.22 * var(--sx)); }   /* 1014-1190 */
 
 .showcase__text { padding-top: 120px; }
-.showcase__copies { display: grid; }
-.showcase__copies > * { grid-area: 1 / 1; }
-.showcase__copy { display: grid; align-content: start; justify-items: center; gap: 24px; }
+/* The copies are stacked in one grid cell, and a grid item keeps an `auto`
+   minimum, so the widest slide set the block's width. In German that reached
+   the 453px measure below on a 390px phone and the copy ran off both edges. */
+.showcase__copies { display: grid; min-width: 0; }
+.showcase__copies > * { grid-area: 1 / 1; min-width: 0; }
+.showcase__copy { display: grid; align-content: start; justify-items: center; gap: 24px; min-width: 0; }
+/* `center` sizes each child to its content, so a single long German word
+   made the heading wider than the column it sits in. */
+.showcase__copy > * { max-width: 100%; }
 .showcase__copy--sizer { visibility: hidden; }
 .showcase-text-enter-active { transition: opacity 280ms ease, transform 360ms cubic-bezier(0.22, 1, 0.36, 1); }
 .showcase-text-leave-active { transition: opacity 160ms ease; }
 .showcase-text-enter-from { opacity: 0; transform: translateY(8px); }
 .showcase-text-leave-to { opacity: 0; }
-.showcase__text :deep(.sec-title) { max-width: 453px; }
+/* `min-width: auto` on a grid item beats max-width, so the heading held its
+   longest word's width and overran the column. */
+.showcase__text :deep(.sec-title) { max-width: min(453px, 100%); min-width: 0; }
+.showcase__text :deep(.sec-title) > * { min-width: 0; }
 .showcase__more { color: var(--c-blue); font-weight: 500; }
 
 /* Outgoing and incoming slides overlap (both are absolutely placed), so the
@@ -284,6 +293,10 @@ useSwipe(root, { prev: () => go(leftIndex.value, 'prev'), next: () => go(rightIn
   .showcase__nav--prev { left: 12px; }
   .showcase__nav--next { right: 12px; }
   .showcase__nav span { max-width: 36vw; }
+  /* Waitak: "for the landing page carousel there is no choice, we need to
+     lessen the font size". German product names are one long compound and
+     broke mid-word at the drawn size. */
+  .showcase__text :deep(.sec-title__h):lang(de) { font-size: clamp(1.625rem, 8.2vw, 2.25rem); }
   .showcase__rule { display: none; }
   .showcase__text { padding-top: 36px; }
 }
