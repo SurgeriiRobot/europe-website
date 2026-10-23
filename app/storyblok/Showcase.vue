@@ -228,6 +228,11 @@ useSwipe(root, { prev: () => go(leftIndex.value, 'prev'), next: () => go(rightIn
 /* Offsets are from the centred 1440 frame, so wide screens keep the layout. */
 .showcase__nav--prev { left: calc(var(--frame-x) + 4.74 * var(--sx)); }
 .showcase__nav--next { right: calc(var(--frame-x) + 2.65 * var(--sx)); }
+/* The two links are pinned to opposite edges and grew toward each other, so a
+   pair of long translated names met in the middle. The label wraps instead and
+   the button grows upward from its pinned foot. */
+.showcase__nav span { max-width: calc(13.9 * var(--sx)); text-align: start; }
+.showcase__nav--next span { text-align: end; }
 /* A hairline on each side, running from the label toward the product. */
 .showcase__rule {
   position: absolute;
@@ -275,9 +280,10 @@ useSwipe(root, { prev: () => go(leftIndex.value, 'prev'), next: () => go(rightIn
      which leaves the letterforms readable under it as the phone frame draws. */
   .showcase__word { top: auto; bottom: 10vw; font-size: min(25.64vw, calc(97vw / (0.54 * var(--chars, 7)))); }
   .showcase__image { bottom: 24vw; width: 127.4vw; }          /* 497 wide */
-  .showcase__nav { bottom: 0; font-size: 1.125rem; }
+  .showcase__nav { bottom: 0; font-size: 1.125rem; gap: 8px; }
   .showcase__nav--prev { left: 12px; }
   .showcase__nav--next { right: 12px; }
+  .showcase__nav span { max-width: 36vw; }
   .showcase__rule { display: none; }
   .showcase__text { padding-top: 36px; }
 }

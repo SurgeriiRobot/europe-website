@@ -151,8 +151,12 @@ useSwipe(stage, { prev: () => go(-1), next: () => go(1) })
 }
 /* "Frühe Forschung im Bereich der roboterassistierten Chirurgie" is twice the
    length of the English it was drawn to and touched the curve. German sets a
-   little smaller so the longest milestone sits inside the disc. */
-.tl__disc:lang(de) { font-size: calc(1.94 * var(--sx)); }
+   little smaller so the longest milestone sits inside the disc. Scoped to the
+   wide layout: the phone draws this in real px, and `--sx` there is about 4px,
+   which shrank the German copy to nothing. */
+@media (min-width: 721px) {
+  .tl__disc:lang(de) { font-size: calc(1.94 * var(--sx)); }
+}
 /* The year is drawn behind the disc, its top 23px covered by it. */
 .tl__year {
   position: relative;
@@ -222,6 +226,7 @@ useSwipe(stage, { prev: () => go(-1), next: () => go(1) })
   .tl__lead { height: min(var(--connector-len, 40px), 56px); }
   .tl__title { margin-bottom: 56px; padding-inline: 16px; font-size: clamp(2.25rem, 12.3vw, 3rem); }
   .tl__disc { width: 240px; height: 240px; padding-top: 10px; padding-inline: 28px; font-size: 1.5rem; line-height: 1.2083; }
+  .tl__disc:lang(de) { font-size: 1.125rem; }
   .tl__year { margin-top: -40px; font-size: 150px; }
   .tl__foot { display: grid; grid-template-columns: 1fr 1fr; justify-items: center; gap: 28px; margin-top: 28px; padding-inline: 16px; }
   .tl__caption { grid-area: 1 / 1 / 2 / 3; max-width: none; font-size: 1.5rem; line-height: 1.2083; }

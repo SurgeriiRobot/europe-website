@@ -101,6 +101,7 @@ const ctaLabel = computed(() => (props.blok.cta ? ctaWord(props.blok.cta) : ''))
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
+  justify-content: space-between;
   gap: 8px;
   min-height: 30px;
   margin: 0;
@@ -113,7 +114,10 @@ const ctaLabel = computed(() => (props.blok.cta ? ctaWord(props.blok.cta) : ''))
   font-weight: 400;
   line-height: 1.2;
 }
-.lcard__tags { display: flex; flex: none; justify-content: flex-end; gap: 7px; margin-left: auto; }
+/* Ranged right beside the date, but flush left once they wrap onto their own
+   line, which is how the News & events cards behave. `margin-left: auto`
+   held them right even on a line of their own. */
+.lcard__tags { display: flex; flex: none; flex-wrap: wrap; gap: 7px; }
 .lcard__tag {
   display: inline-flex;
   align-items: center;
