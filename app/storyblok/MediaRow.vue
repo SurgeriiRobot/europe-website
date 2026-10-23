@@ -137,6 +137,11 @@ const mediaWidth = computed(() => `calc(${(widthPx.value / 14.4).toFixed(2)} * m
 .mrow__video.is-on { opacity: 1; }
 
 .mrow__title { margin: 0; font-size: clamp(2rem, 3.33vw, 3rem); font-weight: 600; line-height: 1.2083; color: var(--ink); }
+/* "Allgemeinchirurgie" needs 432px of the 410px column at the drawn size.
+   The long-word languages set a little smaller so it stays one word. */
+@media (min-width: 721px) {
+  .mrow__title:lang(de), .mrow__title:lang(it), .mrow__title:lang(es) { font-size: clamp(1.75rem, 2.8vw, 3rem); }
+}
 /* The edge tick: a hairline on the outer side of the copy, level with the
    middle of the headline's first line. Waitak, Instruments Ecosystem: "all of
    them have blue lines on opposite side of the text headline". `edge_ticks` has

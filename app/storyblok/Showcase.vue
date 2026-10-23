@@ -235,6 +235,9 @@ useSwipe(root, { prev: () => go(leftIndex.value, 'prev'), next: () => go(rightIn
    before it. "Instrumentenwagen" reached past it, so the rule ran through
    the words. The label stops short of where the rule begins. */
 .showcase__nav span { max-width: calc(11.4 * var(--sx)); text-align: start; }
+/* The label has to clear the hairline and cannot break, so German sets
+   smaller rather than running past it. */
+.showcase__nav:lang(de) span { font-size: 1rem; }
 .showcase__nav--next span { text-align: end; }
 /* A hairline on each side, running from the label toward the product. */
 .showcase__rule {

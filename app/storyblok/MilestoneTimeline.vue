@@ -147,7 +147,6 @@ useSwipe(stage, { prev: () => go(-1), next: () => go(1) })
   text-align: center;
   white-space: pre-line;
   overflow-wrap: break-word;
-  hyphens: auto;
 }
 /* "Frühe Forschung im Bereich der roboterassistierten Chirurgie" is twice the
    length of the English it was drawn to and touched the curve. German sets a

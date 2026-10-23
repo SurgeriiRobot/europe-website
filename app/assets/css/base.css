@@ -266,12 +266,6 @@ html {
   .sec-title--lines .sec-title__h::before,
   .sec-title--lines .sec-title__h::after { display: none; }
 }
-/* Translated headings are longer than the English they were drawn to, and a
-   long German compound has nowhere to break on a phone. This lets one break
-   rather than run off the screen; it changes nothing for a heading that
-   already fits. */
-h1, h2, h3, h4 { hyphens: auto; }
-
 /* The mobile design keeps section titles at 48px (only very narrow phones scale
    them down: 48px is 12.3vw at 390). */
 @media (max-width: 720px) {

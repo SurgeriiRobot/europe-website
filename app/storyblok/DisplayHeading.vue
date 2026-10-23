@@ -229,7 +229,6 @@ const accentWord = computed(() => ` ${String(props.blok.accent || '').trim() ===
     font-size: clamp(2.5rem, 13.33vw, 3.25rem);
     line-height: 1;
     text-align: center;
-    hyphens: auto;
     overflow-wrap: break-word;
   }
   .display__line { min-width: 0; }
