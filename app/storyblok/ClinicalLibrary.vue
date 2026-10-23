@@ -140,6 +140,11 @@ const openHref = computed(() => {
   const l = playing.value?.link
   return l && (l.cached_url || l.url || l.story?.full_slug) ? sbHref(l) : null
 })
+// "Lobectomy/Segmentectomy" has no break opportunity a browser will take, so
+// in the narrow pop-up it was cut mid-word as "Segmentect / omy". A zero width
+// space after the slash lets it break where a reader would expect it to.
+const breakable = (t: string) => String(t || '').replace(/\/(?=\S)/g, '/\u200b')
+
 const openExternal = computed(() => /^https?:\/\//.test(openHref.value || ''))
 const openTags = computed(() => [playing.value?.kind, playing.value?.specialty]
   .filter(Boolean)
@@ -320,7 +325,7 @@ const promoHref = computed(() => {
 
         <div class="lib__pop-head">
           <div class="lib__pop-headings">
-            <h3 class="lib__pop-title">{{ playing.title }}</h3>
+            <h3 class="lib__pop-title">{{ breakable(playing.title) }}</h3>
             <p v-if="playing.excerpt" class="lib__pop-body">{{ playing.excerpt }}</p>
           </div>
           <div class="lib__pop-meta">
@@ -570,7 +575,7 @@ const promoHref = computed(() => {
 .lib__pop-headings { min-width: 0; }
 /* "Lobectomy/Segmentectomy" is one unbreakable word on a phone, and it pushed
    the heading past its box and under the close mark. */
-.lib__pop-title { margin: 0; overflow-wrap: anywhere; font-size: 1.375rem; font-weight: 600; line-height: 1.2083; }   /* 22 */
+.lib__pop-title { margin: 0; overflow-wrap: break-word; font-size: 1.375rem; font-weight: 600; line-height: 1.2083; }   /* 22 */
 .lib__pop-body { margin: 10px 0 0; font-size: 1.125rem; font-weight: 300; line-height: 1.3; }
 .lib__pop-meta { flex: none; display: grid; justify-items: end; gap: 10px; }
 .lib__pop-tags { display: flex; gap: 7px; }
