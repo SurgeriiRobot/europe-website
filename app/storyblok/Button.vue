@@ -34,7 +34,12 @@ const classes = computed(() => ['btn', `btn--${props.blok.variant || 'primary'}`
   line-height: 1.625rem;
   letter-spacing: 0.46px;
   text-decoration: none;
-  white-space: nowrap;
+  /* Waitak, on the translated CTAs: "maybe make the button fall on two lines,
+     thus making the button have more height". Held on one line, a label like
+     "Lesen Sie den gesamten Fallbericht" ran straight out of its button. */
+  white-space: normal;
+  text-align: center;
+  text-wrap: balance;
   cursor: pointer;
   transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1),

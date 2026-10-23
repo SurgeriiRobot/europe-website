@@ -146,7 +146,13 @@ useSwipe(stage, { prev: () => go(-1), next: () => go(1) })
   color: var(--c-white);
   text-align: center;
   white-space: pre-line;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
+/* "Frühe Forschung im Bereich der roboterassistierten Chirurgie" is twice the
+   length of the English it was drawn to and touched the curve. German sets a
+   little smaller so the longest milestone sits inside the disc. */
+.tl__disc:lang(de) { font-size: calc(1.94 * var(--sx)); }
 /* The year is drawn behind the disc, its top 23px covered by it. */
 .tl__year {
   position: relative;

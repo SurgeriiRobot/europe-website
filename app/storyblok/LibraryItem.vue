@@ -93,18 +93,21 @@ const ctaLabel = computed(() => (props.blok.cta ? ctaWord(props.blok.cta) : ''))
   overflow: hidden;
 }
 
+/* Waitak: "the date becomes a mess, follow the News & Events cards where the
+   date just gets placed on top of the tags". A translated chip pair leaves the
+   date a two-character column, so "9 giugno 2026" set as three stacked lines.
+   The row wraps instead: the date keeps its line and the chips drop below it. */
 .lcard__meta {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: 8px;
   min-height: 30px;
   margin: 0;
 }
 .lcard__date {
-  /* Ranged against the tags, and free to fall onto a second line when they are
-     wide — the design does exactly that on its "Publication / Gynecology" card. */
-  flex: 0 1 auto;
-  min-width: 0;
+  flex: none;
+  white-space: nowrap;
   align-self: center;
   font-size: 0.75rem;
   font-weight: 400;
