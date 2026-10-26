@@ -20,6 +20,7 @@
 // screen reader a visible list is collapsed.
 const props = defineProps<{ blok: any }>()
 const language = useStoryblokLanguage()
+const dimension = useDatasourceDimension()
 
 // Centres and country labels travel together: the labels are the `countries`
 // datasource's own names, never a list written into this component.
@@ -35,7 +36,14 @@ const { data: source } = await useAsyncData(
         language: language.value,
         per_page: 100,
       }),
-      api.getAll('cdn/datasource_entries', { datasource: 'countries', per_page: 100 }),
+      // With a dimension the translated name arrives as `dimension_value`.
+      // Without one the delivery API hands back the default, which is why the
+      // country headings read English on all four translated sites.
+      api.getAll('cdn/datasource_entries', {
+        datasource: 'countries',
+        per_page: 100,
+        ...(dimension.value ? { dimension: dimension.value } : {}),
+      }),
     ])
     return {
       centers: (stories as any[]).map(s => ({
@@ -48,7 +56,7 @@ const { data: source } = await useAsyncData(
         city: s.content?.city || '',
         coordinates: s.content?.coordinates || '',
       })),
-      countries: (countries as any[]).map(e => ({ name: e.name, value: e.value })),
+      countries: (countries as any[]).map(e => ({ name: e.dimension_value || e.name, value: e.value })),
     }
   },
 )

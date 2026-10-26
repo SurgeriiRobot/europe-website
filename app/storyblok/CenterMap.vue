@@ -22,6 +22,7 @@
 // gutter, 24/29 brand blue over a 1px #8182af hairline.
 const props = defineProps<{ blok: any }>()
 const language = useStoryblokLanguage()
+const dimension = useDatasourceDimension()
 const url = useSbUrl()
 
 // Centres and country labels travel together: the labels are the `countries`
@@ -46,7 +47,14 @@ const { data: source } = await useAsyncData(
           ? { filter_query: { installed: { is: true } } }
           : {}),
       }),
-      api.getAll('cdn/datasource_entries', { datasource: 'countries', per_page: 100 }),
+      // With a dimension the translated name arrives as `dimension_value`.
+      // Without one the delivery API hands back the default, which is why the
+      // country headings read English on all four translated sites.
+      api.getAll('cdn/datasource_entries', {
+        datasource: 'countries',
+        per_page: 100,
+        ...(dimension.value ? { dimension: dimension.value } : {}),
+      }),
     ])
     return {
       centers: (stories as any[]).map(s => ({
@@ -58,7 +66,7 @@ const { data: source } = await useAsyncData(
         city: s.content?.city || '',
         coordinates: s.content?.coordinates || '',
       })),
-      countries: (countries as any[]).map(e => ({ name: e.name, value: e.value })),
+      countries: (countries as any[]).map(e => ({ name: e.dimension_value || e.name, value: e.value })),
     }
   },
 )
