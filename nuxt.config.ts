@@ -176,6 +176,11 @@ export default defineNuxtConfig({
   runtimeConfig: {
     storyblokAccessToken: process.env.NUXT_STORYBLOK_ACCESS_TOKEN || '',
     storyblokRegion: region,
+    // Server side only, and it must stay that way. This token reads unpublished
+    // content, so anything under `public` below would ship it to every visitor
+    // and make draft work readable by anyone. It is used by
+    // server/api/preview-story.get.ts and nowhere else.
+    storyblokPreviewToken: process.env.NUXT_STORYBLOK_PREVIEW_TOKEN || '',
     public: {
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://localhost:3010',
       storyblokVersion: process.env.NUXT_PUBLIC_STORYBLOK_VERSION || 'published',

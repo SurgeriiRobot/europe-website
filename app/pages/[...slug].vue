@@ -14,16 +14,82 @@ const slug = computed(() => {
   return raw || 'home'
 })
 
+// Storyblok signs the URL it loads into the editor's iframe, so the presence
+// of that signature is what tells us an editor is looking rather than a
+// visitor. It is derived from the route, so server and client agree on which
+// branch runs for a given URL.
+const editorSignature = computed(() => String(route.query['_storyblok_tk[token]'] || ''))
+const inEditor = computed(() => !!editorSignature.value)
+
+// Two ways in, and the ordinary one is left exactly as it was: a bug in the
+// preview path can only reach someone who arrived from the editor.
+//
 // v11 nests the CDN params under `api`; the bridge is registered automatically
 // so Visual Editor edits stream in live. The cache key carries the locale so
 // switching language refetches instead of serving the previous translation.
-const { story, error } = await useAsyncStoryblok(slug.value, {
-  api: {
-    version: useStoryblokVersion(),
-    language: language.value,
-    resolve_links: 'url',
-  },
-})
+let story: ComputedRef<any>
+let error: Ref<any>
+
+if (inEditor.value) {
+  // Published content is what the public token can read, and it is the wrong
+  // thing to show an editor: their saved but unpublished work would be
+  // missing, which looks exactly like the save having failed. The draft comes
+  // from our own endpoint, which holds the preview token server side.
+  const sbApi = useStoryblokApi()
+  // Read before the fetcher runs. Anything that reaches for the Nuxt instance
+  // after an await is past the point where one exists, which is NUXT_E1001 and
+  // was quietly turning the fallback below into a 404.
+  const publishedVersion = useStoryblokVersion()
+  const preview = await useAsyncData(
+    () => `preview-${slug.value}-${language.value}`,
+    async () => {
+      try {
+        return await $fetch<any>('/api/preview-story', {
+          query: {
+            slug: slug.value,
+            language: language.value,
+            '_storyblok_tk[space_id]': route.query['_storyblok_tk[space_id]'],
+            '_storyblok_tk[timestamp]': route.query['_storyblok_tk[timestamp]'],
+            '_storyblok_tk[token]': editorSignature.value,
+          },
+        })
+      }
+      catch {
+        // A signature is good for an hour. Someone who left the editor open
+        // over lunch and reloaded should get the published page, not a 404.
+        const { data } = await sbApi.get(`cdn/stories/${slug.value}`, {
+          version: publishedVersion,
+          language: language.value,
+          resolve_links: 'url',
+        })
+        return data
+      }
+    },
+  )
+  story = computed(() => preview.data.value?.story)
+  error = preview.error
+  // useAsyncStoryblok would have done this for us. Taking the draft from our
+  // own endpoint means wiring the live updates by hand instead.
+  if (import.meta.client) {
+    watch(() => story.value?.id, (id) => {
+      if (!id) return
+      useStoryblokBridge(id, (evStory: any) => {
+        if (preview.data.value) preview.data.value = { ...preview.data.value, story: evStory }
+      }, { resolveLinks: 'url' })
+    }, { immediate: true })
+  }
+}
+else {
+  const published = await useAsyncStoryblok(slug.value, {
+    api: {
+      version: useStoryblokVersion(),
+      language: language.value,
+      resolve_links: 'url',
+    },
+  })
+  story = published.story
+  error = published.error
+}
 
 if (error.value || !story.value?.content) {
   throw createError({ statusCode: 404, statusMessage: `Story "${slug.value}" not found` })
