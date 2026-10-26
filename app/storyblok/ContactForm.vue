@@ -50,8 +50,9 @@ const MAP: Record<string, string> = {
   message: 'message',
   interest: 'website_interest',
 }
-// The country dropdown stores country names; the interest dropdown stores the
-// same keys we use. So one is translated on the way out and the other is not.
+// The country dropdown is the one field HubSpot will not take our key for: its
+// Country/Region property only accepts its own spellings. Everything else goes
+// across as the value we hold.
 const AS_NAME = new Set(['country'])
 
 // `consent` is the data processing consent and is required; `marketing` is the
@@ -59,18 +60,6 @@ const AS_NAME = new Set(['country'])
 // they can tell who agreed to be marketed to.
 function label(name: string) {
   return fields.value.find((f: any) => f.name === name)?.label || ''
-}
-
-// A select submits its datasource key, "DE" rather than "Germany". That is the
-// right thing to carry around the site and the wrong thing to put in a CRM, so
-// the readable name goes to HubSpot. FormField has already fetched each list
-// under `ds-<datasource>`, so this reads that result rather than fetching again.
-const nuxtApp = useNuxtApp()
-function readable(fieldName: string, value: string) {
-  const field = fields.value.find((f: any) => f.name === fieldName)
-  if (!field?.options) return value
-  const list = (nuxtApp.payload.data as Record<string, any>)?.[`ds-${field.options}`] as { name: string, value: string }[] | undefined
-  return list?.find(e => e.value === value)?.name || value
 }
 
 async function submit() {
@@ -82,9 +71,7 @@ async function submit() {
     for (const [ours, theirs] of Object.entries(MAP)) {
       const v = values[ours]
       if (v === undefined || v === '' || typeof v === 'boolean') continue
-      payload[theirs] = AS_NAME.has(ours)
-        ? hubspotCountry(String(v), readable(ours, String(v)))
-        : String(v)
+      payload[theirs] = AS_NAME.has(ours) ? hubspotCountry(String(v)) : String(v)
     }
     // The three hidden properties the client added to both forms.
     payload.website_page_url = import.meta.client ? window.location.href : undefined

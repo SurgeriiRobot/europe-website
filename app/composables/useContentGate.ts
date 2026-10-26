@@ -29,12 +29,6 @@ export function useContentGate() {
   const hubspot = useHubspotForm()
   const formId = (useRuntimeConfig().public as Record<string, string>).hubspotGateFormId
   const language = useStoryblokLanguage()
-  const nuxtApp = useNuxtApp()
-  const countryName = (code: string) => {
-    const list = (nuxtApp.payload.data as Record<string, any>)?.['gate-countries'] as { name: string, value: string }[] | undefined
-    return list?.find(e => e.value === code)?.name || code
-  }
-
   onMounted(() => {
     try { granted.value = localStorage.getItem(GRANT) === '1' } catch { /* private mode */ }
   })
@@ -68,7 +62,7 @@ export function useContentGate() {
         const res = await hubspot.submit(formId, {
           firstname: lead.name.trim(),
           email: lead.email.trim(),
-          contact_country: hubspotCountry(lead.country, countryName(lead.country)),
+          contact_country: hubspotCountry(lead.country),
           website_page_url: import.meta.client ? window.location.href : undefined,
           website_language: siteLanguage(language.value),
           website_form_source: 'content_download',
