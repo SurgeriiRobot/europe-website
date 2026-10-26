@@ -3,3 +3,12 @@
 # does not exist yet is a bare directory, so its index falls back to the same.
 ErrorDocument 404 /404.html
 DirectoryIndex index.html /404.html
+
+# www goes to the apex, which is what the build treats as canonical: the
+# canonical tags and the sitemap both name surgerii.com. Combell's own Force
+# HTTPS handles http to https, so this only moves the hostname.
+# The Let's Encrypt challenge is never redirected, or renewal fails.
+RewriteEngine On
+RewriteCond %{REQUEST_URI} !^/\.well-known/
+RewriteCond %{HTTP_HOST} ^www\.surgerii\.com$ [NC]
+RewriteRule ^(.*)$ https://surgerii.com/$1 [R=301,L]

@@ -12,7 +12,8 @@
     "storyblok:build": "node storyblok/build.mjs",
     "deploy:test": "bash scripts/deploy-test.sh",
     "build:app": "nuxt build",
-    "serve": "node .output/server/index.mjs"
+    "serve": "node .output/server/index.mjs",
+    "deploy:prod": "bash scripts/deploy-prod.sh"
   },
   "dependencies": {
     "@nuxt/fonts": "^0.14.0",
