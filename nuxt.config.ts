@@ -32,6 +32,22 @@ export default defineNuxtConfig({
       meta: process.env.NUXT_PUBLIC_STORYBLOK_VERSION === 'draft'
         ? [{ name: 'robots', content: 'noindex, nofollow' }]
         : [],
+      // Plausible sets no cookies and stores nothing that identifies a
+      // visitor, so unlike the HubSpot and LinkedIn tags in ConsentScripts it
+      // needs no consent and loads for everyone. Its own script attaches to
+      // the History API, so Nuxt's client side navigation is counted without
+      // anything further.
+      //
+      // The draft build is a review copy. It ships without the tag at all
+      // rather than being filtered out afterwards, so our own testing never
+      // reaches the client's figures.
+      script: process.env.NUXT_PUBLIC_STORYBLOK_VERSION === 'draft'
+        ? []
+        : [{
+            src: 'https://plausible.io/js/script.js',
+            defer: true,
+            'data-domain': process.env.NUXT_PUBLIC_PLAUSIBLE_DOMAIN || 'surgerii.com',
+          }],
     },
   },
 
