@@ -27,9 +27,15 @@ useHead(computed(() => {
   if (linkedinPartnerId) {
     script.push({
       key: 'linkedin-partner',
+      // `lintrk` is the queue LinkedIn's own snippet defines before the tag
+      // loads, so that a conversion fired during those few hundred
+      // milliseconds is held and replayed rather than throwing. We had the tag
+      // but not the queue, which is fine until the first conversion event is
+      // added and then silently is not.
       innerHTML: `window._linkedin_partner_id="${linkedinPartnerId}";`
         + 'window._linkedin_data_partner_ids=window._linkedin_data_partner_ids||[];'
-        + `window._linkedin_data_partner_ids.push("${linkedinPartnerId}");`,
+        + `window._linkedin_data_partner_ids.push("${linkedinPartnerId}");`
+        + 'if(!window.lintrk){window.lintrk=function(a,b){window.lintrk.q.push([a,b])};window.lintrk.q=[];}',
       tagPosition: 'bodyClose' as const,
     })
     script.push({
