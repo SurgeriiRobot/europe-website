@@ -40,6 +40,9 @@ const HUBSPOT_COUNTRY: Record<string, string> = {
   NO: 'Norway',
   PL: 'Poland',
   PT: 'Portugal',
+  // Added 27 October at the client's request: their IT team has the Romania
+  // notification branch ready, and "Romania" is HubSpot's own spelling.
+  RO: 'Romania',
   ES: 'Spain',
   SE: 'Sweden',
   CH: 'Switzerland',

@@ -17,7 +17,9 @@ const { data: choices } = await useAsyncData(
   () => `ds-${props.blok.options || 'none'}-${dimension.value || 'default'}`,
   async () => {
     if (props.blok.type !== 'select' || !props.blok.options) return []
-    return await fetchDatasource(props.blok.options, dimension.value)
+    const rows = await fetchDatasource(props.blok.options, dimension.value)
+    // Only the countries: an enquiry-type list is in the order its author chose.
+    return props.blok.options === 'countries' ? sortCountries(rows, dimension.value) : rows
   },
 )
 </script>

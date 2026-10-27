@@ -103,6 +103,6 @@ export function useContentGate() {
 export function useGateCountries() {
   const dimension = useDatasourceDimension()
   return useAsyncData(() => `gate-countries-${dimension.value || 'default'}`, async () => {
-    return await fetchDatasource('countries', dimension.value)
+    return sortCountries(await fetchDatasource('countries', dimension.value), dimension.value)
   }, { default: () => [] })
 }
