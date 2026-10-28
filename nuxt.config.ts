@@ -60,7 +60,19 @@ export default defineNuxtConfig({
 
   storyblok: {
     accessToken: process.env.NUXT_STORYBLOK_ACCESS_TOKEN,
-    apiOptions: { region },
+    // `cv` is Storyblok's cache-busting stamp. Left alone, the client reads it
+    // from the first response and then appends that same value to every later
+    // request for the life of the process, so a long-running server keeps
+    // asking for the snapshot it saw when it started. On 28 October the live
+    // site was still serving the content from the previous evening's deploy,
+    // hours after publishing, while the same build started fresh on this
+    // machine served the new content immediately.
+    //
+    // That breaks the point of running the Node app at all: the client was
+    // promised that they publish, refresh, and see the change, with no deploy.
+    // Anything but 'auto' here stops the stale stamp being pinned, and the
+    // response cache stays off because `type` is unset.
+    apiOptions: { region, cache: { cv: 'fresh' } },
     // On now, including in production, which is what makes the Visual Editor
     // usable: without it an editor sees a page they cannot click into and
     // their edits never appear.
