@@ -41,7 +41,20 @@ export default defineEventHandler(async (event) => {
     // Centre stories carry a name and a country code, nothing a page can be
     // made of, and the client asked for the list not to be clickable. They are
     // not built, so they must not be advertised either.
-    .filter(l => !l.is_folder && !/(^|\/)global(\/|$)/.test(l.slug) && !l.slug.startsWith('clinical-centers/'))
+    //
+    // The pattern needs something after the slash. The Clinical centers page is
+    // the folder's own index story and Storyblok gives it the slug
+    // `clinical-centers/`, so matching the bare prefix dropped the listing page
+    // along with the 100 centres below it: a live, translated, indexable page
+    // that was in no sitemap and reachable only from the Contact page.
+    //
+    // Search is left out because it ships `noindex`. A sitemap that advertises
+    // a noindexed URL is reported as an error in Search Console, and it was
+    // advertising five.
+    .filter(l => !l.is_folder
+      && !/(^|\/)global(\/|$)/.test(l.slug)
+      && !/^clinical-centers\/.+/.test(l.slug)
+      && !/^search\/?$/.test(l.slug))
     .map(l => ({ path: l.slug === 'home' ? '' : `/${l.slug.replace(/\/+$/, '')}`, lastmod: l.published_at }))
     .sort((a, b) => a.path.localeCompare(b.path))
 
