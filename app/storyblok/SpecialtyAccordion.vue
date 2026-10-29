@@ -27,15 +27,29 @@ const slug = (v: unknown) => String(v ?? '').trim().toLowerCase().replace(/[^a-z
 // icons and summaries did nothing until you reloaded without it.
 const open = ref('')
 watch(() => route.query.specialty, v => { open.value = slug(v) }, { immediate: true })
-const isOpen = (label: string) => {
+// A row's stable name. The link says ?specialty=urology in every language, but
+// the label is translated copy, so matching on the label only ever worked in
+// English: the German row reads Urologie, and Pediatric surgery is
+// Paediatrische Chirurgie there, which no amount of tolerance reaches. The key
+// is set once in Storyblok and is never translated. A row without one falls
+// back to its label, which is what every row did before.
+const rowKey = (item: any) => slug(item.key) || slug(item.label)
+const isOpen = (item: any) => {
   const want = open.value
   if (!want) return false
-  const have = slug(label)
+  const have = rowKey(item)
   return have === want || have.startsWith(`${want}-`) || want.startsWith(`${have}-`)
+}
+// The drawings above the list name their row by the label they print, both in
+// the reader's own language, so they find the row through the labels on the
+// page and then use its key like everything else.
+const rowFor = (label: string) => {
+  const want = slug(label)
+  return items.value.find(i => slug(i.label) === want) || { label }
 }
 // Opening one row closes the rest, which is how a <details> group reads when it
 // is driven from a link rather than from its own summary.
-const show = (label: string) => { open.value = isOpen(label) ? '' : slug(label) }
+const show = (item: any) => { open.value = isOpen(item) ? '' : rowKey(item) }
 
 // A link that names a specialty should land on that row rather than at the top
 // of the page with the row open somewhere below the fold. Doing it on mount is
@@ -96,7 +110,7 @@ const style = computed(() => ({
 
       <ul v-if="icons.length" class="spec__icons">
         <li v-for="icon in icons" :key="icon._uid" v-editable="icon" class="spec__icon">
-          <button type="button" class="spec__icon-btn" @click="show(icon.label)">
+          <button type="button" class="spec__icon-btn" @click="show(rowFor(icon.label))">
           <img
             v-if="icon.icon?.filename"
             class="spec__icon-img"
@@ -118,11 +132,11 @@ const style = computed(() => ({
           v-for="item in items"
           :key="item._uid"
           v-editable="item"
-          :id="`specialty-${slug(item.label)}`"
+          :id="`specialty-${rowKey(item)}`"
           class="spec__row"
-          :open="isOpen(item.label)"
+          :open="isOpen(item)"
         >
-          <summary class="spec__summary" @click="show(item.label)">
+          <summary class="spec__summary" @click="show(item)">
             <span class="spec__label">{{ item.label }}</span>
             <span class="spec__mark" aria-hidden="true">
               <svg viewBox="0 0 28 28" width="28" height="28" focusable="false">

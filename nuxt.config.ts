@@ -70,9 +70,10 @@ export default defineNuxtConfig({
     //
     // That breaks the point of running the Node app at all: the client was
     // promised that they publish, refresh, and see the change, with no deploy.
-    // Anything but 'auto' here stops the stale stamp being pinned, and the
-    // response cache stays off because `type` is unset.
-    apiOptions: { region, cache: { cv: 'fresh' } },
+    // 'manual' means the client appends no stamp of its own, which is what
+    // stops the stale one being pinned. The response cache stays off because
+    // `type` is unset.
+    apiOptions: { region, cache: { cv: 'manual' } },
     // On now, including in production, which is what makes the Visual Editor
     // usable: without it an editor sees a page they cannot click into and
     // their edits never appear.
