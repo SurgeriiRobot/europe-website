@@ -22,6 +22,17 @@ export default defineEventHandler((event) => {
   const host = getRequestHeader(event, 'x-forwarded-host') || getRequestHeader(event, 'host') || ''
   // Certificate renewal is answered over http on the name being validated, so
   // that one path has to stay where it is or the renewal fails.
+if (
+  host.toLowerCase() === 'en.surgerii.com' &&
+  !path.startsWith('/.well-known/')
+) {
+  return sendRedirect(
+    event,
+    `https://surgerii.com${path}${url.search}`,
+    301,
+  )
+}
+
   if (host.startsWith('www.') && !path.startsWith('/.well-known/')) {
     return sendRedirect(event, `https://${host.slice(4)}${path}${url.search}`, 301)
   }
